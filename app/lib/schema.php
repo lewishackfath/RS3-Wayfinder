@@ -57,6 +57,37 @@ function bootstrap_schema(): void
         CONSTRAINT fk_role_permissions_permission FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_profiles (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        user_id BIGINT UNSIGNED NOT NULL,
+        rsn VARCHAR(12) NOT NULL,
+        rsn_normalised VARCHAR(32) NOT NULL,
+        account_type VARCHAR(40) NOT NULL DEFAULT 'main',
+        visibility ENUM('private','unlisted','public') NOT NULL DEFAULT 'private',
+        is_primary TINYINT(1) NOT NULL DEFAULT 0,
+        runemetrics_public TINYINT(1) NULL,
+        last_sync_at DATETIME NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_profile_user_rsn (user_id, rsn_normalised),
+        INDEX idx_profiles_user (user_id),
+        INDEX idx_profiles_public (visibility),
+        INDEX idx_profiles_primary (user_id, is_primary),
+        CONSTRAINT fk_player_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_profile_settings (
+        profile_id BIGINT UNSIGNED PRIMARY KEY,
+        preferred_journey_id BIGINT UNSIGNED NULL,
+        preferred_playstyle VARCHAR(80) NULL,
+        ui_preferences_json JSON NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_profile_settings_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,
@@ -82,6 +113,8 @@ function seed_permissions_and_roles(): void
         ['users.view', 'View users', 'Allows viewing registered users.'],
         ['users.manage', 'Manage users', 'Allows activating/deactivating users and changing roles.'],
         ['roles.manage', 'Manage roles', 'Allows changing role permissions.'],
+        ['profiles.view', 'View profiles', 'Allows viewing player profiles in the admin area.'],
+        ['profiles.manage', 'Manage profiles', 'Allows moderating player profiles.'],
     ];
 
     $stmt = $pdo->prepare("INSERT INTO permissions (slug, name, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)");
@@ -99,8 +132,8 @@ function seed_permissions_and_roles(): void
         $stmt->execute($role);
     }
 
-    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage']);
-    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage']);
+    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage']);
+    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view']);
 }
 
 function grant_role_permissions(string $roleSlug, array $permissionSlugs): void

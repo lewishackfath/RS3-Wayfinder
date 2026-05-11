@@ -45,3 +45,20 @@ storage/        Private runtime storage
 
 - The real `.env` file is intentionally not included in this package.
 - Keep `.env`, `app/`, `storage/` and future vendor/config files outside the document root.
+
+## Profiles update
+
+This version adds user-owned RSN profiles.
+
+After uploading, visit:
+
+`/setup/check.php`
+
+This creates/updates:
+
+- `player_profiles`
+- `player_profile_settings`
+- profile admin permissions
+
+Users can manage profiles at `/profiles/index.php`.
+Admins can view all profiles at `/admin/profiles.php`.

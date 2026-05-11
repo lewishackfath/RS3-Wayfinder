@@ -9,6 +9,7 @@ function page_header(string $title): void
     echo '<header class="topbar"><a class="brand" href="/index.php">RS3 Wayfinder</a><nav>';
     if ($user) {
         echo '<a href="/dashboard.php">Dashboard</a>';
+        echo '<a href="/profiles/index.php">Profiles</a>';
         if (current_user_can('admin.access')) echo '<a href="/admin/index.php">Admin</a>';
         echo '<a href="/auth/logout.php">Logout</a>';
     } else {
