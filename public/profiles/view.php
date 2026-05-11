@@ -87,10 +87,19 @@ page_header('Profile Data');
         <?php else: ?>
             <div class="skill-grid">
                 <?php foreach ($skills as $skill): ?>
-                    <div class="skill-row">
+                    <?php $display = rs3_display_level((string)$skill['skill_name'], $skill['level'] ?? null, $skill['xp'] ?? null); ?>
+                    <div class="skill-row<?= $display['is_virtual'] ? ' is-virtual' : '' ?>">
                         <span><?= e($skill['skill_name']) ?></span>
-                        <strong><?= e(format_number_short($skill['level'])) ?></strong>
-                        <small><?= e(format_number_short($skill['xp'])) ?> XP</small>
+                        <strong>
+                            <?= e((string)$display['display_level']) ?>
+                            <?php if ($display['is_virtual']): ?>
+                                <em title="Reported level <?= e((string)$display['reported_level']) ?>, virtual level <?= e((string)$display['virtual_level']) ?>">virtual</em>
+                            <?php endif; ?>
+                        </strong>
+                        <small>
+                            <?= e(format_number_short($skill['xp'])) ?> XP
+                            <?php if ($display['is_virtual']): ?> • reported <?= e((string)$display['reported_level']) ?><?php endif; ?>
+                        </small>
                     </div>
                 <?php endforeach; ?>
             </div>

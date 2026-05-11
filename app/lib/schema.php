@@ -4,6 +4,11 @@ declare(strict_types=1);
 function bootstrap_schema(): void
 {
     $pdo = db();
+    $pdo->exec("CREATE TABLE IF NOT EXISTS app_migrations (
+        migration_key VARCHAR(120) PRIMARY KEY,
+        applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS users (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         discord_id VARCHAR(32) NOT NULL UNIQUE,
@@ -198,6 +203,40 @@ function bootstrap_schema(): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     seed_permissions_and_roles();
+    run_schema_migrations();
+}
+
+function run_schema_migrations(): void
+{
+    run_once_migration('20260511_normalise_runemetrics_skill_xp', function (PDO $pdo): void {
+        // Versions before this migration stored RuneMetrics skillvalues[].xp directly.
+        // RuneMetrics returns individual skill XP multiplied by 10, so repair existing parsed rows once.
+        $pdo->exec('UPDATE player_latest_skills SET xp = FLOOR(xp / 10) WHERE xp IS NOT NULL');
+        $pdo->exec('UPDATE player_skill_snapshots SET xp = FLOOR(xp / 10) WHERE xp IS NOT NULL');
+    });
+}
+
+function run_once_migration(string $key, callable $callback): void
+{
+    $pdo = db();
+    $stmt = $pdo->prepare('SELECT migration_key FROM app_migrations WHERE migration_key = ? LIMIT 1');
+    $stmt->execute([$key]);
+    if ($stmt->fetch()) {
+        return;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        $callback($pdo);
+        $insert = $pdo->prepare('INSERT INTO app_migrations (migration_key) VALUES (?)');
+        $insert->execute([$key]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
 }
 
 function seed_permissions_and_roles(): void

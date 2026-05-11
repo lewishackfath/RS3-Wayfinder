@@ -90,3 +90,16 @@ Then visit a profile via:
 ```
 
 The app will sync RuneMetrics profile and quest data only when the profile cache is older than 15 minutes. It stores raw endpoint responses and parsed profile, skill, activity and quest data.
+
+
+## Virtual skill levels
+
+Skill display uses `app/lib/skills.php` to calculate RuneScape virtual levels from XP. Non-elite skills display virtual levels up to 120. Invention is treated as an elite skill and can display virtual levels up to 150. The stored RuneMetrics reported level remains unchanged; only the profile display is adjusted.
+
+## RuneMetrics skill XP normalisation
+
+RuneMetrics `skillvalues[].xp` is returned as actual XP multiplied by 10. This build normalises individual skill XP during ingestion before writing parsed rows to `player_latest_skills` and `player_skill_snapshots`.
+
+Raw API JSON remains untouched in `runemetrics_fetches`.
+
+Running `/setup/check.php` also applies a one-time migration to repair skill XP rows created by the previous build.

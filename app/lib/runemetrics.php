@@ -244,7 +244,8 @@ function runemetrics_store_skills(int $profileId, array $skills, string $fetched
         if ($id === null) continue;
         $name = $names[$id] ?? ('Skill ' . $id);
         $level = int_or_null($skill['level'] ?? null);
-        $xp = int_or_null($skill['xp'] ?? null);
+        // RuneMetrics skill XP is returned multiplied by 10. Store parsed data as real XP.
+        $xp = runemetrics_normalise_skill_xp($skill['xp'] ?? null);
         $rank = int_or_null($skill['rank'] ?? null);
         $snapshot->execute([$profileId, $id, $name, $level, $xp, $rank, $fetchedAt]);
         $latest->execute([$profileId, $id, $name, $level, $xp, $rank, $fetchedAt]);
@@ -359,6 +360,16 @@ function runemetrics_last_fetches(int $profileId): array
     $stmt = db()->prepare('SELECT * FROM runemetrics_fetches WHERE profile_id = ? ORDER BY fetched_at DESC LIMIT 10');
     $stmt->execute([$profileId]);
     return $stmt->fetchAll();
+}
+
+function runemetrics_normalise_skill_xp(mixed $value): ?int
+{
+    $raw = int_or_null($value);
+    if ($raw === null) return null;
+
+    // RuneMetrics skillvalues[].xp is actual XP * 10.
+    // Keep raw API JSON untouched in runemetrics_fetches, but store parsed skill XP as the true value.
+    return intdiv($raw, 10);
 }
 
 function int_or_null(mixed $value): ?int
