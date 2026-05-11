@@ -1,0 +1,12 @@
+Options -Indexes
+
+# RS3 Wayfinder should have the web server document root pointed at /public.
+# This file prevents sensitive project files being browsed if the project root is exposed by mistake.
+<FilesMatch "^(\.env|composer\.(json|lock)|README\.md)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(app|bootstrap|config|database|storage|vendor)(/|$) - [F,L]
+</IfModule>
