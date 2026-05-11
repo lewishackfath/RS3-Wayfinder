@@ -37,13 +37,14 @@ page_header('My Profiles');
                     </div>
                 </div>
                 <p><strong>Visibility:</strong> <?= e(visibility_options()[$profile['visibility']] ?? $profile['visibility']) ?></p>
-                <p class="muted">RuneMetrics sync: <?= $profile['last_sync_at'] ? e($profile['last_sync_at']) : 'Not synced yet' ?></p>
+                <p class="muted">RuneMetrics sync: <?= e(format_sync_age($profile['last_sync_at'] ?? null)) ?></p>
                 <div class="form-actions">
                     <form method="post" action="/profiles/select.php">
                         <?= csrf_field() ?>
                         <input type="hidden" name="profile_id" value="<?= (int)$profile['id'] ?>">
                         <button class="button secondary" type="submit">Use profile</button>
                     </form>
+                    <a class="button secondary" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>">View data</a>
                     <a class="button secondary" href="/profiles/edit.php?id=<?= (int)$profile['id'] ?>">Edit profile</a>
                 </div>
             </div>

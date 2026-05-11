@@ -88,6 +88,101 @@ function bootstrap_schema(): void
         CONSTRAINT fk_profile_settings_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS runemetrics_fetches (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        profile_id BIGINT UNSIGNED NOT NULL,
+        endpoint VARCHAR(40) NOT NULL,
+        request_url TEXT NOT NULL,
+        http_status INT NULL,
+        was_successful TINYINT(1) NOT NULL DEFAULT 0,
+        error_message TEXT NULL,
+        response_json LONGTEXT NULL,
+        fetched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_rm_fetches_profile_endpoint (profile_id, endpoint, fetched_at),
+        CONSTRAINT fk_rm_fetches_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_profile_metrics (
+        profile_id BIGINT UNSIGNED PRIMARY KEY,
+        display_name VARCHAR(100) NULL,
+        overall_rank BIGINT NULL,
+        total_level INT NULL,
+        total_xp BIGINT NULL,
+        combat_level INT NULL,
+        melee_xp BIGINT NULL,
+        magic_xp BIGINT NULL,
+        ranged_xp BIGINT NULL,
+        quests_started INT NULL,
+        quests_complete INT NULL,
+        quests_not_started INT NULL,
+        logged_in TINYINT(1) NULL,
+        last_profile_fetch_at DATETIME NULL,
+        last_quest_fetch_at DATETIME NULL,
+        last_successful_sync_at DATETIME NULL,
+        last_sync_attempt_at DATETIME NULL,
+        last_sync_status VARCHAR(30) NULL,
+        last_sync_error TEXT NULL,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_profile_metrics_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_skill_snapshots (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        profile_id BIGINT UNSIGNED NOT NULL,
+        skill_id INT NOT NULL,
+        skill_name VARCHAR(80) NOT NULL,
+        level INT NULL,
+        xp BIGINT NULL,
+        rank BIGINT NULL,
+        fetched_at DATETIME NOT NULL,
+        UNIQUE KEY uniq_skill_snapshot (profile_id, skill_id, fetched_at),
+        INDEX idx_skill_latest (profile_id, skill_id, fetched_at),
+        CONSTRAINT fk_skill_snapshots_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_latest_skills (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        skill_id INT NOT NULL,
+        skill_name VARCHAR(80) NOT NULL,
+        level INT NULL,
+        xp BIGINT NULL,
+        rank BIGINT NULL,
+        fetched_at DATETIME NOT NULL,
+        PRIMARY KEY (profile_id, skill_id),
+        CONSTRAINT fk_latest_skills_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_activity_logs (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        profile_id BIGINT UNSIGNED NOT NULL,
+        activity_date_raw VARCHAR(80) NULL,
+        activity_date_utc DATETIME NULL,
+        activity_text VARCHAR(255) NULL,
+        activity_details TEXT NULL,
+        raw_json JSON NULL,
+        source_hash CHAR(64) NOT NULL,
+        first_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_seen_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_activity_source (profile_id, source_hash),
+        INDEX idx_activities_profile_date (profile_id, activity_date_utc),
+        CONSTRAINT fk_activity_logs_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_quest_statuses (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        quest_title VARCHAR(255) NOT NULL,
+        status VARCHAR(80) NULL,
+        difficulty VARCHAR(80) NULL,
+        quest_points INT NULL,
+        raw_json JSON NULL,
+        fetched_at DATETIME NOT NULL,
+        PRIMARY KEY (profile_id, quest_title),
+        INDEX idx_quests_profile_status (profile_id, status),
+        CONSTRAINT fk_quest_statuses_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,

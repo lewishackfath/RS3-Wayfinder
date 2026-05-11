@@ -72,3 +72,21 @@ RuneScape character chat-head avatars are loaded using Jagex's public avatar end
 `https://secure.runescape.com/m=avatar-rs/{RSN}/chat.png`
 
 Only the generated URL is stored/rendered; no avatar image files are cached locally yet.
+
+## RuneMetrics data collection
+
+This build adds the first RuneMetrics data layer.
+
+After upload, run:
+
+```text
+/setup/check.php
+```
+
+Then visit a profile via:
+
+```text
+/profiles/view.php
+```
+
+The app will sync RuneMetrics profile and quest data only when the profile cache is older than 15 minutes. It stores raw endpoint responses and parsed profile, skill, activity and quest data.
