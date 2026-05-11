@@ -1,6 +1,6 @@
 <?php
-require_once dirname(__DIR__) . '/app/bootstrap.php';
-require_once dirname(__DIR__) . '/app/layout.php';
+require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
+require_once dirname(__DIR__, 2) . '/app/layout.php';
 require_permission('admin.access');
 page_header('Admin');
 ?>

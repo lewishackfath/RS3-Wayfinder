@@ -1,20 +1,47 @@
 # RS3 Wayfinder
 
-Standalone RS3 journey tracker foundation.
+Standalone RS3 Wayfinder foundation with Discord OAuth authentication, users, roles and permissions.
+
+## Important web root
+
+Set your web server document root to:
+
+```text
+/path/to/RS3-Wayfinder/public
+```
+
+Only files inside `public/` should be web accessible. Application code, config, storage and future services live outside the web root.
 
 ## Setup
 
-1. Upload the files to your web root.
-2. Copy `.env.example` to `.env` and fill in database and Discord OAuth details.
-3. In the Discord Developer Portal, add your redirect URI exactly as:
-   `https://your-domain.com/auth/callback.php`
-4. Visit `/setup/check.php` once to bootstrap the database.
-5. Log in via Discord.
+1. Copy `.env.example` to `.env` in the project root.
+2. Fill in your database and Discord OAuth values.
+3. In the Discord Developer Portal, set your redirect URI to:
 
-## Admin access
+```text
+https://your-domain.example/auth/callback.php
+```
 
-Add your Discord user ID to `ADMIN_DISCORD_IDS` in `.env` before first login. Multiple IDs can be comma-separated.
+4. Visit:
 
-## OAuth scopes
+```text
+/setup/check.php
+```
 
-This app only requests `identify email`.
+5. Log in with Discord.
+
+## Current structure
+
+```text
+app/            Private application bootstrap, layout, libraries and schema
+public/         Web root only
+public/admin/   Admin user/permission screens
+public/auth/    Discord OAuth login/callback/logout
+public/assets/  Public CSS and future assets
+storage/        Private runtime storage
+```
+
+## Notes
+
+- The real `.env` file is intentionally not included in this package.
+- Keep `.env`, `app/`, `storage/` and future vendor/config files outside the document root.

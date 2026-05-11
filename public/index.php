@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/app/bootstrap.php';
-require_once __DIR__ . '/app/layout.php';
+require_once dirname(__DIR__) . '/app/bootstrap.php';
+require_once dirname(__DIR__) . '/app/layout.php';
 page_header('Home');
 ?>
 <section class="hero">
