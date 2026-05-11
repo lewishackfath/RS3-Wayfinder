@@ -12,6 +12,9 @@ require_once __DIR__ . '/lib/session.php';
 require_once __DIR__ . '/lib/schema.php';
 require_once __DIR__ . '/lib/auth.php';
 require_once __DIR__ . '/lib/permissions.php';
+require_once __DIR__ . '/lib/profiles.php';
+require_once __DIR__ . '/lib/skills.php';
+require_once __DIR__ . '/lib/runemetrics.php';
 require_once __DIR__ . '/lib/discord_oauth.php';
 
 start_app_session();

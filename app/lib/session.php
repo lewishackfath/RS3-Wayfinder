@@ -34,3 +34,8 @@ function require_csrf(): void
         abort_page(419, 'Invalid security token.');
     }
 }
+
+function verify_csrf_token(string $token): bool
+{
+    return $token !== '' && hash_equals(csrf_token(), $token);
+}
