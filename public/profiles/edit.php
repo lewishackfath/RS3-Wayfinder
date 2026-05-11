@@ -9,6 +9,7 @@ if (!$profile) abort_page(404, 'Profile not found.');
 $error = null;
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
+        require_csrf();
         if (isset($_POST['delete_profile'])) {
             delete_profile($profileId, (int)$user['id']);
             redirect('/profiles/index.php');
@@ -26,6 +27,7 @@ page_header('Edit Profile');
     <h1>Edit RSN Profile</h1>
     <?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
     <form method="post" class="form-stack">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= (int)$profileId ?>">
         <label>RuneScape Name
             <input type="text" name="rsn" maxlength="12" required value="<?= e($profile['rsn']) ?>">
@@ -51,6 +53,7 @@ page_header('Edit Profile');
         </div>
     </form>
     <form method="post" onsubmit="return confirm('Delete this profile?');" class="danger-zone">
+        <?= csrf_field() ?>
         <input type="hidden" name="id" value="<?= (int)$profileId ?>">
         <button class="button danger" type="submit" name="delete_profile" value="1">Delete profile</button>
     </form>

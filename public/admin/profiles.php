@@ -28,7 +28,7 @@ page_header('Admin Profiles');
         <tbody>
             <?php foreach ($profiles as $profile): ?>
                 <tr>
-                    <td><?= e($profile['rsn']) ?></td>
+                    <td><span class="admin-rsn-cell"><img class="profile-avatar tiny" src="<?= e(runescape_avatar_url((string)$profile['rsn'])) ?>" alt="" loading="lazy" referrerpolicy="no-referrer"> <?= e($profile['rsn']) ?></span></td>
                     <td><?= e($profile['global_name'] ?: $profile['username']) ?><br><span class="muted small">Discord ID: <?= e($profile['discord_id']) ?></span></td>
                     <td><?= e(account_type_options()[$profile['account_type']] ?? $profile['account_type']) ?></td>
                     <td><span class="badge"><?= e(visibility_options()[$profile['visibility']] ?? $profile['visibility']) ?></span></td>

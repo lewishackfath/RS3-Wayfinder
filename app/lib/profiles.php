@@ -174,3 +174,57 @@ function all_profiles_admin(): array
         JOIN users u ON u.id = pp.user_id
         ORDER BY pp.created_at DESC, pp.rsn ASC")->fetchAll();
 }
+
+function runescape_avatar_url(string $rsn): string
+{
+    $clean = clean_rsn_display($rsn);
+    if ($clean === '') {
+        return '/assets/default-avatar.svg';
+    }
+    return 'https://secure.runescape.com/m=avatar-rs/' . rawurlencode($clean) . '/chat.png';
+}
+
+function active_profile_id(): ?int
+{
+    return isset($_SESSION['active_profile_id']) ? (int)$_SESSION['active_profile_id'] : null;
+}
+
+function active_profile(): ?array
+{
+    $user = current_user();
+    if (!$user) {
+        return null;
+    }
+
+    $profiles = profiles_for_user((int)$user['id']);
+    if (!$profiles) {
+        unset($_SESSION['active_profile_id']);
+        return null;
+    }
+
+    $activeId = active_profile_id();
+    foreach ($profiles as $profile) {
+        if ($activeId && (int)$profile['id'] === $activeId) {
+            return $profile;
+        }
+    }
+
+    foreach ($profiles as $profile) {
+        if ((int)$profile['is_primary'] === 1) {
+            $_SESSION['active_profile_id'] = (int)$profile['id'];
+            return $profile;
+        }
+    }
+
+    $_SESSION['active_profile_id'] = (int)$profiles[0]['id'];
+    return $profiles[0];
+}
+
+function set_active_profile(int $profileId, int $userId): void
+{
+    $profile = profile_for_user($profileId, $userId);
+    if (!$profile) {
+        throw new InvalidArgumentException('That profile could not be found.');
+    }
+    $_SESSION['active_profile_id'] = (int)$profile['id'];
+}

@@ -6,14 +6,24 @@ $user = current_user();
 page_header('Dashboard');
 $roles = roles_for_user((int)$user['id']);
 $profiles = profiles_for_user((int)$user['id']);
+$active = active_profile();
 ?>
 <div class="card">
     <h1>Welcome, <?= e($user['global_name'] ?: $user['username']) ?></h1>
     <p class="muted">Your account is active. Add RSN profiles now; RuneMetrics syncing will build on top of these profiles next.</p>
     <h2>Your roles</h2>
     <p><?php foreach ($roles as $role): ?><span class="badge"><?= e($role['name']) ?></span><?php endforeach; ?></p>
-    <h2>Your profiles</h2>
-    <?php if ($profiles): ?>
+    <h2>Active profile</h2>
+    <?php if ($active): ?>
+        <div class="active-profile-panel">
+            <img class="profile-avatar large" src="<?= e(runescape_avatar_url((string)$active['rsn'])) ?>" alt="Avatar for <?= e($active['rsn']) ?>" loading="lazy" referrerpolicy="no-referrer">
+            <div>
+                <h3><?= e($active['rsn']) ?></h3>
+                <p class="muted"><?= e(account_type_options()[$active['account_type']] ?? $active['account_type']) ?> • <?= e(visibility_options()[$active['visibility']] ?? $active['visibility']) ?></p>
+            </div>
+        </div>
+        <p><a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
+    <?php elseif ($profiles): ?>
         <p><?php foreach ($profiles as $profile): ?><span class="badge"><?= e($profile['rsn']) ?><?= ((int)$profile['is_primary'] === 1) ? ' • Primary' : '' ?></span><?php endforeach; ?></p>
         <p><a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
     <?php else: ?>

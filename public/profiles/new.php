@@ -6,7 +6,9 @@ $user = current_user();
 $error = null;
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
-        create_profile((int)$user['id'], (string)($_POST['rsn'] ?? ''), (string)($_POST['account_type'] ?? 'main'), (string)($_POST['visibility'] ?? 'private'));
+        require_csrf();
+        $profileId = create_profile((int)$user['id'], (string)($_POST['rsn'] ?? ''), (string)($_POST['account_type'] ?? 'main'), (string)($_POST['visibility'] ?? 'private'));
+        set_active_profile((int)$profileId, (int)$user['id']);
         redirect('/profiles/index.php');
     } catch (Throwable $e) {
         $error = $e->getMessage();
@@ -18,6 +20,7 @@ page_header('Add Profile');
     <h1>Add RSN Profile</h1>
     <?php if ($error): ?><div class="alert error"><?= e($error) ?></div><?php endif; ?>
     <form method="post" class="form-stack">
+        <?= csrf_field() ?>
         <label>RuneScape Name
             <input type="text" name="rsn" maxlength="12" required placeholder="Your RSN" value="<?= e($_POST['rsn'] ?? '') ?>">
         </label>

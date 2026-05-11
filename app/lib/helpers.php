@@ -37,3 +37,8 @@ function require_post(): void
         abort_page(405, 'Method not allowed.');
     }
 }
+
+function csrf_field(): string
+{
+    return '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+}

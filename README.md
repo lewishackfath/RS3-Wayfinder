@@ -62,3 +62,13 @@ This creates/updates:
 
 Users can manage profiles at `/profiles/index.php`.
 Admins can view all profiles at `/admin/profiles.php`.
+
+## Profile Selector + RuneScape Avatars
+
+This version adds an active profile selector to the authenticated top navigation. The selected profile is stored in the user's PHP session as `active_profile_id` and falls back to the user's primary profile when no active profile has been selected.
+
+RuneScape character chat-head avatars are loaded using Jagex's public avatar endpoint:
+
+`https://secure.runescape.com/m=avatar-rs/{RSN}/chat.png`
+
+Only the generated URL is stored/rendered; no avatar image files are cached locally yet.
