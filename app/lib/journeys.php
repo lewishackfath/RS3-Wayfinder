@@ -27,6 +27,31 @@ function journey_slugify(string $value): string
     return $slug !== '' ? $slug : 'journey';
 }
 
+function journey_unique_slug(string $base, ?int $ignoreJourneyId = null): string
+{
+    $base = journey_slugify($base);
+    $slug = $base;
+    $i = 2;
+    $pdo = db();
+
+    while (true) {
+        $sql = 'SELECT id FROM journeys WHERE slug = ?';
+        $params = [$slug];
+        if ($ignoreJourneyId !== null) {
+            $sql .= ' AND id <> ?';
+            $params[] = $ignoreJourneyId;
+        }
+        $sql .= ' LIMIT 1';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        if (!$stmt->fetchColumn()) {
+            return $slug;
+        }
+        $slug = $base . '-' . $i;
+        $i++;
+    }
+}
+
 function all_journeys(bool $publishedOnly = false): array
 {
     $sql = 'SELECT * FROM journeys';
@@ -104,7 +129,7 @@ function create_journey(string $name, string $slug, string $description, string 
     if ($name === '') {
         throw new InvalidArgumentException('Journey name is required.');
     }
-    $slug = journey_slugify($slug !== '' ? $slug : $name);
+    $slug = journey_unique_slug($slug !== '' ? $slug : $name);
     $stmt = db()->prepare('INSERT INTO journeys (name, slug, description, icon, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?)');
     $stmt->execute([$name, $slug, trim($description), trim($icon), $isPublished ? 1 : 0, $sortOrder]);
     return (int)db()->lastInsertId();
@@ -116,7 +141,7 @@ function update_journey(int $journeyId, string $name, string $slug, string $desc
     if ($name === '') {
         throw new InvalidArgumentException('Journey name is required.');
     }
-    $slug = journey_slugify($slug !== '' ? $slug : $name);
+    $slug = journey_unique_slug($slug !== '' ? $slug : $name, $journeyId);
     $stmt = db()->prepare('UPDATE journeys SET name = ?, slug = ?, description = ?, icon = ?, is_published = ?, sort_order = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?');
     $stmt->execute([$name, $slug, trim($description), trim($icon), $isPublished ? 1 : 0, $sortOrder, $journeyId]);
 }

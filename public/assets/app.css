@@ -306,3 +306,120 @@ input[type="checkbox"] { transform:translateY(2px); }
 .skill-row strong em {
     display: none;
 }
+
+
+/* Enhanced admin journey forms */
+.enhanced-form {
+    display: grid;
+    gap: 1.35rem;
+    padding: clamp(1rem, 2vw, 1.75rem);
+}
+
+.form-section {
+    display: grid;
+    gap: 1rem;
+    padding: 1.1rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    background: rgba(255,255,255,.035);
+}
+
+.form-section-intro h2 {
+    margin: 0 0 .25rem;
+    font-size: 1.15rem;
+}
+
+.form-section-intro p {
+    margin: 0;
+}
+
+.field-help {
+    display: block;
+    margin-top: .35rem;
+    color: var(--muted);
+    font-size: .86rem;
+    line-height: 1.45;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.enhanced-form input[type="text"],
+.enhanced-form input[type="number"],
+.enhanced-form input:not([type]),
+.enhanced-form textarea,
+.enhanced-form select {
+    width: 100%;
+}
+
+.toggle-row,
+.choice-card {
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+    padding: .9rem 1rem;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    background: rgba(255,255,255,.045);
+    cursor: pointer;
+}
+
+.toggle-row input,
+.choice-card input {
+    margin-top: .2rem;
+}
+
+.toggle-row small,
+.choice-card small {
+    display: block;
+    margin-top: .2rem;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.choice-grid {
+    display: grid;
+    gap: .85rem;
+}
+
+.completion-choice-grid {
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.choice-card:has(input:checked),
+.toggle-row:has(input:checked) {
+    border-color: rgba(124,240,166,.45);
+    background: rgba(124,240,166,.08);
+}
+
+.auto-rule-panel.is-muted {
+    opacity: .68;
+}
+
+.rule-fields {
+    margin-top: .25rem;
+}
+
+.sticky-form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    padding: 1rem;
+    margin: .25rem -1rem -1rem;
+    border-top: 1px solid rgba(255,255,255,.10);
+    background: rgba(12, 16, 28, .92);
+    backdrop-filter: blur(12px);
+    border-radius: 0 0 18px 18px;
+}
+
+code {
+    padding: .15rem .35rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,.08);
+}

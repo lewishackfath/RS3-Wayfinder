@@ -38,18 +38,33 @@ page_header($id ? 'Edit Chapter' : 'Create Chapter');
 
 <?php if ($error): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 
-<form class="card form-card" method="post">
+<form class="card form-card enhanced-form" method="post">
     <?= csrf_field() ?>
-    <label>Title
-        <input name="title" value="<?= e($_POST['title'] ?? $chapter['title'] ?? '') ?>" required>
-    </label>
-    <label>Description
-        <textarea name="description" rows="5"><?= e($_POST['description'] ?? $chapter['description'] ?? '') ?></textarea>
-    </label>
-    <label>Sort order
-        <input type="number" name="sort_order" value="<?= e($_POST['sort_order'] ?? $chapter['sort_order'] ?? 0) ?>">
-    </label>
-    <div class="form-actions">
+
+    <section class="form-section">
+        <div class="form-section-intro">
+            <h2>Chapter details</h2>
+            <p class="muted">Chapters group related steps together, such as account setup, quests, unlocks or early bosses.</p>
+        </div>
+
+        <label>Chapter title
+            <input name="title" value="<?= e($_POST['title'] ?? $chapter['title'] ?? '') ?>" required placeholder="Core Account Setup">
+            <span class="field-help">Use a short, scannable title.</span>
+        </label>
+
+        <label>Description
+            <textarea name="description" rows="5" placeholder="Unlock the baseline systems this journey depends on."><?= e($_POST['description'] ?? $chapter['description'] ?? '') ?></textarea>
+            <span class="field-help">Optional, but useful for explaining why this chapter matters.</span>
+        </label>
+
+        <label>Sort order
+            <input type="number" name="sort_order" value="<?= e($_POST['sort_order'] ?? $chapter['sort_order'] ?? 0) ?>">
+            <span class="field-help">Lower numbers appear first within the journey.</span>
+        </label>
+    </section>
+
+    <div class="sticky-form-actions">
+        <a class="button secondary" href="/admin/journey_view.php?id=<?= (int)$journeyId ?>">Cancel</a>
         <button class="button" type="submit">Save chapter</button>
     </div>
 </form>
