@@ -121,3 +121,55 @@ input[type="checkbox"] { transform:translateY(2px); }
         padding-right: 1rem;
     }
 }
+
+
+/* Profile skill cards with icons */
+.skill-grid {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.75rem;
+}
+
+.skill-row {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 64px;
+}
+
+.skill-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    image-rendering: auto;
+}
+
+.skill-main {
+    min-width: 0;
+}
+
+.skill-name {
+    display: block;
+    font-weight: 700;
+}
+
+.skill-row small {
+    grid-column: auto;
+    display: block;
+    margin-top: 0.15rem;
+}
+
+.skill-level {
+    font-size: 1.35rem;
+    line-height: 1;
+    min-width: 2.4ch;
+    text-align: right;
+}
+
+.skill-row.is-virtual .skill-level {
+    color: #9ff6bd;
+}
+
+.skill-row strong em {
+    display: none;
+}

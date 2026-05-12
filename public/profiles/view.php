@@ -45,6 +45,17 @@ foreach ($quests as $quest) {
     if (str_contains(strtolower((string)$quest['status']), 'complete')) $completedQuests++;
 }
 $completionPct = $totalQuests > 0 ? round(($completedQuests / $totalQuests) * 100, 1) : null;
+
+function skill_icon_url(string $skillName): string
+{
+    $file = strtolower(trim($skillName));
+    $file = preg_replace('/[^a-z0-9]+/', '', $file) ?? $file;
+    if ($file === '') {
+        return '/assets/default-avatar.svg';
+    }
+    return '/assets/skills/' . $file . '.png';
+}
+
 page_header('Profile Data');
 ?>
 <div class="page-title-row">
@@ -89,17 +100,14 @@ page_header('Profile Data');
                 <?php foreach ($skills as $skill): ?>
                     <?php $display = rs3_display_level((string)$skill['skill_name'], $skill['level'] ?? null, $skill['xp'] ?? null); ?>
                     <div class="skill-row<?= $display['is_virtual'] ? ' is-virtual' : '' ?>">
-                        <span><?= e($skill['skill_name']) ?></span>
-                        <strong>
+                        <img class="skill-icon" src="<?= e(skill_icon_url((string)$skill['skill_name'])) ?>" alt="" loading="lazy">
+                        <div class="skill-main">
+                            <span class="skill-name"><?= e($skill['skill_name']) ?></span>
+                            <small><?= e(format_number_short($skill['xp'])) ?> XP</small>
+                        </div>
+                        <strong class="skill-level" title="<?= $display['is_virtual'] ? e('Virtual level based on XP') : e('Current level') ?>">
                             <?= e((string)$display['display_level']) ?>
-                            <?php if ($display['is_virtual']): ?>
-                                <em title="Reported level <?= e((string)$display['reported_level']) ?>, virtual level <?= e((string)$display['virtual_level']) ?>">virtual</em>
-                            <?php endif; ?>
                         </strong>
-                        <small>
-                            <?= e(format_number_short($skill['xp'])) ?> XP
-                            <?php if ($display['is_virtual']): ?> • reported <?= e((string)$display['reported_level']) ?><?php endif; ?>
-                        </small>
                     </div>
                 <?php endforeach; ?>
             </div>
