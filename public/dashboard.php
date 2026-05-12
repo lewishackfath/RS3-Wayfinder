@@ -41,7 +41,7 @@ if ($active) {
                 <?php endif; ?>
             </div>
         </div>
-        <p><a class="button" href="/profiles/view.php?id=<?= (int)$active['id'] ?>">View profile data</a> <a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
+        <p><a class="button" href="/profiles/view.php?id=<?= (int)$active['id'] ?>">View profile data</a> <a class="button secondary" href="/journeys/index.php">Browse journeys</a> <a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
     <?php elseif ($profiles): ?>
         <p><?php foreach ($profiles as $profile): ?><span class="badge"><?= e($profile['rsn']) ?><?= ((int)$profile['is_primary'] === 1) ? ' • Primary' : '' ?></span><?php endforeach; ?></p>
         <p><a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>

@@ -10,6 +10,7 @@ function page_header(string $title): void
     if ($user) {
         echo '<a href="/dashboard.php">Dashboard</a>';
         echo '<a href="/profiles/index.php">Profiles</a>';
+        echo '<a href="/journeys/index.php">Journeys</a>';
 
         $profiles = profiles_for_user((int)$user['id']);
         if ($profiles) {

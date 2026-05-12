@@ -123,6 +123,140 @@ input[type="checkbox"] { transform:translateY(2px); }
 }
 
 
+/* Journey framework */
+.journey-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.journey-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.journey-card-header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.journey-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: rgba(255,255,255,.08);
+    font-size: 1.7rem;
+    flex: 0 0 auto;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(124,240,166,.95), rgba(104,191,255,.95));
+}
+
+.progress-bar.large {
+    height: 16px;
+}
+
+.journey-progress-summary {
+    display: grid;
+    grid-template-columns: minmax(160px, auto) 1fr;
+    gap: 1.25rem;
+    align-items: center;
+}
+
+.journey-progress-summary h2 {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.journey-chapter {
+    margin-top: 1rem;
+}
+
+.journey-step {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(255,255,255,.10);
+}
+
+.journey-step:first-of-type {
+    border-top: 0;
+}
+
+.step-status {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.05);
+    font-weight: 800;
+}
+
+.journey-step.complete .step-status {
+    color: #111;
+    background: #9ff6bd;
+    border-color: #9ff6bd;
+}
+
+.step-body h3 {
+    margin: 0 0 .25rem;
+}
+
+.step-body p {
+    margin: .2rem 0;
+}
+
+.step-actions form {
+    margin: 0;
+}
+
+.badge.success {
+    background: rgba(124,240,166,.16);
+    border-color: rgba(124,240,166,.35);
+    color: #9ff6bd;
+}
+
+.page-title-row.compact {
+    gap: 1rem;
+    margin-bottom: .75rem;
+}
+
+@media (max-width: 760px) {
+    .journey-progress-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .journey-step {
+        grid-template-columns: 34px 1fr;
+    }
+
+    .step-actions {
+        grid-column: 2;
+    }
+}
+
+
 /* Profile skill cards with icons */
 .skill-grid {
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -141,7 +275,6 @@ input[type="checkbox"] { transform:translateY(2px); }
     width: 32px;
     height: 32px;
     object-fit: contain;
-    image-rendering: auto;
 }
 
 .skill-main {

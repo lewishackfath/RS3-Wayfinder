@@ -188,6 +188,74 @@ function bootstrap_schema(): void
         CONSTRAINT fk_quest_statuses_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS journeys (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(160) NOT NULL,
+        slug VARCHAR(180) NOT NULL UNIQUE,
+        description TEXT NULL,
+        icon VARCHAR(120) NULL,
+        is_published TINYINT(1) NOT NULL DEFAULT 0,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_journeys_published (is_published, sort_order)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS journey_chapters (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        journey_id BIGINT UNSIGNED NOT NULL,
+        title VARCHAR(180) NOT NULL,
+        description TEXT NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_journey_chapters_journey (journey_id, sort_order),
+        CONSTRAINT fk_journey_chapters_journey FOREIGN KEY (journey_id) REFERENCES journeys(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS journey_steps (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        chapter_id BIGINT UNSIGNED NOT NULL,
+        title VARCHAR(220) NOT NULL,
+        description TEXT NULL,
+        completion_mode ENUM('auto_only','manual_only','auto_or_manual') NOT NULL DEFAULT 'manual_only',
+        auto_rule_type ENUM('skill_level','quest_complete') NULL,
+        rule_skill_name VARCHAR(80) NULL,
+        rule_level INT NULL,
+        rule_quest_title VARCHAR(255) NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_journey_steps_chapter (chapter_id, sort_order),
+        INDEX idx_journey_steps_rule (auto_rule_type),
+        CONSTRAINT fk_journey_steps_chapter FOREIGN KEY (chapter_id) REFERENCES journey_chapters(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_journeys (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        journey_id BIGINT UNSIGNED NOT NULL,
+        started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        completed_at DATETIME NULL,
+        PRIMARY KEY (profile_id, journey_id),
+        CONSTRAINT fk_player_journeys_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+        CONSTRAINT fk_player_journeys_journey FOREIGN KEY (journey_id) REFERENCES journeys(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_step_progress (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        step_id BIGINT UNSIGNED NOT NULL,
+        is_completed TINYINT(1) NOT NULL DEFAULT 0,
+        completion_source ENUM('manual','automatic') NULL,
+        completed_at DATETIME NULL,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (profile_id, step_id),
+        INDEX idx_player_step_progress_completed (profile_id, is_completed),
+        CONSTRAINT fk_player_step_progress_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+        CONSTRAINT fk_player_step_progress_step FOREIGN KEY (step_id) REFERENCES journey_steps(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,
@@ -249,6 +317,8 @@ function seed_permissions_and_roles(): void
         ['roles.manage', 'Manage roles', 'Allows changing role permissions.'],
         ['profiles.view', 'View profiles', 'Allows viewing player profiles in the admin area.'],
         ['profiles.manage', 'Manage profiles', 'Allows moderating player profiles.'],
+        ['journeys.view', 'View journeys', 'Allows viewing journeys in the admin area.'],
+        ['journeys.manage', 'Manage journeys', 'Allows creating and editing journeys, chapters and steps.'],
     ];
 
     $stmt = $pdo->prepare("INSERT INTO permissions (slug, name, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)");
@@ -266,8 +336,8 @@ function seed_permissions_and_roles(): void
         $stmt->execute($role);
     }
 
-    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage']);
-    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view']);
+    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'journeys.view', 'journeys.manage']);
+    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'journeys.view', 'journeys.manage']);
 }
 
 function grant_role_permissions(string $roleSlug, array $permissionSlugs): void
