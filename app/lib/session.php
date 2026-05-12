@@ -9,7 +9,7 @@ function start_app_session(): void
 
     session_name((string) env('SESSION_NAME', 'rs3_wayfinder_session'));
     session_set_cookie_params([
-        'lifetime' => 0,
+        'lifetime' => (int) env('SESSION_LIFETIME_SECONDS', 60 * 60 * 24 * 30),
         'path' => '/',
         'domain' => '',
         'secure' => (bool) env('SESSION_SECURE', true),

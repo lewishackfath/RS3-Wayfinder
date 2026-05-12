@@ -4,6 +4,9 @@ declare(strict_types=1);
 function current_user(): ?array
 {
     if (empty($_SESSION['user_id'])) {
+        restore_user_from_remember_cookie();
+    }
+    if (empty($_SESSION['user_id'])) {
         return null;
     }
     static $cached = null;
@@ -24,14 +27,20 @@ function require_login(): void
     }
 }
 
-function login_user(int $userId): void
+function login_user(int $userId, bool $remember = true): void
 {
     session_regenerate_id(true);
     $_SESSION['user_id'] = $userId;
+
+    if ($remember) {
+        issue_remember_cookie($userId);
+    }
 }
 
 function logout_user(): void
 {
+    clear_remember_cookie();
+
     $_SESSION = [];
     if (ini_get('session.use_cookies')) {
         $params = session_get_cookie_params();
@@ -39,6 +48,101 @@ function logout_user(): void
     }
     session_destroy();
 }
+
+
+function remember_cookie_name(): string
+{
+    return (string) env('REMEMBER_COOKIE_NAME', 'rs3_wayfinder_remember');
+}
+
+function remember_cookie_lifetime_seconds(): int
+{
+    return (int) env('REMEMBER_COOKIE_LIFETIME_SECONDS', 60 * 60 * 24 * 30);
+}
+
+function remember_cookie_options(?int $expires = null): array
+{
+    return [
+        'expires' => $expires ?? (time() + remember_cookie_lifetime_seconds()),
+        'path' => '/',
+        'domain' => '',
+        'secure' => (bool) env('SESSION_SECURE', true),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ];
+}
+
+function issue_remember_cookie(int $userId): void
+{
+    $selector = bin2hex(random_bytes(12));
+    $validator = bin2hex(random_bytes(32));
+    $hash = hash('sha256', $validator);
+    $expiresTs = time() + remember_cookie_lifetime_seconds();
+    $expiresAt = gmdate('Y-m-d H:i:s', $expiresTs);
+
+    db()->prepare('DELETE FROM user_remember_tokens WHERE user_id = ? AND expires_at < UTC_TIMESTAMP()')->execute([$userId]);
+    db()->prepare('INSERT INTO user_remember_tokens (user_id, selector, token_hash, expires_at) VALUES (?, ?, ?, ?)')
+        ->execute([$userId, $selector, $hash, $expiresAt]);
+
+    setcookie(remember_cookie_name(), $selector . ':' . $validator, remember_cookie_options($expiresTs));
+}
+
+function restore_user_from_remember_cookie(): void
+{
+    $cookie = $_COOKIE[remember_cookie_name()] ?? '';
+    if (!is_string($cookie) || !str_contains($cookie, ':')) {
+        return;
+    }
+
+    [$selector, $validator] = explode(':', $cookie, 2);
+    if (!preg_match('/^[a-f0-9]{24}$/', $selector) || !preg_match('/^[a-f0-9]{64}$/', $validator)) {
+        clear_remember_cookie();
+        return;
+    }
+
+    $stmt = db()->prepare("SELECT rt.*, u.is_active
+        FROM user_remember_tokens rt
+        JOIN users u ON u.id = rt.user_id
+        WHERE rt.selector = ? AND rt.expires_at > UTC_TIMESTAMP()
+        LIMIT 1");
+    $stmt->execute([$selector]);
+    $token = $stmt->fetch();
+
+    if (!$token || (int)$token['is_active'] !== 1) {
+        clear_remember_cookie();
+        return;
+    }
+
+    if (!hash_equals((string)$token['token_hash'], hash('sha256', $validator))) {
+        db()->prepare('DELETE FROM user_remember_tokens WHERE selector = ?')->execute([$selector]);
+        clear_remember_cookie();
+        return;
+    }
+
+    $_SESSION['user_id'] = (int)$token['user_id'];
+    db()->prepare('UPDATE user_remember_tokens SET last_used_at = UTC_TIMESTAMP() WHERE id = ?')->execute([(int)$token['id']]);
+
+    // Rotate token after successful restore.
+    db()->prepare('DELETE FROM user_remember_tokens WHERE id = ?')->execute([(int)$token['id']]);
+    issue_remember_cookie((int)$token['user_id']);
+}
+
+function clear_remember_cookie(): void
+{
+    $cookie = $_COOKIE[remember_cookie_name()] ?? '';
+    if (is_string($cookie) && str_contains($cookie, ':')) {
+        [$selector] = explode(':', $cookie, 2);
+        if (preg_match('/^[a-f0-9]{24}$/', $selector)) {
+            try {
+                db()->prepare('DELETE FROM user_remember_tokens WHERE selector = ?')->execute([$selector]);
+            } catch (Throwable $ignored) {}
+        }
+    }
+
+    setcookie(remember_cookie_name(), '', remember_cookie_options(time() - 3600));
+    unset($_COOKIE[remember_cookie_name()]);
+}
+
 
 function upsert_discord_user(array $discordUser): int
 {
