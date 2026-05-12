@@ -32,7 +32,18 @@ function page_header(string $title): void
             echo '</form>';
         }
 
-        if (current_user_can('admin.access')) echo '<a href="/admin/index.php">Admin</a>';
+        if (current_user_can('admin.access')) {
+            echo '<div class="nav-dropdown">';
+            echo '<button class="nav-dropdown-toggle" type="button">Admin ▾</button>';
+            echo '<div class="nav-dropdown-menu">';
+            echo '<a href="/admin/index.php">Admin Dashboard</a>';
+            if (current_user_can('users.view')) echo '<a href="/admin/users.php">Users</a>';
+            if (current_user_can('roles.manage')) echo '<a href="/admin/roles.php">Roles & Permissions</a>';
+            if (current_user_can('profiles.view')) echo '<a href="/admin/profiles.php">Player Profiles</a>';
+            if (current_user_can('journeys.view')) echo '<a href="/admin/journeys.php">Journeys</a>';
+            echo '</div>';
+            echo '</div>';
+        }
         echo '<a href="/auth/logout.php">Logout</a>';
     } else {
         echo '<a href="/auth/login.php">Login</a>';
