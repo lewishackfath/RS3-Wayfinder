@@ -225,11 +225,15 @@ function bootstrap_schema(): void
         rule_level INT NULL,
         rule_quest_title VARCHAR(255) NULL,
         sort_order INT NOT NULL DEFAULT 0,
+        is_optional TINYINT(1) NOT NULL DEFAULT 0,
+        requires_step_id BIGINT UNSIGNED NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_journey_steps_chapter (chapter_id, sort_order),
         INDEX idx_journey_steps_rule (auto_rule_type),
-        CONSTRAINT fk_journey_steps_chapter FOREIGN KEY (chapter_id) REFERENCES journey_chapters(id) ON DELETE CASCADE
+        INDEX idx_journey_steps_requires (requires_step_id),
+        CONSTRAINT fk_journey_steps_chapter FOREIGN KEY (chapter_id) REFERENCES journey_chapters(id) ON DELETE CASCADE,
+        CONSTRAINT fk_journey_steps_requires FOREIGN KEY (requires_step_id) REFERENCES journey_steps(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS player_journeys (
@@ -281,6 +285,23 @@ function run_schema_migrations(): void
         // RuneMetrics returns individual skill XP multiplied by 10, so repair existing parsed rows once.
         $pdo->exec('UPDATE player_latest_skills SET xp = FLOOR(xp / 10) WHERE xp IS NOT NULL');
         $pdo->exec('UPDATE player_skill_snapshots SET xp = FLOOR(xp / 10) WHERE xp IS NOT NULL');
+    });
+
+    run_once_migration('20260512_smart_journey_step_fields', function (PDO $pdo): void {
+        $cols = $pdo->query("SHOW COLUMNS FROM journey_steps")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('is_optional', $cols, true)) {
+            $pdo->exec("ALTER TABLE journey_steps ADD COLUMN is_optional TINYINT(1) NOT NULL DEFAULT 0 AFTER sort_order");
+        }
+        if (!in_array('requires_step_id', $cols, true)) {
+            $pdo->exec("ALTER TABLE journey_steps ADD COLUMN requires_step_id BIGINT UNSIGNED NULL AFTER is_optional");
+            $pdo->exec("ALTER TABLE journey_steps ADD INDEX idx_journey_steps_requires (requires_step_id)");
+            // Foreign key may fail on some shared hosts if duplicate names exist, so ignore gracefully.
+            try {
+                $pdo->exec("ALTER TABLE journey_steps ADD CONSTRAINT fk_journey_steps_requires FOREIGN KEY (requires_step_id) REFERENCES journey_steps(id) ON DELETE SET NULL");
+            } catch (Throwable $e) {
+                // Column and index are enough for the app to function.
+            }
+        }
     });
 }
 

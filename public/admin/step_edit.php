@@ -25,7 +25,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (string)($_POST['rule_skill_name'] ?? ''),
                 ($_POST['rule_level'] ?? '') === '' ? null : (int)$_POST['rule_level'],
                 (string)($_POST['rule_quest_title'] ?? ''),
-                (int)($_POST['sort_order'] ?? 0)
+                (int)($_POST['sort_order'] ?? 0),
+                !empty($_POST['is_optional']),
+                ($_POST['requires_step_id'] ?? '') === '' ? null : (int)$_POST['requires_step_id']
             );
         } else {
             create_step(
@@ -37,7 +39,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (string)($_POST['rule_skill_name'] ?? ''),
                 ($_POST['rule_level'] ?? '') === '' ? null : (int)$_POST['rule_level'],
                 (string)($_POST['rule_quest_title'] ?? ''),
-                (int)($_POST['sort_order'] ?? 0)
+                (int)($_POST['sort_order'] ?? 0),
+                !empty($_POST['is_optional']),
+                ($_POST['requires_step_id'] ?? '') === '' ? null : (int)$_POST['requires_step_id']
             );
         }
         redirect('/admin/journey_view.php?id=' . (int)$chapter['journey_id']);
@@ -52,6 +56,9 @@ $skills = runemetrics_skill_names();
 $selectedMode = (string)($_POST['completion_mode'] ?? $step['completion_mode'] ?? 'manual_only');
 $selectedRule = (string)($_POST['auto_rule_type'] ?? $step['auto_rule_type'] ?? '');
 $selectedSkill = (string)($_POST['rule_skill_name'] ?? $step['rule_skill_name'] ?? '');
+$prereqOptions = prerequisite_options_for_journey((int)$chapter['journey_id'], $id ?: null);
+$selectedRequiresStepId = (int)($_POST['requires_step_id'] ?? $step['requires_step_id'] ?? 0);
+$isOptional = !empty($_POST['is_optional']) || (!$_POST && !empty($step['is_optional']));
 page_header($id ? 'Edit Step' : 'Create Step');
 ?>
 <div class="page-title-row">
@@ -149,6 +156,33 @@ page_header($id ? 'Edit Step' : 'Create Step');
                 <span class="field-help">Use the quest name as it appears in RuneMetrics.</span>
             </label>
         </div>
+    </section>
+
+    <section class="form-section">
+        <div class="form-section-intro">
+            <h2>Journey logic</h2>
+            <p class="muted">Use this to shape the player path without making everything mandatory.</p>
+        </div>
+
+        <label class="toggle-row">
+            <input type="checkbox" name="is_optional" value="1" <?= $isOptional ? 'checked' : '' ?>>
+            <span>
+                <strong>Optional step</strong>
+                <small>Optional steps can still be completed, but they do not count against the main journey completion percentage.</small>
+            </span>
+        </label>
+
+        <label>Unlock after step
+            <select name="requires_step_id">
+                <option value="">Available immediately</option>
+                <?php foreach ($prereqOptions as $optionStep): ?>
+                    <option value="<?= (int)$optionStep['id'] ?>" <?= $selectedRequiresStepId === (int)$optionStep['id'] ? 'selected' : '' ?>>
+                        <?= e($optionStep['chapter_title'] . ' → ' . $optionStep['title']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <span class="field-help">Choose a prior milestone if this step should stay locked until another step is complete.</span>
+        </label>
     </section>
 
     <section class="form-section">

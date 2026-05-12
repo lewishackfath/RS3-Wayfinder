@@ -549,3 +549,51 @@ code {
         justify-self: start;
     }
 }
+
+
+/* Smart journey logic */
+.journey-step.locked {
+    opacity: .58;
+}
+
+.journey-step.locked .step-status {
+    background: rgba(255,255,255,.04);
+}
+
+.journey-step.optional {
+    border-left: 3px solid rgba(104,191,255,.45);
+    padding-left: .85rem;
+}
+
+.recommended-steps-card {
+    border-color: rgba(124,240,166,.25);
+}
+
+.recommended-step-list {
+    display: grid;
+    gap: .75rem;
+}
+
+.recommended-step {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: .75rem;
+    align-items: center;
+    padding: .85rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+    color: inherit;
+    text-decoration: none;
+}
+
+.recommended-step:hover {
+    border-color: rgba(124,240,166,.35);
+    background: rgba(124,240,166,.06);
+}
+
+.recommended-step small {
+    display: block;
+    margin-top: .15rem;
+    color: var(--muted);
+}

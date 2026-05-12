@@ -50,13 +50,18 @@ page_header('Manage Journey');
             <p class="muted">No steps in this chapter yet.</p>
         <?php else: ?>
             <table class="table">
-                <thead><tr><th>Step</th><th>Completion</th><th>Rule</th><th>Sort</th><th></th></tr></thead>
+                <thead><tr><th>Step</th><th>Completion</th><th>Rule</th><th>Logic</th><th>Sort</th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($steps as $step): ?>
                     <tr>
                         <td><strong><?= e($step['title']) ?></strong><br><span class="muted small"><?= e($step['description'] ?: '') ?></span></td>
                         <td><?= e(completion_mode_label((string)$step['completion_mode'])) ?></td>
                         <td><?= e(rule_summary($step)) ?></td>
+                        <td>
+                            <?php if (!empty($step['is_optional'])): ?><span class="badge">Optional</span><?php endif; ?>
+                            <?php if (!empty($step['requires_step_id'])): ?><span class="badge">Locked by prerequisite</span><?php endif; ?>
+                            <?php if (empty($step['is_optional']) && empty($step['requires_step_id'])): ?><span class="muted small">Standard</span><?php endif; ?>
+                        </td>
                         <td><?= (int)$step['sort_order'] ?></td>
                         <td><?php if (current_user_can('journeys.manage')): ?><a class="button secondary" href="/admin/step_edit.php?id=<?= (int)$step['id'] ?>">Edit</a><?php endif; ?></td>
                     </tr>

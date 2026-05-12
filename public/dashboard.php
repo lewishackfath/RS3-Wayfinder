@@ -73,9 +73,12 @@ if ($active) {
                             <div class="dashboard-journey-main">
                                 <div class="journey-list-heading">
                                     <h3><?= e($journey['name']) ?></h3>
-                                    <span class="muted small"><?= (int)$progress['completed'] ?> / <?= (int)$progress['total'] ?> steps</span>
+                                    <span class="muted small"><?= (int)($progress['required_completed'] ?? $progress['completed']) ?> / <?= (int)($progress['required_total'] ?? $progress['total']) ?> required</span>
                                 </div>
                                 <div class="progress-bar"><span style="width: <?= e((string)$progress['percent']) ?>%"></span></div>
+                                <?php if (!empty($progress['recommended'][0])): ?>
+                                    <p class="muted small">Next: <?= e($progress['recommended'][0]['title']) ?></p>
+                                <?php endif; ?>
                             </div>
                             <a class="button secondary" href="/journeys/view.php?id=<?= (int)$journey['id'] ?>">Continue</a>
                         </article>

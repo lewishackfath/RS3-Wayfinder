@@ -177,7 +177,7 @@ function delete_chapter(int $chapterId): void
     db()->prepare('DELETE FROM journey_chapters WHERE id = ?')->execute([$chapterId]);
 }
 
-function create_step(int $chapterId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder): int
+function create_step(int $chapterId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder, bool $isOptional = false, ?int $requiresStepId = null): int
 {
     $title = trim($title);
     if ($title === '') {
@@ -187,14 +187,15 @@ function create_step(int $chapterId, string $title, string $description, string 
     $ruleType = normalise_rule_type($ruleType, $completionMode);
     validate_step_rule($completionMode, $ruleType, $ruleSkillName, $ruleLevel, $ruleQuestTitle);
 
+    $requiresStepId = valid_requires_step_id($requiresStepId, $chapterId);
     $stmt = db()->prepare('INSERT INTO journey_steps
-        (chapter_id, title, description, completion_mode, auto_rule_type, rule_skill_name, rule_level, rule_quest_title, sort_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$chapterId, $title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder]);
+        (chapter_id, title, description, completion_mode, auto_rule_type, rule_skill_name, rule_level, rule_quest_title, sort_order, is_optional, requires_step_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$chapterId, $title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $isOptional ? 1 : 0, $requiresStepId]);
     return (int)db()->lastInsertId();
 }
 
-function update_step(int $stepId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder): void
+function update_step(int $stepId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder, bool $isOptional = false, ?int $requiresStepId = null): void
 {
     $title = trim($title);
     if ($title === '') {
@@ -204,10 +205,12 @@ function update_step(int $stepId, string $title, string $description, string $co
     $ruleType = normalise_rule_type($ruleType, $completionMode);
     validate_step_rule($completionMode, $ruleType, $ruleSkillName, $ruleLevel, $ruleQuestTitle);
 
+    $step = step_by_id($stepId);
+    $requiresStepId = valid_requires_step_id($requiresStepId, (int)($step['chapter_id'] ?? 0), $stepId);
     db()->prepare('UPDATE journey_steps
-        SET title = ?, description = ?, completion_mode = ?, auto_rule_type = ?, rule_skill_name = ?, rule_level = ?, rule_quest_title = ?, sort_order = ?, updated_at = UTC_TIMESTAMP()
+        SET title = ?, description = ?, completion_mode = ?, auto_rule_type = ?, rule_skill_name = ?, rule_level = ?, rule_quest_title = ?, sort_order = ?, is_optional = ?, requires_step_id = ?, updated_at = UTC_TIMESTAMP()
         WHERE id = ?')
-        ->execute([$title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $stepId]);
+        ->execute([$title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $isOptional ? 1 : 0, $requiresStepId, $stepId]);
 }
 
 function delete_step(int $stepId): void
@@ -219,6 +222,42 @@ function clean_nullable(?string $value): ?string
 {
     $value = trim((string)$value);
     return $value === '' ? null : $value;
+}
+
+function valid_requires_step_id(?int $requiresStepId, int $chapterId, ?int $currentStepId = null): ?int
+{
+    $requiresStepId = (int)($requiresStepId ?? 0);
+    if ($requiresStepId <= 0) {
+        return null;
+    }
+
+    $current = $currentStepId ? step_by_id($currentStepId) : null;
+    $journeyId = null;
+    if ($current && isset($current['journey_id'])) {
+        $journeyId = (int)$current['journey_id'];
+    } elseif ($chapterId > 0) {
+        $chapter = chapter_by_id($chapterId);
+        $journeyId = $chapter ? (int)$chapter['journey_id'] : null;
+    }
+
+    if (!$journeyId) {
+        return null;
+    }
+
+    $candidate = step_by_id($requiresStepId);
+    if (!$candidate || (int)$candidate['journey_id'] !== $journeyId || ($currentStepId && (int)$candidate['id'] === $currentStepId)) {
+        return null;
+    }
+
+    return $requiresStepId;
+}
+
+function prerequisite_options_for_journey(int $journeyId, ?int $excludeStepId = null): array
+{
+    $steps = steps_for_journey($journeyId);
+    return array_values(array_filter($steps, function (array $step) use ($excludeStepId): bool {
+        return !$excludeStepId || (int)$step['id'] !== $excludeStepId;
+    }));
 }
 
 function normalise_completion_mode(string $mode): string
@@ -302,33 +341,77 @@ function evaluate_journey_progress(int $profileId, int $journeyId): array
     $progress = progress_for_profile_steps($profileId, array_map(fn($s) => (int)$s['id'], $steps));
     $evaluated = [];
     $completed = 0;
+    $requiredTotal = 0;
+    $requiredCompleted = 0;
+    $progressByStep = [];
+    $recommended = [];
 
     foreach ($steps as $step) {
         $stepId = (int)$step['id'];
         $row = $progress[$stepId] ?? null;
         $autoComplete = step_auto_complete($profileId, $step);
         $isCompleted = $autoComplete || (!empty($row['is_completed']));
+
         if ($autoComplete) {
             upsert_step_progress($profileId, $stepId, true, 'automatic');
             $row = $progress[$stepId] ?? [];
             $row['is_completed'] = 1;
             $row['completion_source'] = 'automatic';
+            $row['completed_at'] = $row['completed_at'] ?? gmdate('Y-m-d H:i:s');
         }
+
+        $isOptional = !empty($step['is_optional']);
+        $requiresStepId = isset($step['requires_step_id']) ? (int)$step['requires_step_id'] : 0;
+        $isLocked = false;
+        $lockReason = null;
+
+        if ($requiresStepId > 0) {
+            $requiredProgress = $progressByStep[$requiresStepId] ?? null;
+            if (!$requiredProgress || empty($requiredProgress['is_completed'])) {
+                $isLocked = true;
+                $requiredStep = step_by_id($requiresStepId);
+                $lockReason = $requiredStep ? 'Requires: ' . $requiredStep['title'] : 'Requires another step first';
+            }
+        }
+
         if ($isCompleted) {
             $completed++;
         }
+        if (!$isOptional) {
+            $requiredTotal++;
+            if ($isCompleted) {
+                $requiredCompleted++;
+            }
+        }
+
         $step['progress'] = $row;
         $step['is_completed'] = $isCompleted;
         $step['auto_complete'] = $autoComplete;
-        $step['can_complete_manually'] = in_array($step['completion_mode'], ['manual_only', 'auto_or_manual'], true);
+        $step['is_optional'] = $isOptional;
+        $step['is_locked'] = $isLocked;
+        $step['lock_reason'] = $lockReason;
+        $step['can_complete_manually'] = (!$isLocked && in_array($step['completion_mode'], ['manual_only', 'auto_or_manual'], true));
+        $step['is_available'] = (!$isCompleted && !$isLocked);
+
         $evaluated[] = $step;
+        $progressByStep[$stepId] = [
+            'is_completed' => $isCompleted,
+            'is_locked' => $isLocked,
+        ];
+
+        if (!$isCompleted && !$isLocked && count($recommended) < 5) {
+            $recommended[] = $step;
+        }
     }
 
     return [
         'steps' => $evaluated,
         'total' => count($steps),
         'completed' => $completed,
-        'percent' => count($steps) ? round(($completed / count($steps)) * 100, 1) : 0,
+        'required_total' => $requiredTotal,
+        'required_completed' => $requiredCompleted,
+        'percent' => $requiredTotal ? round(($requiredCompleted / $requiredTotal) * 100, 1) : (count($steps) ? round(($completed / count($steps)) * 100, 1) : 0),
+        'recommended' => $recommended,
     ];
 }
 

@@ -92,7 +92,7 @@ page_header($journey['name']);
             <h2><?= e((string)$progress['percent']) ?>%</h2>
             <p class="muted">
                 <?php if ($isEnabled): ?>
-                    <?= (int)$progress['completed'] ?> of <?= (int)$progress['total'] ?> steps complete
+                    <?= (int)$progress['required_completed'] ?> of <?= (int)$progress['required_total'] ?> required steps complete
                 <?php else: ?>
                     <?= (int)$progress['total'] ?> steps available. Enable this journey to begin tracking.
                 <?php endif; ?>
@@ -113,25 +113,56 @@ page_header($journey['name']);
     </form>
 </div>
 
+<?php if ($isEnabled && !empty($progress['recommended'])): ?>
+    <div class="card recommended-steps-card">
+        <div class="page-title-row compact">
+            <div>
+                <h2>Recommended next steps</h2>
+                <p class="muted">These are the next available incomplete steps for <?= e($active['rsn']) ?>.</p>
+            </div>
+        </div>
+        <div class="recommended-step-list">
+            <?php foreach ($progress['recommended'] as $recommendedStep): ?>
+                <a class="recommended-step" href="#step-<?= (int)$recommendedStep['id'] ?>">
+                    <span class="step-status">○</span>
+                    <span>
+                        <strong><?= e($recommendedStep['title']) ?></strong>
+                        <small><?= e($recommendedStep['chapter_title'] ?? '') ?><?= !empty($recommendedStep['is_optional']) ? ' • Optional' : '' ?></small>
+                    </span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php elseif ($isEnabled && (int)$progress['required_total'] > 0 && (int)$progress['required_completed'] >= (int)$progress['required_total']): ?>
+    <div class="card recommended-steps-card">
+        <h2>Main path complete</h2>
+        <p class="muted">All required steps are complete. Optional steps can still be ticked off if you want to fully clear the journey.</p>
+    </div>
+<?php endif; ?>
+
 <?php foreach ($chapters as $chapter): ?>
     <div class="card journey-chapter">
         <h2><?= e($chapter['title']) ?></h2>
         <?php if (!empty($chapter['description'])): ?><p class="muted"><?= nl2br(e($chapter['description'])) ?></p><?php endif; ?>
 
         <?php foreach (($stepsByChapter[(int)$chapter['id']] ?? []) as $step): ?>
-            <div class="journey-step <?= !empty($step['is_completed']) ? 'complete' : '' ?>">
+            <div id="step-<?= (int)$step['id'] ?>" class="journey-step <?= !empty($step['is_completed']) ? 'complete' : '' ?> <?= !empty($step['is_locked']) ? 'locked' : '' ?> <?= !empty($step['is_optional']) ? 'optional' : '' ?>">
                 <div class="step-status"><?= !empty($step['is_completed']) ? '✓' : '○' ?></div>
                 <div class="step-body">
                     <h3><?= e($step['title']) ?></h3>
                     <?php if (!empty($step['description'])): ?><p class="muted"><?= nl2br(e($step['description'])) ?></p><?php endif; ?>
                     <p class="muted small">
                         <?= e(completion_mode_label((string)$step['completion_mode'])) ?> • <?= e(rule_summary($step)) ?>
+                        <?php if (!empty($step['is_optional'])): ?> • Optional<?php endif; ?>
+                        <?php if (!empty($step['is_locked'])): ?> • <?= e($step['lock_reason'] ?? 'Locked') ?><?php endif; ?>
                         <?php if (!empty($step['is_completed'])): ?> • <?= e(!empty($step['auto_complete']) ? 'Completed automatically' : 'Completed manually') ?><?php endif; ?>
                     </p>
                 </div>
                 <div class="step-actions">
                     <?php if (!$isEnabled): ?>
                         <span class="badge">Preview</span>
+                    <?php elseif (!empty($step['is_locked'])): ?>
+                        <span class="badge">Locked</span>
                     <?php elseif (!empty($step['can_complete_manually'])): ?>
                         <form method="post">
                             <?= csrf_field() ?>

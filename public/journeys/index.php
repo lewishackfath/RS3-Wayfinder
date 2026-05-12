@@ -82,7 +82,7 @@ page_header('Journeys');
                         <div class="progress-bar"><span style="width: <?= e((string)$progress['percent']) ?>%"></span></div>
                         <p class="muted small">
                             <?php if ($isStarted): ?>
-                                <?= (int)$progress['completed'] ?> / <?= (int)$progress['total'] ?> steps complete
+                                <?= (int)($progress['required_completed'] ?? $progress['completed']) ?> / <?= (int)($progress['required_total'] ?? $progress['total']) ?> required steps complete
                             <?php else: ?>
                                 <?= (int)$progress['total'] ?> steps available • not tracking yet
                             <?php endif; ?>
