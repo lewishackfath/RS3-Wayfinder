@@ -36,6 +36,7 @@ $startedIds = [];
 foreach ($started as $row) {
     $startedIds[(int)$row['id']] = $row;
 }
+$recommendedJourneys = $active ? recommended_journeys_for_profile((int)$active['id'], 6) : [];
 
 page_header('Journeys');
 ?>
@@ -50,6 +51,31 @@ page_header('Journeys');
 </div>
 
 <?php if ($notice): ?><div class="notice"><?= e($notice) ?></div><?php endif; ?>
+
+<?php if ($active && $recommendedJourneys): ?>
+    <div class="card journey-recommendation-strip">
+        <div class="page-title-row compact">
+            <div>
+                <h2>Recommended for <?= e($active['rsn']) ?></h2>
+                <p class="muted">These suggestions use your profile interests and current account progression.</p>
+            </div>
+            <a class="button secondary" href="/profiles/edit.php?id=<?= (int)$active['id'] ?>">Edit interests</a>
+        </div>
+        <div class="recommended-journey-grid compact">
+            <?php foreach ($recommendedJourneys as $item): ?>
+                <?php $recJourney = $item['journey']; ?>
+                <article class="recommended-journey-card compact">
+                    <div class="journey-list-icon small"><?= e($recJourney['icon'] ?: '🧭') ?></div>
+                    <div>
+                        <h3><?= e($recJourney['name']) ?></h3>
+                        <p class="muted small"><?= e($item['reasons'][0] ?? 'Recommended journey') ?></p>
+                        <a class="button secondary" href="/journeys/view.php?id=<?= (int)$recJourney['id'] ?>">View</a>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php if (!$active): ?>
     <div class="card">
@@ -77,6 +103,8 @@ page_header('Journeys');
                         <?php if ($isStarted): ?><span class="badge success">Enabled</span><?php endif; ?>
                     </div>
                     <p class="muted"><?= e($journey['description'] ?: 'No description yet.') ?></p>
+                    <?php $tags = journey_tags_for_journey($journeyId); ?>
+                    <?php if ($tags): ?><p class="journey-tags-row"><?php foreach ($tags as $tag): ?><span class="badge"><?= e($tag['name']) ?></span><?php endforeach; ?></p><?php endif; ?>
 
                     <div class="journey-list-progress">
                         <div class="progress-bar"><span style="width: <?= e((string)$progress['percent']) ?>%"></span></div>

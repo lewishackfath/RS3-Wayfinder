@@ -35,6 +35,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (int)($_POST['sort_order'] ?? 0)
             );
         }
+        set_journey_tags($id, is_array($_POST['tag_ids'] ?? null) ? $_POST['tag_ids'] : []);
         redirect('/admin/journey_view.php?id=' . $id);
     } catch (Throwable $e) {
         $error = $e->getMessage();
@@ -47,6 +48,10 @@ $descriptionValue = (string)($_POST['description'] ?? $journey['description'] ??
 $iconValue = (string)($_POST['icon'] ?? $journey['icon'] ?? '🧭');
 $sortValue = (int)($_POST['sort_order'] ?? $journey['sort_order'] ?? 0);
 $isPublished = !empty($_POST['is_published']) || (!$_POST && !empty($journey['is_published']));
+$allTags = all_journey_tags();
+$selectedTagIds = $_POST && isset($_POST['tag_ids']) && is_array($_POST['tag_ids'])
+    ? array_map('intval', $_POST['tag_ids'])
+    : ($id ? journey_tag_ids_for_journey($id) : []);
 ?>
 <div class="page-title-row">
     <div>
@@ -76,6 +81,25 @@ $isPublished = !empty($_POST['is_published']) || (!$_POST && !empty($journey['is
             <textarea name="description" rows="5" placeholder="A guided path for learning RS3 combat systems, unlocks and bosses."><?= e($descriptionValue) ?></textarea>
             <span class="field-help">Keep this player-facing. You can explain goals, intended account stage and playstyle.</span>
         </label>
+    </section>
+
+    <section class="form-section">
+        <div class="form-section-intro">
+            <h2>Journey type / tags</h2>
+            <p class="muted">Tags help Wayfinder recommend this journey to players with matching interests.</p>
+        </div>
+
+        <div class="choice-grid tag-choice-grid">
+            <?php foreach ($allTags as $tag): ?>
+                <label class="choice-card tag-choice-card">
+                    <input type="checkbox" name="tag_ids[]" value="<?= (int)$tag['id'] ?>" <?= in_array((int)$tag['id'], $selectedTagIds, true) ? 'checked' : '' ?>>
+                    <span>
+                        <strong><?= e($tag['name']) ?></strong>
+                        <small><?= e($tag['description'] ?: $tag['slug']) ?></small>
+                    </span>
+                </label>
+            <?php endforeach; ?>
+        </div>
     </section>
 
     <section class="form-section">

@@ -613,6 +613,7 @@ function duplicate_journey(int $journeyId): int
             false,
             (int)$journey['sort_order'] + 10
         );
+        set_journey_tags($newJourneyId, journey_tag_ids_for_journey($journeyId));
 
         $stepMap = [];
         foreach (chapters_for_journey($journeyId) as $chapter) {
@@ -754,5 +755,77 @@ function apply_step_template_values(string $template, array $current = []): arra
     }
 
     return $values;
+}
+
+
+
+function journey_tag_slugify(string $value): string
+{
+    $slug = strtolower(trim($value));
+    $slug = preg_replace('/[^a-z0-9]+/', '-', $slug) ?? $slug;
+    $slug = trim($slug, '-');
+    return $slug !== '' ? $slug : 'tag';
+}
+
+function all_journey_tags(): array
+{
+    return db()->query('SELECT * FROM journey_tags ORDER BY sort_order ASC, name ASC')->fetchAll();
+}
+
+function journey_tags_for_journey(int $journeyId): array
+{
+    $stmt = db()->prepare('SELECT jt.* FROM journey_tags jt JOIN journey_tag_map jtm ON jtm.tag_id = jt.id WHERE jtm.journey_id = ? ORDER BY jt.sort_order ASC, jt.name ASC');
+    $stmt->execute([$journeyId]);
+    return $stmt->fetchAll();
+}
+
+function journey_tag_ids_for_journey(int $journeyId): array
+{
+    return array_map(fn($row) => (int)$row['id'], journey_tags_for_journey($journeyId));
+}
+
+function set_journey_tags(int $journeyId, array $tagIds): void
+{
+    $pdo = db();
+    $pdo->prepare('DELETE FROM journey_tag_map WHERE journey_id = ?')->execute([$journeyId]);
+    $insert = $pdo->prepare('INSERT IGNORE INTO journey_tag_map (journey_id, tag_id) VALUES (?, ?)');
+    foreach (array_unique(array_map('intval', $tagIds)) as $tagId) {
+        if ($tagId > 0) {
+            $insert->execute([$journeyId, $tagId]);
+        }
+    }
+}
+
+function create_journey_tag(string $name, string $description = '', int $sortOrder = 0): int
+{
+    $name = trim($name);
+    if ($name === '') {
+        throw new InvalidArgumentException('Tag name is required.');
+    }
+    $slug = journey_tag_slugify($name);
+    $base = $slug;
+    $i = 2;
+    $pdo = db();
+    while (true) {
+        $stmt = $pdo->prepare('SELECT id FROM journey_tags WHERE slug = ? LIMIT 1');
+        $stmt->execute([$slug]);
+        if (!$stmt->fetchColumn()) {
+            break;
+        }
+        $slug = $base . '-' . $i++;
+    }
+    $stmt = $pdo->prepare('INSERT INTO journey_tags (slug, name, description, sort_order) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$slug, $name, trim($description), $sortOrder]);
+    return (int)$pdo->lastInsertId();
+}
+
+function journeys_with_tags(bool $publishedOnly = false): array
+{
+    $journeys = all_journeys($publishedOnly);
+    foreach ($journeys as &$journey) {
+        $journey['tags'] = journey_tags_for_journey((int)$journey['id']);
+    }
+    unset($journey);
+    return $journeys;
 }
 

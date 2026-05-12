@@ -260,6 +260,36 @@ function bootstrap_schema(): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS journey_tags (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        slug VARCHAR(80) NOT NULL UNIQUE,
+        name VARCHAR(120) NOT NULL,
+        description TEXT NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS journey_tag_map (
+        journey_id BIGINT UNSIGNED NOT NULL,
+        tag_id BIGINT UNSIGNED NOT NULL,
+        PRIMARY KEY (journey_id, tag_id),
+        INDEX idx_journey_tag_map_tag (tag_id),
+        CONSTRAINT fk_journey_tag_map_journey FOREIGN KEY (journey_id) REFERENCES journeys(id) ON DELETE CASCADE,
+        CONSTRAINT fk_journey_tag_map_tag FOREIGN KEY (tag_id) REFERENCES journey_tags(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS profile_interests (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        tag_id BIGINT UNSIGNED NOT NULL,
+        PRIMARY KEY (profile_id, tag_id),
+        INDEX idx_profile_interests_tag (tag_id),
+        CONSTRAINT fk_profile_interests_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+        CONSTRAINT fk_profile_interests_tag FOREIGN KEY (tag_id) REFERENCES journey_tags(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,
@@ -275,6 +305,7 @@ function bootstrap_schema(): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     seed_permissions_and_roles();
+    seed_default_journey_tags();
     run_schema_migrations();
 }
 
@@ -325,6 +356,29 @@ function run_once_migration(string $key, callable $callback): void
             $pdo->rollBack();
         }
         throw $e;
+    }
+}
+
+
+function seed_default_journey_tags(): void
+{
+    $tags = [
+        ['pvm', 'PvM', 'Bossing, combat progression and combat unlocks.', 10],
+        ['questing', 'Questing', 'Quest progression, unlock quests and story paths.', 20],
+        ['completionist', 'Completionist', 'Completionist, comp cape and broad account completion.', 30],
+        ['skilling', 'Skilling', 'Skill training, skilling unlocks and non-combat progression.', 40],
+        ['ironman', 'Ironman', 'Ironman-friendly progression and self-sufficient unlock paths.', 50],
+        ['new-player', 'New Player', 'Beginner friendly progression for newer accounts.', 60],
+        ['returning-player', 'Returning Player', 'Catch-up paths for players returning to RuneScape.', 70],
+        ['lore', 'Lore', 'Story, lore and world exploration.', 80],
+        ['clues', 'Clues', 'Clue scroll progression and unlocks.', 90],
+    ];
+
+    $stmt = db()->prepare("INSERT INTO journey_tags (slug, name, description, sort_order)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description), sort_order = VALUES(sort_order)");
+    foreach ($tags as $tag) {
+        $stmt->execute($tag);
     }
 }
 

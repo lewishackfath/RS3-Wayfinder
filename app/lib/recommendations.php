@@ -233,3 +233,100 @@ function wayfinder_profile_analysis(int $profileId): array
         'optional_steps' => $optional,
     ];
 }
+
+
+
+function recommended_journeys_for_profile(int $profileId, int $limit = 4): array
+{
+    $profile = profile_by_id($profileId);
+    if (!$profile) {
+        return [];
+    }
+
+    $enabled = journeys_for_profile($profileId);
+    $enabledIds = array_fill_keys(array_map(fn($j) => (int)$j['id'], $enabled), true);
+    $interestTags = profile_interest_tags($profileId);
+    $interestIds = array_map(fn($t) => (int)$t['id'], $interestTags);
+    $interestSlugs = array_map(fn($t) => (string)$t['slug'], $interestTags);
+
+    $metrics = runemetrics_profile_metrics($profileId);
+    $totalLevel = (int)($metrics['total_level'] ?? 0);
+    $combatLevel = (int)($metrics['combat_level'] ?? 0);
+    $questComplete = (int)($metrics['quests_complete'] ?? 0);
+
+    $results = [];
+    foreach (journeys_with_tags(true) as $journey) {
+        $journeyId = (int)$journey['id'];
+        if (isset($enabledIds[$journeyId])) {
+            continue;
+        }
+
+        $tags = $journey['tags'] ?? [];
+        $tagIds = array_map(fn($t) => (int)$t['id'], $tags);
+        $tagSlugs = array_map(fn($t) => (string)$t['slug'], $tags);
+        $tagNames = array_map(fn($t) => (string)$t['name'], $tags);
+
+        $score = 10;
+        $reasons = [];
+
+        $matches = array_intersect($interestIds, $tagIds);
+        if ($matches) {
+            $score += 50 + (10 * count($matches));
+            $matchedNames = [];
+            foreach ($tags as $tag) {
+                if (in_array((int)$tag['id'], $matches, true)) {
+                    $matchedNames[] = (string)$tag['name'];
+                }
+            }
+            $reasons[] = 'Matches your interests: ' . implode(', ', $matchedNames);
+        }
+
+        $accountType = (string)($profile['account_type'] ?? 'main');
+        if (str_contains($accountType, 'ironman') && in_array('ironman', $tagSlugs, true)) {
+            $score += 35;
+            $reasons[] = 'Matches your Ironman account type.';
+        }
+
+        if ($totalLevel > 0) {
+            if ($totalLevel < 1000 && (in_array('new-player', $tagSlugs, true) || in_array('skilling', $tagSlugs, true))) {
+                $score += 25;
+                $reasons[] = 'Good fit for your current total level.';
+            } elseif ($totalLevel >= 1000 && $totalLevel < 2400 && (in_array('questing', $tagSlugs, true) || in_array('pvm', $tagSlugs, true))) {
+                $score += 20;
+                $reasons[] = 'Useful for mid-game account progression.';
+            } elseif ($totalLevel >= 2400 && in_array('completionist', $tagSlugs, true)) {
+                $score += 30;
+                $reasons[] = 'Good fit for late-game account completion.';
+            }
+        }
+
+        if ($combatLevel >= 80 && in_array('pvm', $tagSlugs, true)) {
+            $score += 20;
+            $reasons[] = 'Your combat level suggests PvM paths may be useful.';
+        }
+
+        if ($questComplete < 150 && in_array('questing', $tagSlugs, true)) {
+            $score += 15;
+            $reasons[] = 'Questing paths can unlock major account upgrades.';
+        }
+
+        if (!$reasons && $interestTags) {
+            $score -= 5;
+            $reasons[] = 'A general journey you have not enabled yet.';
+        } elseif (!$reasons) {
+            $reasons[] = 'Popular starting point once you choose interests.';
+        }
+
+        $results[] = [
+            'journey' => $journey,
+            'score' => $score,
+            'reasons' => $reasons,
+            'tags' => $tagNames,
+        ];
+    }
+
+    usort($results, fn(array $a, array $b): int => ($b['score'] <=> $a['score']));
+
+    return array_slice($results, 0, $limit);
+}
+

@@ -15,12 +15,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             redirect('/profiles/index.php');
         }
         update_profile($profileId, (int)$user['id'], (string)($_POST['rsn'] ?? ''), (string)($_POST['account_type'] ?? 'main'), (string)($_POST['visibility'] ?? 'private'), !empty($_POST['is_primary']));
+        set_profile_interests($profileId, (int)$user['id'], is_array($_POST['interest_tag_ids'] ?? null) ? $_POST['interest_tag_ids'] : []);
         redirect('/profiles/index.php');
     } catch (Throwable $e) {
         $error = $e->getMessage();
         $profile = array_merge($profile, $_POST);
     }
 }
+$allTags = all_journey_tags();
+$selectedInterestIds = $_POST && isset($_POST['interest_tag_ids']) && is_array($_POST['interest_tag_ids'])
+    ? array_map('intval', $_POST['interest_tag_ids'])
+    : profile_interest_tag_ids($profileId);
 page_header('Edit Profile');
 ?>
 <div class="card narrow">
@@ -46,6 +51,24 @@ page_header('Edit Profile');
                 <?php endforeach; ?>
             </select>
         </label>
+        <div class="form-section profile-interest-section">
+            <div class="form-section-intro">
+                <h2>Progression interests</h2>
+                <p class="muted">Wayfinder uses these to recommend journeys for this profile.</p>
+            </div>
+            <div class="choice-grid tag-choice-grid">
+                <?php foreach ($allTags as $tag): ?>
+                    <label class="choice-card tag-choice-card">
+                        <input type="checkbox" name="interest_tag_ids[]" value="<?= (int)$tag['id'] ?>" <?= in_array((int)$tag['id'], $selectedInterestIds, true) ? 'checked' : '' ?>>
+                        <span>
+                            <strong><?= e($tag['name']) ?></strong>
+                            <small><?= e($tag['description'] ?: $tag['slug']) ?></small>
+                        </span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
         <label class="checkbox-label"><input type="checkbox" name="is_primary" value="1" <?= ((int)$profile['is_primary'] === 1) ? 'checked' : '' ?>> Make this my primary profile</label>
         <div class="form-actions">
             <button class="button" type="submit">Save changes</button>

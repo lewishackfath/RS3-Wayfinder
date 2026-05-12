@@ -13,6 +13,7 @@ $myJourneys = [];
 $myJourneyProgress = [];
 $recommendations = [];
 $profileAnalysis = null;
+$recommendedJourneys = [];
 if ($active) {
     try {
         $sync = runemetrics_sync_profile_if_due($active);
@@ -33,6 +34,7 @@ if ($active) {
     }
     $recommendations = wayfinder_recommendations_for_profile((int)$active['id'], 5);
     $profileAnalysis = wayfinder_profile_analysis((int)$active['id']);
+    $recommendedJourneys = recommended_journeys_for_profile((int)$active['id'], 4);
 }
 ?>
 <div class="card dashboard-hero-card">
@@ -102,6 +104,43 @@ if ($active) {
                     <div><strong><?= e($profileAnalysis['available_steps']) ?></strong><span>Available steps</span></div>
                     <div><strong><?= e($profileAnalysis['locked_steps']) ?></strong><span>Locked steps</span></div>
                     <div><strong><?= e($profileAnalysis['optional_steps']) ?></strong><span>Optional steps</span></div>
+                </div>
+            <?php endif; ?>
+        </section>
+
+        <section class="dashboard-section recommended-journeys-section">
+            <div class="page-title-row compact">
+                <div>
+                    <h2>Recommended journeys</h2>
+                    <p class="muted">Suggested paths based on <?= e($active['rsn']) ?> and your selected interests.</p>
+                </div>
+                <a class="button secondary" href="/journeys/index.php">Browse all journeys</a>
+            </div>
+
+            <?php if (!$recommendedJourneys): ?>
+                <div class="empty-panel">
+                    <p class="muted">No journey recommendations yet. Add interests to this profile or create more published journeys with tags.</p>
+                    <a class="button secondary" href="/profiles/edit.php?id=<?= (int)$active['id'] ?>">Edit interests</a>
+                </div>
+            <?php else: ?>
+                <div class="recommended-journey-grid">
+                    <?php foreach ($recommendedJourneys as $item): ?>
+                        <?php $journey = $item['journey']; ?>
+                        <article class="recommended-journey-card">
+                            <div class="journey-list-icon small"><?= e($journey['icon'] ?: '🧭') ?></div>
+                            <div>
+                                <h3><?= e($journey['name']) ?></h3>
+                                <p class="muted"><?= e($journey['description'] ?: 'No description yet.') ?></p>
+                                <?php if (!empty($item['tags'])): ?>
+                                    <p><?php foreach ($item['tags'] as $tagName): ?><span class="badge"><?= e($tagName) ?></span><?php endforeach; ?></p>
+                                <?php endif; ?>
+                                <ul class="recommendation-reasons">
+                                    <?php foreach (array_slice($item['reasons'], 0, 2) as $reason): ?><li><?= e($reason) ?></li><?php endforeach; ?>
+                                </ul>
+                                <a class="button secondary" href="/journeys/view.php?id=<?= (int)$journey['id'] ?>">View journey</a>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </section>

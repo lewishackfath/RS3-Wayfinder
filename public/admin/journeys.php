@@ -27,7 +27,8 @@ page_header('Manage Journeys');
                 <tr>
                     <td>
                         <strong><?= e($journey['icon'] ?: '🧭') ?> <?= e($journey['name']) ?></strong><br>
-                        <span class="muted small"><?= e($journey['slug']) ?></span>
+                        <span class="muted small"><?= e($journey['slug']) ?></span><br>
+                        <?php foreach (journey_tags_for_journey((int)$journey['id']) as $tag): ?><span class="badge"><?= e($tag['name']) ?></span><?php endforeach; ?>
                     </td>
                     <td><?= ((int)$journey['is_published'] === 1) ? '<span class="badge success">Published</span>' : '<span class="badge">Draft</span>' ?></td>
                     <td><?= (int)$journey['sort_order'] ?></td>

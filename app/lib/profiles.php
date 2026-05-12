@@ -228,3 +228,35 @@ function set_active_profile(int $profileId, int $userId): void
     }
     $_SESSION['active_profile_id'] = (int)$profile['id'];
 }
+
+
+
+function profile_interest_tags(int $profileId): array
+{
+    $stmt = db()->prepare('SELECT jt.* FROM journey_tags jt JOIN profile_interests pi ON pi.tag_id = jt.id WHERE pi.profile_id = ? ORDER BY jt.sort_order ASC, jt.name ASC');
+    $stmt->execute([$profileId]);
+    return $stmt->fetchAll();
+}
+
+function profile_interest_tag_ids(int $profileId): array
+{
+    return array_map(fn($row) => (int)$row['id'], profile_interest_tags($profileId));
+}
+
+function set_profile_interests(int $profileId, int $userId, array $tagIds): void
+{
+    $profile = profile_for_user($profileId, $userId);
+    if (!$profile) {
+        throw new InvalidArgumentException('Profile not found.');
+    }
+
+    $pdo = db();
+    $pdo->prepare('DELETE FROM profile_interests WHERE profile_id = ?')->execute([$profileId]);
+    $insert = $pdo->prepare('INSERT IGNORE INTO profile_interests (profile_id, tag_id) VALUES (?, ?)');
+    foreach (array_unique(array_map('intval', $tagIds)) as $tagId) {
+        if ($tagId > 0) {
+            $insert->execute([$profileId, $tagId]);
+        }
+    }
+}
+

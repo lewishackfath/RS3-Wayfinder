@@ -15,6 +15,10 @@ page_header('Manage Journey');
     <div>
         <h1><?= e($journey['icon'] ?: '🧭') ?> <?= e($journey['name']) ?></h1>
         <p class="muted"><?= nl2br(e($journey['description'] ?: 'No description yet.')) ?></p>
+        <?php $journeyTags = journey_tags_for_journey((int)$journey['id']); ?>
+        <?php if ($journeyTags): ?>
+            <p class="journey-tags-row"><?php foreach ($journeyTags as $tag): ?><span class="badge"><?= e($tag['name']) ?></span><?php endforeach; ?></p>
+        <?php endif; ?>
     </div>
     <div class="form-actions">
         <a class="button secondary" href="/admin/journeys.php">All journeys</a>
