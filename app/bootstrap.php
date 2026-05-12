@@ -16,6 +16,7 @@ require_once __DIR__ . '/lib/profiles.php';
 require_once __DIR__ . '/lib/skills.php';
 require_once __DIR__ . '/lib/runemetrics.php';
 require_once __DIR__ . '/lib/journeys.php';
+require_once __DIR__ . '/lib/content.php';
 require_once __DIR__ . '/lib/recommendations.php';
 require_once __DIR__ . '/lib/discord_oauth.php';
 

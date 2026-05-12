@@ -950,3 +950,36 @@ code {
 .profile-interest-section {
     margin: 1rem 0;
 }
+
+
+/* Content library */
+.content-stat-card {
+    color: inherit;
+    text-decoration: none;
+}
+
+.filter-form {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(260px, 1fr) auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.mini-admin-form {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,.10);
+    display: grid;
+    gap: .85rem;
+}
+
+.mini-admin-form input,
+.mini-admin-form select {
+    width: 100%;
+}
+
+@media (max-width: 760px) {
+    .filter-form {
+        grid-template-columns: 1fr;
+    }
+}

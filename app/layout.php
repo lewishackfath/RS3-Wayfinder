@@ -41,6 +41,7 @@ function page_header(string $title): void
             if (current_user_can('roles.manage')) echo '<a href="/admin/roles.php">Roles & Permissions</a>';
             if (current_user_can('profiles.view')) echo '<a href="/admin/profiles.php">Player Profiles</a>';
             if (current_user_can('journeys.view')) echo '<a href="/admin/journeys.php">Journeys</a>';
+            if (current_user_can('content.view')) echo '<a href="/admin/content.php">Content Library</a>';
             echo '</div>';
             echo '</div>';
         }

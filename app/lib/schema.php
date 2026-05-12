@@ -305,6 +305,90 @@ function bootstrap_schema(): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_items (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        type ENUM('quest','achievement','task','boss','drop','unlock','item') NOT NULL,
+        name VARCHAR(220) NOT NULL,
+        slug VARCHAR(240) NOT NULL UNIQUE,
+        description TEXT NULL,
+        category VARCHAR(120) NULL,
+        source_url TEXT NULL,
+        icon_url TEXT NULL,
+        metadata_json JSON NULL,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_content_type (type, is_active),
+        INDEX idx_content_category (category),
+        FULLTEXT KEY ft_content_search (name, description, category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_skill_requirements (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        content_item_id BIGINT UNSIGNED NOT NULL,
+        skill_name VARCHAR(80) NOT NULL,
+        required_level INT NOT NULL,
+        notes TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_content_skill_req_item (content_item_id),
+        CONSTRAINT fk_content_skill_req_item FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_quest_requirements (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        content_item_id BIGINT UNSIGNED NOT NULL,
+        required_content_item_id BIGINT UNSIGNED NOT NULL,
+        notes TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_content_quest_req (content_item_id, required_content_item_id),
+        INDEX idx_content_quest_req_item (content_item_id),
+        CONSTRAINT fk_content_quest_req_item FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
+        CONSTRAINT fk_content_quest_req_required FOREIGN KEY (required_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_relationships (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        source_content_item_id BIGINT UNSIGNED NOT NULL,
+        relationship_type ENUM('requires','unlocks','related_to','contains','part_of') NOT NULL,
+        target_content_item_id BIGINT UNSIGNED NOT NULL,
+        notes TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_content_relationship (source_content_item_id, relationship_type, target_content_item_id),
+        INDEX idx_content_relationship_source (source_content_item_id),
+        INDEX idx_content_relationship_target (target_content_item_id),
+        CONSTRAINT fk_content_relationship_source FOREIGN KEY (source_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
+        CONSTRAINT fk_content_relationship_target FOREIGN KEY (target_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS drop_items (
+        content_item_id BIGINT UNSIGNED PRIMARY KEY,
+        item_name VARCHAR(220) NOT NULL,
+        wiki_url TEXT NULL,
+        icon_url TEXT NULL,
+        notes TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_drop_items_content FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS boss_drop_sources (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        boss_content_item_id BIGINT UNSIGNED NOT NULL,
+        drop_content_item_id BIGINT UNSIGNED NOT NULL,
+        rarity VARCHAR(80) NULL,
+        quantity VARCHAR(80) NULL,
+        notes TEXT NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_boss_drop_source (boss_content_item_id, drop_content_item_id),
+        INDEX idx_boss_drop_source_boss (boss_content_item_id),
+        INDEX idx_boss_drop_source_drop (drop_content_item_id),
+        CONSTRAINT fk_boss_drop_sources_boss FOREIGN KEY (boss_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
+        CONSTRAINT fk_boss_drop_sources_drop FOREIGN KEY (drop_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,
@@ -409,6 +493,8 @@ function seed_permissions_and_roles(): void
         ['profiles.manage', 'Manage profiles', 'Allows moderating player profiles.'],
         ['journeys.view', 'View journeys', 'Allows viewing journeys in the admin area.'],
         ['journeys.manage', 'Manage journeys', 'Allows creating and editing journeys, chapters and steps.'],
+        ['content.view', 'View content library', 'Allows viewing the admin content library.'],
+        ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses and drops.'],
     ];
 
     $stmt = $pdo->prepare("INSERT INTO permissions (slug, name, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)");
@@ -426,8 +512,8 @@ function seed_permissions_and_roles(): void
         $stmt->execute($role);
     }
 
-    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'journeys.view', 'journeys.manage']);
-    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'journeys.view', 'journeys.manage']);
+    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'journeys.view', 'journeys.manage', 'content.view', 'content.manage']);
+    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'journeys.view', 'journeys.manage', 'content.view', 'content.manage']);
 }
 
 function grant_role_permissions(string $roleSlug, array $permissionSlugs): void
