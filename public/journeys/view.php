@@ -56,9 +56,13 @@ if ($isEnabled) {
 }
 
 $chapters = chapters_for_journey($journeyId);
+$journeyRecommendations = [];
 if ($isEnabled) {
     $progress = evaluate_journey_progress((int)$active['id'], $journeyId);
     $allSteps = $progress['steps'];
+    foreach (($progress['recommended'] ?? []) as $recommendedStep) {
+        $journeyRecommendations[] = recommendation_from_step((int)$active['id'], $journey, $recommendedStep);
+    }
 } else {
     $allSteps = steps_for_journey($journeyId);
     foreach ($allSteps as &$step) {
@@ -115,7 +119,7 @@ page_header($journey['name']);
     </form>
 </div>
 
-<?php if ($isEnabled && !empty($progress['recommended'])): ?>
+<?php if ($isEnabled && !empty($journeyRecommendations)): ?>
     <div class="card recommended-steps-card">
         <div class="page-title-row compact">
             <div>
@@ -124,12 +128,12 @@ page_header($journey['name']);
             </div>
         </div>
         <div class="recommended-step-list">
-            <?php foreach ($progress['recommended'] as $recommendedStep): ?>
-                <a class="recommended-step" href="#step-<?= (int)$recommendedStep['id'] ?>">
+            <?php foreach ($journeyRecommendations as $rec): ?>
+                <a class="recommended-step rich" href="<?= e($rec['cta_url']) ?>">
                     <span class="step-status">○</span>
                     <span>
-                        <strong><?= e($recommendedStep['title']) ?></strong>
-                        <small><?= e($recommendedStep['chapter_title'] ?? '') ?><?= !empty($recommendedStep['is_optional']) ? ' • Optional' : '' ?></small>
+                        <strong><?= e($rec['title']) ?></strong>
+                        <small><?= e($rec['summary']) ?> • <?= e($rec['detail']) ?></small>
                     </span>
                 </a>
             <?php endforeach; ?>

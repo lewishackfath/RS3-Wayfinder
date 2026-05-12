@@ -11,6 +11,8 @@ $syncNotice = null;
 $activeMetrics = null;
 $myJourneys = [];
 $myJourneyProgress = [];
+$recommendations = [];
+$profileAnalysis = null;
 if ($active) {
     try {
         $sync = runemetrics_sync_profile_if_due($active);
@@ -29,6 +31,8 @@ if ($active) {
     foreach ($myJourneys as $journey) {
         $myJourneyProgress[(int)$journey['id']] = evaluate_journey_progress((int)$active['id'], (int)$journey['id']);
     }
+    $recommendations = wayfinder_recommendations_for_profile((int)$active['id'], 5);
+    $profileAnalysis = wayfinder_profile_analysis((int)$active['id']);
 }
 ?>
 <div class="card dashboard-hero-card">
@@ -53,6 +57,55 @@ if ($active) {
             </div>
         </div>
         <p><a class="button" href="/profiles/view.php?id=<?= (int)$active['id'] ?>">View profile data</a> <a class="button secondary" href="/journeys/index.php">Browse journeys</a> <a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
+
+        <section class="dashboard-section recommendation-section">
+            <div class="page-title-row compact">
+                <div>
+                    <h2>Recommended next steps</h2>
+                    <p class="muted">Suggestions based on enabled journeys for <?= e($active['rsn']) ?>.</p>
+                </div>
+                <?php if ($profileAnalysis): ?>
+                    <span class="badge success"><?= e((string)$profileAnalysis['overall_percent']) ?>% overall</span>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!$myJourneys): ?>
+                <div class="empty-panel">
+                    <p class="muted">Enable a journey to receive account-specific recommendations.</p>
+                    <a class="button" href="/journeys/index.php">Browse journeys</a>
+                </div>
+            <?php elseif (!$recommendations): ?>
+                <div class="empty-panel">
+                    <p class="muted">No recommendations right now. You may have completed all currently available required steps.</p>
+                    <a class="button secondary" href="/journeys/index.php">Review journeys</a>
+                </div>
+            <?php else: ?>
+                <div class="recommendation-grid">
+                    <?php foreach ($recommendations as $rec): ?>
+                        <article class="recommendation-card">
+                            <div class="recommendation-icon"><?= e($rec['journey_icon'] ?? '🧭') ?></div>
+                            <div class="recommendation-main">
+                                <span class="muted small"><?= e($rec['journey_name'] ?? 'Journey') ?> • <?= e(str_replace('_', ' ', (string)($rec['type'] ?? 'recommendation'))) ?></span>
+                                <h3><?= e($rec['title']) ?></h3>
+                                <p class="muted"><?= e($rec['summary']) ?></p>
+                                <p class="small"><?= e($rec['detail']) ?></p>
+                                <a class="button secondary" href="<?= e($rec['cta_url']) ?>"><?= e($rec['cta_label'] ?? 'View') ?></a>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($profileAnalysis): ?>
+                <div class="recommendation-analysis-row">
+                    <div><strong><?= e($profileAnalysis['enabled_journeys']) ?></strong><span>Enabled journeys</span></div>
+                    <div><strong><?= e($profileAnalysis['available_steps']) ?></strong><span>Available steps</span></div>
+                    <div><strong><?= e($profileAnalysis['locked_steps']) ?></strong><span>Locked steps</span></div>
+                    <div><strong><?= e($profileAnalysis['optional_steps']) ?></strong><span>Optional steps</span></div>
+                </div>
+            <?php endif; ?>
+        </section>
+
         <section class="dashboard-section">
             <div class="page-title-row compact">
                 <div>

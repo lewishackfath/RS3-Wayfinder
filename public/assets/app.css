@@ -813,3 +813,80 @@ code {
     flex-wrap: wrap;
     gap: .75rem;
 }
+
+
+/* Recommendation engine */
+.recommendation-section {
+    border-top-color: rgba(124,240,166,.22);
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.recommendation-card {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    background: rgba(255,255,255,.04);
+}
+
+.recommendation-card:hover {
+    border-color: rgba(124,240,166,.28);
+    background: rgba(124,240,166,.045);
+}
+
+.recommendation-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: rgba(255,255,255,.08);
+    font-size: 1.7rem;
+}
+
+.recommendation-main h3 {
+    margin: .25rem 0 .35rem;
+}
+
+.recommendation-main p {
+    margin: .35rem 0;
+}
+
+.recommendation-main .button {
+    margin-top: .45rem;
+}
+
+.recommendation-analysis-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .75rem;
+    margin-top: 1rem;
+}
+
+.recommendation-analysis-row > div {
+    padding: .85rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    background: rgba(255,255,255,.035);
+}
+
+.recommendation-analysis-row strong {
+    display: block;
+    font-size: 1.35rem;
+}
+
+.recommendation-analysis-row span {
+    color: var(--muted);
+    font-size: .9rem;
+}
+
+.recommended-step.rich small {
+    line-height: 1.45;
+}
