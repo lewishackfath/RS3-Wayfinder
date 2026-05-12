@@ -9,6 +9,28 @@ function page_header(string $title): void
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
         echo '<a href="/dashboard.php">Dashboard</a>';
+        echo '<a href="/profiles/index.php">Profiles</a>';
+
+        $profiles = profiles_for_user((int)$user['id']);
+        if ($profiles) {
+            $activeProfile = active_profile();
+            echo '<form class="profile-selector-form" method="post" action="/profiles/select.php">';
+            echo '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+            echo '<label class="sr-only" for="active-profile-select">Active profile</label>';
+            echo '<select id="active-profile-select" name="profile_id" class="profile-selector" onchange="this.form.submit()">';
+            foreach ($profiles as $profile) {
+                $selected = ($activeProfile && (int)$activeProfile['id'] === (int)$profile['id']) ? ' selected' : '';
+                $label = $profile['rsn'];
+                if (!empty($profile['is_primary'])) {
+                    $label .= ' ★';
+                }
+                echo '<option value="' . (int)$profile['id'] . '"' . $selected . '>' . e($label) . '</option>';
+            }
+            echo '</select>';
+            echo '<noscript><button type="submit">Switch</button></noscript>';
+            echo '</form>';
+        }
+
         if (current_user_can('admin.access')) echo '<a href="/admin/index.php">Admin</a>';
         echo '<a href="/auth/logout.php">Logout</a>';
     } else {
