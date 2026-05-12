@@ -423,3 +423,129 @@ code {
     border-radius: 6px;
     background: rgba(255,255,255,.08);
 }
+
+
+/* Elegant journey browsing */
+.journey-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.journey-list-item {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) auto;
+    gap: 1.2rem;
+    align-items: center;
+}
+
+.journey-list-item.is-enabled {
+    border-color: rgba(124,240,166,.28);
+}
+
+.journey-list-icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: rgba(255,255,255,.08);
+    font-size: 2rem;
+    flex: 0 0 auto;
+}
+
+.journey-list-icon.small {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    font-size: 1.45rem;
+}
+
+.journey-list-main {
+    min-width: 0;
+}
+
+.journey-list-heading {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+
+.journey-list-heading h2,
+.journey-list-heading h3 {
+    margin: 0;
+}
+
+.journey-list-main p {
+    margin: .35rem 0 .65rem;
+}
+
+.journey-list-progress {
+    display: grid;
+    gap: .35rem;
+}
+
+.journey-list-progress p {
+    margin: 0;
+}
+
+.journey-list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+.journey-list-actions form,
+.inline-form {
+    margin: 0;
+}
+
+.dashboard-section {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255,255,255,.10);
+}
+
+.dashboard-journey-list {
+    display: grid;
+    gap: .85rem;
+}
+
+.dashboard-journey-item {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: .85rem;
+    align-items: center;
+    padding: .85rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+    background: rgba(255,255,255,.04);
+}
+
+.dashboard-journey-main {
+    display: grid;
+    gap: .45rem;
+    min-width: 0;
+}
+
+.empty-panel {
+    padding: 1rem;
+    border: 1px dashed rgba(255,255,255,.18);
+    border-radius: 16px;
+    background: rgba(255,255,255,.035);
+}
+
+@media (max-width: 820px) {
+    .journey-list-item,
+    .dashboard-journey-item {
+        grid-template-columns: 52px 1fr;
+    }
+
+    .journey-list-actions,
+    .dashboard-journey-item > .button {
+        grid-column: 2;
+        justify-self: start;
+    }
+}

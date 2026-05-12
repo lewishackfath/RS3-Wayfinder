@@ -9,6 +9,8 @@ $profiles = profiles_for_user((int)$user['id']);
 $active = active_profile();
 $syncNotice = null;
 $activeMetrics = null;
+$myJourneys = [];
+$myJourneyProgress = [];
 if ($active) {
     try {
         $sync = runemetrics_sync_profile_if_due($active);
@@ -20,6 +22,12 @@ if ($active) {
     } catch (Throwable $e) {
         $syncNotice = is_debug() ? $e->getMessage() : 'RuneMetrics sync failed. Cached data is shown where available.';
         $activeMetrics = runemetrics_profile_metrics((int)$active['id']);
+    }
+}
+if ($active) {
+    $myJourneys = journeys_for_profile((int)$active['id']);
+    foreach ($myJourneys as $journey) {
+        $myJourneyProgress[(int)$journey['id']] = evaluate_journey_progress((int)$active['id'], (int)$journey['id']);
     }
 }
 ?>
@@ -42,6 +50,39 @@ if ($active) {
             </div>
         </div>
         <p><a class="button" href="/profiles/view.php?id=<?= (int)$active['id'] ?>">View profile data</a> <a class="button secondary" href="/journeys/index.php">Browse journeys</a> <a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
+        <section class="dashboard-section">
+            <div class="page-title-row compact">
+                <div>
+                    <h2>My journeys</h2>
+                    <p class="muted">Journeys currently enabled for <?= e($active['rsn']) ?>.</p>
+                </div>
+                <a class="button secondary" href="/journeys/index.php">Browse journeys</a>
+            </div>
+
+            <?php if (!$myJourneys): ?>
+                <div class="empty-panel">
+                    <p class="muted">No journeys are enabled yet.</p>
+                    <a class="button" href="/journeys/index.php">Choose a journey</a>
+                </div>
+            <?php else: ?>
+                <div class="dashboard-journey-list">
+                    <?php foreach ($myJourneys as $journey): ?>
+                        <?php $progress = $myJourneyProgress[(int)$journey['id']] ?? ['percent' => 0, 'completed' => 0, 'total' => 0]; ?>
+                        <article class="dashboard-journey-item">
+                            <div class="journey-list-icon small"><?= e($journey['icon'] ?: '🧭') ?></div>
+                            <div class="dashboard-journey-main">
+                                <div class="journey-list-heading">
+                                    <h3><?= e($journey['name']) ?></h3>
+                                    <span class="muted small"><?= (int)$progress['completed'] ?> / <?= (int)$progress['total'] ?> steps</span>
+                                </div>
+                                <div class="progress-bar"><span style="width: <?= e((string)$progress['percent']) ?>%"></span></div>
+                            </div>
+                            <a class="button secondary" href="/journeys/view.php?id=<?= (int)$journey['id'] ?>">Continue</a>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </section>
     <?php elseif ($profiles): ?>
         <p><?php foreach ($profiles as $profile): ?><span class="badge"><?= e($profile['rsn']) ?><?= ((int)$profile['is_primary'] === 1) ? ' • Primary' : '' ?></span><?php endforeach; ?></p>
         <p><a class="button secondary" href="/profiles/index.php">Manage profiles</a></p>
