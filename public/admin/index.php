@@ -8,6 +8,7 @@ page_header('Admin');
     <h1>Admin</h1>
     <p class="muted">Manage RS3 Wayfinder users and permissions.</p>
     <p><a class="button" href="/admin/users.php">Manage Users</a></p>
+    <p><a class="button secondary" href="/admin/roles.php">Manage roles & permissions</a></p>
     <p><a class="button secondary" href="/admin/profiles.php">View player profiles</a></p>
     <p><a class="button secondary" href="/admin/journeys.php">Manage journeys</a></p>
 </div>

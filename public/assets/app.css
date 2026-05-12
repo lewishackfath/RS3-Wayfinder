@@ -597,3 +597,77 @@ code {
     margin-top: .15rem;
     color: var(--muted);
 }
+
+
+/* Role and permission management */
+.permission-pill-list {
+    display: flex;
+    gap: .35rem;
+    flex-wrap: wrap;
+}
+
+.permission-groups {
+    display: grid;
+    gap: 1rem;
+}
+
+.permission-group {
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+    padding: 1rem;
+    background: rgba(255,255,255,.035);
+}
+
+.permission-group legend {
+    padding: 0 .4rem;
+    font-weight: 800;
+}
+
+.permission-check {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .75rem;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.permission-check:hover {
+    background: rgba(255,255,255,.045);
+}
+
+.permission-check input {
+    margin-top: .2rem;
+}
+
+.permission-check small {
+    display: block;
+    color: var(--muted);
+    margin-top: .15rem;
+    line-height: 1.35;
+}
+
+.permission-check.compact {
+    padding: .5rem;
+}
+
+.role-check-list {
+    display: grid;
+    gap: .25rem;
+    min-width: 220px;
+}
+
+.user-role-form {
+    margin: 0;
+}
+
+.toggle-row.compact {
+    padding: .55rem .7rem;
+    margin-bottom: .75rem;
+}
+
+.button.danger {
+    background: rgba(255,90,90,.18);
+    border-color: rgba(255,90,90,.35);
+    color: #ffb4b4;
+}
