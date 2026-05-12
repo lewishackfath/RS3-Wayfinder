@@ -11,7 +11,8 @@ if (!$active) {
 
 $journeyId = (int)($_GET['id'] ?? 0);
 $journey = journey_by_id($journeyId);
-if (!$journey || (int)$journey['is_published'] !== 1) {
+$isAdminPreview = (($_GET['preview'] ?? '') === '1') && current_user_can('journeys.view');
+if (!$journey || ((int)$journey['is_published'] !== 1 && !$isAdminPreview)) {
     abort_page(404, 'Journey not found.');
 }
 
@@ -79,12 +80,13 @@ page_header($journey['name']);
     <div>
         <h1><?= e($journey['icon'] ?: '🧭') ?> <?= e($journey['name']) ?></h1>
         <p class="muted"><?= nl2br(e($journey['description'] ?: 'No description yet.')) ?></p>
-        <p class="muted small">Active profile: <?= e($active['rsn']) ?><?= $isEnabled ? ' • tracking enabled' : ' • preview only' ?></p>
+        <p class="muted small">Active profile: <?= e($active['rsn']) ?><?= $isEnabled ? ' • tracking enabled' : ' • preview only' ?><?= $isAdminPreview ? ' • admin preview' : '' ?></p>
     </div>
     <a class="button secondary" href="/journeys/index.php">All journeys</a>
 </div>
 
 <?php if ($notice): ?><div class="notice"><?= e($notice) ?></div><?php endif; ?>
+<?php if ($isAdminPreview): ?><div class="notice">Admin preview: this journey can be viewed even if it is not published.</div><?php endif; ?>
 
 <div class="card">
     <div class="journey-progress-summary">

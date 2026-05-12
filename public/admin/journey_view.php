@@ -19,11 +19,23 @@ page_header('Manage Journey');
     <div class="form-actions">
         <a class="button secondary" href="/admin/journeys.php">All journeys</a>
         <?php if (current_user_can('journeys.manage')): ?>
+            <a class="button secondary" href="/journeys/view.php?id=<?= (int)$journey['id'] ?>&preview=1">Preview as player</a>
             <a class="button secondary" href="/admin/journey_edit.php?id=<?= (int)$journey['id'] ?>">Edit journey</a>
+            <form class="inline-form" method="post" action="/admin/journey_action.php">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="duplicate_journey">
+                <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                <button class="button secondary" type="submit">Duplicate journey</button>
+            </form>
             <a class="button" href="/admin/chapter_edit.php?journey_id=<?= (int)$journey['id'] ?>">Add chapter</a>
         <?php endif; ?>
     </div>
 </div>
+
+<?php if (!empty($_SESSION['flash_error'])): ?>
+    <div class="notice error"><?= e((string)$_SESSION['flash_error']) ?></div>
+    <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>
 
 <?php if (!$chapters): ?>
     <div class="card"><p class="muted">No chapters yet. Add your first chapter to start building this journey.</p></div>
@@ -40,6 +52,29 @@ page_header('Manage Journey');
             </div>
             <?php if (current_user_can('journeys.manage')): ?>
                 <div class="form-actions">
+                    <form class="inline-form" method="post" action="/admin/journey_action.php">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="action" value="move_chapter">
+                        <input type="hidden" name="direction" value="up">
+                        <input type="hidden" name="chapter_id" value="<?= (int)$chapter['id'] ?>">
+                        <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                        <button class="button secondary icon-button" type="submit" title="Move chapter up">↑</button>
+                    </form>
+                    <form class="inline-form" method="post" action="/admin/journey_action.php">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="action" value="move_chapter">
+                        <input type="hidden" name="direction" value="down">
+                        <input type="hidden" name="chapter_id" value="<?= (int)$chapter['id'] ?>">
+                        <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                        <button class="button secondary icon-button" type="submit" title="Move chapter down">↓</button>
+                    </form>
+                    <form class="inline-form" method="post" action="/admin/journey_action.php">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="action" value="duplicate_chapter">
+                        <input type="hidden" name="chapter_id" value="<?= (int)$chapter['id'] ?>">
+                        <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                        <button class="button secondary" type="submit">Duplicate</button>
+                    </form>
                     <a class="button secondary" href="/admin/chapter_edit.php?id=<?= (int)$chapter['id'] ?>">Edit chapter</a>
                     <a class="button" href="/admin/step_edit.php?chapter_id=<?= (int)$chapter['id'] ?>">Add step</a>
                 </div>
@@ -63,7 +98,36 @@ page_header('Manage Journey');
                             <?php if (empty($step['is_optional']) && empty($step['requires_step_id'])): ?><span class="muted small">Standard</span><?php endif; ?>
                         </td>
                         <td><?= (int)$step['sort_order'] ?></td>
-                        <td><?php if (current_user_can('journeys.manage')): ?><a class="button secondary" href="/admin/step_edit.php?id=<?= (int)$step['id'] ?>">Edit</a><?php endif; ?></td>
+                        <td>
+                            <?php if (current_user_can('journeys.manage')): ?>
+                                <div class="admin-step-actions">
+                                    <form class="inline-form" method="post" action="/admin/journey_action.php">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="move_step">
+                                        <input type="hidden" name="direction" value="up">
+                                        <input type="hidden" name="step_id" value="<?= (int)$step['id'] ?>">
+                                        <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                                        <button class="button secondary icon-button" type="submit" title="Move step up">↑</button>
+                                    </form>
+                                    <form class="inline-form" method="post" action="/admin/journey_action.php">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="move_step">
+                                        <input type="hidden" name="direction" value="down">
+                                        <input type="hidden" name="step_id" value="<?= (int)$step['id'] ?>">
+                                        <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                                        <button class="button secondary icon-button" type="submit" title="Move step down">↓</button>
+                                    </form>
+                                    <form class="inline-form" method="post" action="/admin/journey_action.php">
+                                        <?= csrf_field() ?>
+                                        <input type="hidden" name="action" value="duplicate_step">
+                                        <input type="hidden" name="step_id" value="<?= (int)$step['id'] ?>">
+                                        <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
+                                        <button class="button secondary" type="submit">Copy</button>
+                                    </form>
+                                    <a class="button secondary" href="/admin/step_edit.php?id=<?= (int)$step['id'] ?>">Edit</a>
+                                </div>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

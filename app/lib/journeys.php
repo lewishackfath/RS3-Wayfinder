@@ -492,3 +492,267 @@ function rule_summary(array $step): string
     }
     return 'Manual progress';
 }
+
+
+
+function normalise_sort_orders_for_chapters(int $journeyId): void
+{
+    $chapters = chapters_for_journey($journeyId);
+    $sort = 10;
+    $stmt = db()->prepare('UPDATE journey_chapters SET sort_order = ? WHERE id = ?');
+    foreach ($chapters as $chapter) {
+        $stmt->execute([$sort, (int)$chapter['id']]);
+        $sort += 10;
+    }
+}
+
+function normalise_sort_orders_for_steps(int $chapterId): void
+{
+    $steps = steps_for_chapter($chapterId);
+    $sort = 10;
+    $stmt = db()->prepare('UPDATE journey_steps SET sort_order = ? WHERE id = ?');
+    foreach ($steps as $step) {
+        $stmt->execute([$sort, (int)$step['id']]);
+        $sort += 10;
+    }
+}
+
+function move_chapter(int $chapterId, string $direction): void
+{
+    $chapter = chapter_by_id($chapterId);
+    if (!$chapter) {
+        throw new InvalidArgumentException('Chapter not found.');
+    }
+
+    normalise_sort_orders_for_chapters((int)$chapter['journey_id']);
+    $chapters = chapters_for_journey((int)$chapter['journey_id']);
+    $index = null;
+    foreach ($chapters as $i => $row) {
+        if ((int)$row['id'] === $chapterId) {
+            $index = $i;
+            break;
+        }
+    }
+    if ($index === null) {
+        return;
+    }
+
+    $swapIndex = $direction === 'up' ? $index - 1 : $index + 1;
+    if (!isset($chapters[$swapIndex])) {
+        return;
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $a = $chapters[$index];
+        $b = $chapters[$swapIndex];
+        $pdo->prepare('UPDATE journey_chapters SET sort_order = ? WHERE id = ?')->execute([(int)$b['sort_order'], (int)$a['id']]);
+        $pdo->prepare('UPDATE journey_chapters SET sort_order = ? WHERE id = ?')->execute([(int)$a['sort_order'], (int)$b['id']]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function move_step(int $stepId, string $direction): void
+{
+    $step = step_by_id($stepId);
+    if (!$step) {
+        throw new InvalidArgumentException('Step not found.');
+    }
+
+    normalise_sort_orders_for_steps((int)$step['chapter_id']);
+    $steps = steps_for_chapter((int)$step['chapter_id']);
+    $index = null;
+    foreach ($steps as $i => $row) {
+        if ((int)$row['id'] === $stepId) {
+            $index = $i;
+            break;
+        }
+    }
+    if ($index === null) {
+        return;
+    }
+
+    $swapIndex = $direction === 'up' ? $index - 1 : $index + 1;
+    if (!isset($steps[$swapIndex])) {
+        return;
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $a = $steps[$index];
+        $b = $steps[$swapIndex];
+        $pdo->prepare('UPDATE journey_steps SET sort_order = ? WHERE id = ?')->execute([(int)$b['sort_order'], (int)$a['id']]);
+        $pdo->prepare('UPDATE journey_steps SET sort_order = ? WHERE id = ?')->execute([(int)$a['sort_order'], (int)$b['id']]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function duplicate_journey(int $journeyId): int
+{
+    $journey = journey_by_id($journeyId);
+    if (!$journey) {
+        throw new InvalidArgumentException('Journey not found.');
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $newJourneyId = create_journey(
+            (string)$journey['name'] . ' Copy',
+            '',
+            (string)($journey['description'] ?? ''),
+            (string)($journey['icon'] ?? '🧭'),
+            false,
+            (int)$journey['sort_order'] + 10
+        );
+
+        $stepMap = [];
+        foreach (chapters_for_journey($journeyId) as $chapter) {
+            $newChapterId = create_chapter(
+                $newJourneyId,
+                (string)$chapter['title'],
+                (string)($chapter['description'] ?? ''),
+                (int)$chapter['sort_order']
+            );
+
+            foreach (steps_for_chapter((int)$chapter['id']) as $step) {
+                $newStepId = create_step(
+                    $newChapterId,
+                    (string)$step['title'],
+                    (string)($step['description'] ?? ''),
+                    (string)$step['completion_mode'],
+                    (string)($step['auto_rule_type'] ?? ''),
+                    $step['rule_skill_name'] ?? null,
+                    isset($step['rule_level']) ? (int)$step['rule_level'] : null,
+                    $step['rule_quest_title'] ?? null,
+                    (int)$step['sort_order'],
+                    !empty($step['is_optional']),
+                    null
+                );
+                $stepMap[(int)$step['id']] = $newStepId;
+            }
+        }
+
+        foreach (chapters_for_journey($journeyId) as $chapter) {
+            foreach (steps_for_chapter((int)$chapter['id']) as $step) {
+                $oldRequires = (int)($step['requires_step_id'] ?? 0);
+                if ($oldRequires && isset($stepMap[$oldRequires], $stepMap[(int)$step['id']])) {
+                    db()->prepare('UPDATE journey_steps SET requires_step_id = ? WHERE id = ?')->execute([$stepMap[$oldRequires], $stepMap[(int)$step['id']]]);
+                }
+            }
+        }
+
+        $pdo->commit();
+        return $newJourneyId;
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function duplicate_chapter(int $chapterId): int
+{
+    $chapter = chapter_by_id($chapterId);
+    if (!$chapter) {
+        throw new InvalidArgumentException('Chapter not found.');
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $newChapterId = create_chapter(
+            (int)$chapter['journey_id'],
+            (string)$chapter['title'] . ' Copy',
+            (string)($chapter['description'] ?? ''),
+            (int)$chapter['sort_order'] + 10
+        );
+
+        $stepMap = [];
+        foreach (steps_for_chapter($chapterId) as $step) {
+            $newStepId = create_step(
+                $newChapterId,
+                (string)$step['title'],
+                (string)($step['description'] ?? ''),
+                (string)$step['completion_mode'],
+                (string)($step['auto_rule_type'] ?? ''),
+                $step['rule_skill_name'] ?? null,
+                isset($step['rule_level']) ? (int)$step['rule_level'] : null,
+                $step['rule_quest_title'] ?? null,
+                (int)$step['sort_order'],
+                !empty($step['is_optional']),
+                null
+            );
+            $stepMap[(int)$step['id']] = $newStepId;
+        }
+
+        foreach (steps_for_chapter($chapterId) as $step) {
+            $oldRequires = (int)($step['requires_step_id'] ?? 0);
+            if ($oldRequires && isset($stepMap[$oldRequires], $stepMap[(int)$step['id']])) {
+                db()->prepare('UPDATE journey_steps SET requires_step_id = ? WHERE id = ?')->execute([$stepMap[$oldRequires], $stepMap[(int)$step['id']]]);
+            }
+        }
+
+        $pdo->commit();
+        return $newChapterId;
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function duplicate_step(int $stepId): int
+{
+    $step = step_by_id($stepId);
+    if (!$step) {
+        throw new InvalidArgumentException('Step not found.');
+    }
+
+    return create_step(
+        (int)$step['chapter_id'],
+        (string)$step['title'] . ' Copy',
+        (string)($step['description'] ?? ''),
+        (string)$step['completion_mode'],
+        (string)($step['auto_rule_type'] ?? ''),
+        $step['rule_skill_name'] ?? null,
+        isset($step['rule_level']) ? (int)$step['rule_level'] : null,
+        $step['rule_quest_title'] ?? null,
+        (int)$step['sort_order'] + 10,
+        !empty($step['is_optional']),
+        (int)($step['requires_step_id'] ?? 0) ?: null
+    );
+}
+
+function apply_step_template_values(string $template, array $current = []): array
+{
+    $values = $current;
+
+    if ($template === 'skill_level') {
+        $values['completion_mode'] = $values['completion_mode'] ?? 'auto_only';
+        $values['auto_rule_type'] = 'skill_level';
+        $values['title'] = $values['title'] ?: 'Reach level X in Skill';
+    } elseif ($template === 'quest_complete') {
+        $values['completion_mode'] = $values['completion_mode'] ?? 'auto_or_manual';
+        $values['auto_rule_type'] = 'quest_complete';
+        $values['title'] = $values['title'] ?: 'Complete Quest Name';
+    } elseif ($template === 'manual_unlock') {
+        $values['completion_mode'] = 'manual_only';
+        $values['auto_rule_type'] = '';
+        $values['title'] = $values['title'] ?: 'Unlock something useful';
+    } elseif ($template === 'optional_goal') {
+        $values['completion_mode'] = 'manual_only';
+        $values['auto_rule_type'] = '';
+        $values['is_optional'] = 1;
+        $values['title'] = $values['title'] ?: 'Optional goal';
+    }
+
+    return $values;
+}
+

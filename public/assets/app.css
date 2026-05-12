@@ -671,3 +671,54 @@ code {
     border-color: rgba(255,90,90,.35);
     color: #ffb4b4;
 }
+
+
+/* Journey admin quality-of-life tools */
+.inline-form {
+    display: inline-block;
+    margin: 0;
+}
+
+.icon-button {
+    min-width: 2.4rem;
+    padding-left: .65rem;
+    padding-right: .65rem;
+}
+
+.admin-step-actions {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    flex-wrap: wrap;
+}
+
+.step-template-toolbar {
+    margin-bottom: 1rem;
+}
+
+.step-template-toolbar h2 {
+    margin-top: 0;
+}
+
+.dashboard-hero-card {
+    text-align: left;
+}
+
+.dashboard-logo-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-logo {
+    max-width: min(480px, 90%);
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 14px 34px rgba(0,0,0,.28));
+}
+
+@media (max-width: 760px) {
+    .admin-step-actions {
+        justify-content: flex-start;
+    }
+}

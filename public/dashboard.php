@@ -31,7 +31,10 @@ if ($active) {
     }
 }
 ?>
-<div class="card">
+<div class="card dashboard-hero-card">
+    <div class="dashboard-logo-wrap">
+        <img class="dashboard-logo" src="/assets/branding/logo.png" alt="RS3 Wayfinder">
+    </div>
     <h1>Welcome, <?= e($user['global_name'] ?: $user['username']) ?></h1>
     <p class="muted">Your account is active. Add RSN profiles and Wayfinder will collect RuneMetrics profile and quest data when each profile is viewed.</p>
     <?php if ($syncNotice): ?><div class="notice"><?= e($syncNotice) ?></div><?php endif; ?>

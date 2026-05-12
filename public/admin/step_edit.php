@@ -56,6 +56,17 @@ $skills = runemetrics_skill_names();
 $selectedMode = (string)($_POST['completion_mode'] ?? $step['completion_mode'] ?? 'manual_only');
 $selectedRule = (string)($_POST['auto_rule_type'] ?? $step['auto_rule_type'] ?? '');
 $selectedSkill = (string)($_POST['rule_skill_name'] ?? $step['rule_skill_name'] ?? '');
+$template = (string)($_GET['template'] ?? '');
+if (!$id && !$_POST && $template !== '') {
+    $_POST = apply_step_template_values($template, [
+        'title' => '',
+        'completion_mode' => '',
+        'auto_rule_type' => '',
+        'is_optional' => 0,
+    ]);
+    $selectedMode = (string)($_POST['completion_mode'] ?? $selectedMode);
+    $selectedRule = (string)($_POST['auto_rule_type'] ?? $selectedRule);
+}
 $prereqOptions = prerequisite_options_for_journey((int)$chapter['journey_id'], $id ?: null);
 $selectedRequiresStepId = (int)($_POST['requires_step_id'] ?? $step['requires_step_id'] ?? 0);
 $isOptional = !empty($_POST['is_optional']) || (!$_POST && !empty($step['is_optional']));
@@ -70,6 +81,19 @@ page_header($id ? 'Edit Step' : 'Create Step');
 </div>
 
 <?php if ($error): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
+
+<?php if (!$id): ?>
+    <div class="card step-template-toolbar">
+        <h2>Start with a template</h2>
+        <p class="muted">Templates pre-fill the completion behaviour for common step types.</p>
+        <div class="form-actions">
+            <a class="button secondary" href="/admin/step_edit.php?chapter_id=<?= (int)$chapterId ?>&template=skill_level">Skill level step</a>
+            <a class="button secondary" href="/admin/step_edit.php?chapter_id=<?= (int)$chapterId ?>&template=quest_complete">Quest completion step</a>
+            <a class="button secondary" href="/admin/step_edit.php?chapter_id=<?= (int)$chapterId ?>&template=manual_unlock">Manual unlock step</a>
+            <a class="button secondary" href="/admin/step_edit.php?chapter_id=<?= (int)$chapterId ?>&template=optional_goal">Optional goal</a>
+        </div>
+    </div>
+<?php endif; ?>
 
 <form class="card form-card enhanced-form" method="post">
     <?= csrf_field() ?>
