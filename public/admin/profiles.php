@@ -212,7 +212,7 @@ page_header('Manage Profiles');
 <td><?= e($profile['created_at']) ?></td>
 <td>
     <div class="admin-action-stack">
-        <a class="button secondary" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>">View</a>
+        <a class="button secondary" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>&admin=1">View</a>
         <?php if (current_user_can('profiles.delete')): ?>
         <form method="post" class="inline-form" onsubmit="return confirm('Delete this profile? This cannot be undone.');">
             <?= csrf_field() ?>

@@ -253,7 +253,7 @@ page_header('Manage Users');
         <?php else: ?>
             <div class="admin-linked-profile-grid">
                 <?php foreach ($linkedProfiles as $profile): ?>
-                    <a class="admin-linked-profile-card" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>">
+                    <a class="admin-linked-profile-card" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>&admin=1">
                         <img class="profile-avatar tiny" src="<?= e(runescape_avatar_url((string)$profile['rsn'])) ?>" alt="Avatar for <?= e($profile['rsn']) ?>" loading="lazy" referrerpolicy="no-referrer">
                         <div>
                             <strong><?= e($profile['display_name'] ?: $profile['rsn']) ?></strong>

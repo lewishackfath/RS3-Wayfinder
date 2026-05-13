@@ -3,11 +3,39 @@ require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/app/layout.php';
 require_login();
 $user = current_user();
+$userId = (int)$user['id'];
 $profileId = isset($_GET['id']) ? (int)$_GET['id'] : (active_profile_id() ?? 0);
-$profile = $profileId ? profile_for_user($profileId, (int)$user['id']) : active_profile();
+$isAdminRequest = (($_GET['admin'] ?? '') === '1');
+$isAdminProfileView = false;
+$profile = null;
+
+if ($profileId > 0) {
+    // Admin profile views can inspect any player profile by ID without changing
+    // the currently active RSN/profile for the logged-in admin user. The admin
+    // flag also keeps the admin back-link when an admin views their own profile.
+    if ($isAdminRequest && current_user_can('profiles.view')) {
+        $profile = profile_by_id($profileId);
+        $isAdminProfileView = $profile !== null;
+    }
+
+    if (!$profile) {
+        $profile = profile_for_user($profileId, $userId);
+    }
+
+    if (!$profile && current_user_can('profiles.view')) {
+        $profile = profile_by_id($profileId);
+        $isAdminProfileView = $profile !== null;
+    }
+} else {
+    $profile = active_profile();
+}
+
 if (!$profile) {
     redirect('/profiles/index.php');
 }
+
+$adminQuery = $isAdminProfileView ? '&admin=1' : '';
+$backUrl = $isAdminProfileView ? '/admin/profiles.php' : '/profiles/index.php';
 
 $notice = null;
 $syncResult = null;
@@ -16,7 +44,7 @@ if (($_GET['refresh'] ?? '') === '1') {
         abort_page(400, 'Invalid security token.');
     }
     $syncResult = runemetrics_sync_profile_if_due($profile);
-    $profile = profile_for_user((int)$profile['id'], (int)$user['id']) ?: $profile;
+    $profile = ($isAdminProfileView ? profile_by_id((int)$profile['id']) : profile_for_user((int)$profile['id'], $userId)) ?: $profile;
     if (($syncResult['skipped'] ?? false) === true) {
         $mins = (int)ceil(($syncResult['seconds_until_sync'] ?? 0) / 60);
         $notice = 'RuneMetrics was not refreshed because this profile is still on cooldown. Try again in about ' . $mins . ' minute' . ($mins === 1 ? '' : 's') . '.';
@@ -28,7 +56,7 @@ if (($_GET['refresh'] ?? '') === '1') {
 } else {
     try {
         $syncResult = runemetrics_sync_profile_if_due($profile);
-        $profile = profile_for_user((int)$profile['id'], (int)$user['id']) ?: $profile;
+        $profile = ($isAdminProfileView ? profile_by_id((int)$profile['id']) : profile_for_user((int)$profile['id'], $userId)) ?: $profile;
     } catch (Throwable $e) {
         $notice = is_debug() ? $e->getMessage() : 'RuneMetrics sync failed. Existing cached data is shown where available.';
     }
@@ -62,10 +90,11 @@ page_header('Profile Data');
     <div>
         <h1><?= e($profile['rsn']) ?></h1>
         <p class="muted">RuneMetrics profile and quest data. This syncs on page load only when the profile cache is older than 15 minutes.</p>
+        <?php if ($isAdminProfileView): ?><p class="muted small">Admin view: viewing this profile without switching your active RSN.</p><?php endif; ?>
     </div>
     <div class="form-actions">
-        <a class="button secondary" href="/profiles/index.php">Back to profiles</a>
-        <a class="button" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>&refresh=1&csrf_token=<?= e(csrf_token()) ?>">Refresh data</a>
+        <a class="button secondary" href="<?= e($backUrl) ?>"><?= $isAdminProfileView ? 'Back to admin profiles' : 'Back to profiles' ?></a>
+        <a class="button" href="/profiles/view.php?id=<?= (int)$profile['id'] ?>&refresh=1<?= e($adminQuery) ?>&csrf_token=<?= e(csrf_token()) ?>">Refresh data</a>
     </div>
 </div>
 
