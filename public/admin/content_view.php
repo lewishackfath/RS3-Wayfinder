@@ -71,9 +71,9 @@ $questOptions = content_items_for_select('quest');
 $skills = runemetrics_skill_names();
 $achievementOptions = content_items_for_select('achievement');
 $bossOptions = content_items_for_select('boss');
-$dropOptions = array_merge(content_items_for_select('drop'), content_items_for_select('item'));
+$dropOptions = content_items_for_select('item');
 $bossDrops = $item['type'] === 'boss' ? boss_drop_sources_for_boss($id) : [];
-$dropSources = in_array($item['type'], ['drop','item'], true) ? boss_sources_for_drop($id) : [];
+$dropSources = $item['type'] === 'item' ? boss_sources_for_drop($id) : [];
 
 page_header('Manage Content');
 ?>
@@ -342,12 +342,12 @@ page_header('Manage Content');
 <?php if (!empty($typeConfig['allow_boss_drop_links']) && $item['type'] === 'boss'): ?>
     <div class="card">
         <h2>Boss Drop Sources</h2>
-        <p class="muted">Drops are reusable content items. The same drop can be linked to multiple bosses.</p>
+        <p class="muted">Items are reusable content records. The same item can be linked to multiple bosses.</p>
         <?php if (!$bossDrops): ?>
-            <p class="muted">No drops configured for this boss.</p>
+            <p class="muted">No items configured for this boss.</p>
         <?php else: ?>
             <table class="table">
-                <thead><tr><th>Drop</th><th>Rarity</th><th>Quantity</th><th>Notes</th><th></th></tr></thead>
+                <thead><tr><th>Item</th><th>Rarity</th><th>Quantity</th><th>Notes</th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($bossDrops as $source): ?>
                     <tr>
@@ -375,7 +375,7 @@ page_header('Manage Content');
             <form method="post" class="mini-admin-form">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="add_boss_drop_source">
-                <label>Drop / Item
+                <label>Item
                     <select name="drop_content_item_id" class="searchable-select">
                         <?php foreach ($dropOptions as $drop): ?><option value="<?= (int)$drop['id'] ?>"><?= e($drop['name']) ?></option><?php endforeach; ?>
                     </select>
@@ -386,13 +386,13 @@ page_header('Manage Content');
                     <label>Sort order <input type="number" name="sort_order" value="0"></label>
                 </div>
                 <label>Notes <input name="notes"></label>
-                <button class="button secondary" type="submit">Add drop source</button>
+                <button class="button secondary" type="submit">Add item source</button>
             </form>
         <?php endif; ?>
     </div>
 <?php endif; ?>
 
-<?php if (in_array($item['type'], ['drop','item'], true)): ?>
+<?php if ($item['type'] === 'item'): ?>
     <div class="card">
         <h2>Dropped By</h2>
         <?php if (!$dropSources): ?>

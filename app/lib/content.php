@@ -8,7 +8,6 @@ function content_types(): array
         'achievement' => 'Achievement',
         'task' => 'Task',
         'boss' => 'Boss',
-        'drop' => 'Drop (legacy)',
         'unlock' => 'Unlock',
         'item' => 'Item',
     ];
@@ -78,7 +77,7 @@ function content_items(array $filters = []): array
     if ($where) {
         $sql .= ' WHERE ' . implode(' AND ', $where);
     }
-    $sql .= ' ORDER BY FIELD(type, "quest","achievement","task","boss","item","drop","unlock"), name ASC LIMIT 500';
+    $sql .= ' ORDER BY FIELD(type, "quest","achievement","task","boss","item","unlock"), name ASC LIMIT 500';
 
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
@@ -113,10 +112,6 @@ function create_content_item(string $type, string $name, string $description, st
     $stmt->execute([$type, $name, $slug, trim($description), trim($category), trim($sourceUrl), trim($iconUrl), $isActive ? 1 : 0]);
     $id = (int)db()->lastInsertId();
 
-    if (in_array($type, ['drop', 'item'], true)) {
-        upsert_drop_item($id, $name, $sourceUrl, $iconUrl, '');
-    }
-
     return $id;
 }
 
@@ -137,18 +132,6 @@ function update_content_item(int $id, string $type, string $name, string $descri
     $slug = content_unique_slug($name, $id);
     db()->prepare('UPDATE content_items SET type = ?, name = ?, slug = ?, description = ?, category = ?, source_url = ?, icon_url = ?, is_active = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')
         ->execute([$type, $name, $slug, trim($description), trim($category), trim($sourceUrl), trim($iconUrl), $isActive ? 1 : 0, $id]);
-
-    if (in_array($type, ['drop', 'item'], true)) {
-        upsert_drop_item($id, $name, $sourceUrl, $iconUrl, '');
-    }
-}
-
-function upsert_drop_item(int $contentItemId, string $itemName, string $wikiUrl, string $iconUrl, string $notes): void
-{
-    db()->prepare('INSERT INTO drop_items (content_item_id, item_name, wiki_url, icon_url, notes)
-        VALUES (?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE item_name = VALUES(item_name), wiki_url = VALUES(wiki_url), icon_url = VALUES(icon_url), notes = VALUES(notes), updated_at = UTC_TIMESTAMP()')
-        ->execute([$contentItemId, trim($itemName), trim($wikiUrl), trim($iconUrl), trim($notes)]);
 }
 
 function delete_content_item(int $id): void
@@ -228,8 +211,8 @@ function add_boss_drop_source(int $bossContentItemId, int $dropContentItemId, st
     if (!$boss || $boss['type'] !== 'boss') {
         throw new InvalidArgumentException('Boss content item is invalid.');
     }
-    if (!$drop || !in_array($drop['type'], ['drop','item'], true)) {
-        throw new InvalidArgumentException('Drop content item is invalid.');
+    if (!$drop || $drop['type'] !== 'item') {
+        throw new InvalidArgumentException('Item content record is invalid.');
     }
 
     db()->prepare('INSERT INTO boss_drop_sources (boss_content_item_id, drop_content_item_id, rarity, quantity, notes, sort_order)

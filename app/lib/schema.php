@@ -317,7 +317,7 @@ function bootstrap_schema(): void
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS content_items (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        type ENUM('quest','achievement','task','boss','drop','unlock','item') NOT NULL,
+        type ENUM('quest','achievement','task','boss','unlock','item') NOT NULL,
         name VARCHAR(220) NOT NULL,
         slug VARCHAR(240) NOT NULL UNIQUE,
         description TEXT NULL,
@@ -396,17 +396,6 @@ function bootstrap_schema(): void
         INDEX idx_content_relationship_target (target_content_item_id),
         CONSTRAINT fk_content_relationship_source FOREIGN KEY (source_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
         CONSTRAINT fk_content_relationship_target FOREIGN KEY (target_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS drop_items (
-        content_item_id BIGINT UNSIGNED PRIMARY KEY,
-        item_name VARCHAR(220) NOT NULL,
-        wiki_url TEXT NULL,
-        icon_url TEXT NULL,
-        notes TEXT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        CONSTRAINT fk_drop_items_content FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS boss_drop_sources (
@@ -528,6 +517,24 @@ function run_schema_migrations(): void
         }
     });
 
+
+    run_once_migration('20260513_remove_legacy_drop_content', function (PDO $pdo): void {
+        // Convert legacy content records before narrowing the ENUM.
+        $pdo->exec("UPDATE content_items SET type = 'item' WHERE type = 'drop'");
+        $pdo->exec("DELETE FROM content_type_configs WHERE type_slug = 'drop'");
+
+        // Remove the old drop_items metadata table. Item metadata now lives on content_items/custom fields.
+        $pdo->exec("DROP TABLE IF EXISTS drop_items");
+
+        // Narrow the content_items.type enum so legacy drops cannot be created again.
+        try {
+            $pdo->exec("ALTER TABLE content_items MODIFY type ENUM('quest','achievement','task','boss','unlock','item') NOT NULL");
+        } catch (Throwable $e) {
+            // Some MySQL/MariaDB installs can reject enum changes while old constraints/indexes are being repaired.
+            // The application-level type list still prevents new drop records.
+        }
+    });
+
     run_once_migration('20260512_smart_journey_step_fields', function (PDO $pdo): void {
         $cols = $pdo->query("SHOW COLUMNS FROM journey_steps")->fetchAll(PDO::FETCH_COLUMN);
         if (!in_array('is_optional', $cols, true)) {
@@ -590,9 +597,6 @@ function seed_content_type_configs(): void
         ['item', 'Item', 'Reusable items, drops, unlocks and collection log entries.', 1, 1, 1, 0, 0, json_encode([
             ['key' => 'item_source', 'label' => 'Item Source', 'type' => 'text', 'placeholder' => 'Boss drop / skilling / shop / quest reward'],
         ]), 50],
-        ['drop', 'Drop (legacy)', 'Legacy alias kept for older drop-log records. Prefer Item for new entries.', 1, 1, 1, 0, 0, json_encode([
-            ['key' => 'item_source', 'label' => 'Item Source', 'type' => 'text', 'placeholder' => 'Boss drop / skilling / shop / quest reward'],
-        ]), 60],
         ['unlock', 'Unlock', 'Unlockable features, areas, abilities and account access.', 1, 1, 1, 0, 0, json_encode([]), 70],
     ];
 
@@ -647,7 +651,7 @@ function seed_permissions_and_roles(): void
         ['journeys.delete.all', 'Delete all journeys', 'Allows deleting any journey regardless of creator.'],
         ['journeys.edit.all', 'Edit all journeys', 'Allows editing any journey regardless of creator.'],
         ['content.view', 'View content library', 'Allows viewing the admin content library.'],
-        ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses and drops.'],
+        ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses and items.'],
         ['content.delete', 'Delete non-quest content library items', 'Allows deleting content library items except quests.'],
         ['users.manage', 'Manage users', 'Allows blocking, banning and deleting users.'],
         ['profiles.delete', 'Delete player profiles', 'Allows deleting player profiles.'],
