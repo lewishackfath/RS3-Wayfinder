@@ -1028,18 +1028,15 @@ code {
 }
 
 
-/* Click-to-open admin dropdown */
-.nav-dropdown:hover .nav-dropdown-menu {
-    display: none;
-}
-
-.nav-dropdown.is-open .nav-dropdown-menu,
+/* Hover admin dropdown */
+.nav-dropdown:hover .nav-dropdown-menu,
 .nav-dropdown:focus-within .nav-dropdown-menu {
     display: grid;
     gap: .2rem;
 }
 
-.nav-dropdown.is-open .nav-dropdown-toggle {
+.nav-dropdown:hover .nav-dropdown-toggle,
+.nav-dropdown:focus-within .nav-dropdown-toggle {
     background: rgba(255,255,255,.08);
 }
 
