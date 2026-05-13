@@ -517,14 +517,48 @@ function update_content_type_config(string $type, array $data): void
     if (!isset(content_types()[$type])) {
         throw new InvalidArgumentException('Invalid content type.');
     }
+
     $fields = [];
-    foreach ((string)($data['custom_fields_text'] ?? '') === '' ? [] : preg_split('/\R/', (string)$data['custom_fields_text']) as $line) {
-        $line = trim($line);
-        if ($line === '') continue;
-        [$key, $label, $fieldType, $placeholder] = array_pad(array_map('trim', explode('|', $line, 4)), 4, '');
-        $key = preg_replace('/[^a-z0-9_]+/', '_', strtolower($key)) ?: '';
-        if ($key === '' || $label === '') continue;
-        $fields[] = ['key' => $key, 'label' => $label, 'type' => in_array($fieldType, ['text','textarea','url','number'], true) ? $fieldType : 'text', 'placeholder' => $placeholder];
+    $allowedFieldTypes = ['text', 'textarea', 'url', 'number'];
+
+    if (isset($data['custom_field_key']) && is_array($data['custom_field_key'])) {
+        $keys = $data['custom_field_key'];
+        $labels = is_array($data['custom_field_label'] ?? null) ? $data['custom_field_label'] : [];
+        $types = is_array($data['custom_field_type'] ?? null) ? $data['custom_field_type'] : [];
+        $placeholders = is_array($data['custom_field_placeholder'] ?? null) ? $data['custom_field_placeholder'] : [];
+
+        foreach ($keys as $index => $rawKey) {
+            $key = preg_replace('/[^a-z0-9_]+/', '_', strtolower(trim((string)$rawKey))) ?: '';
+            $label = trim((string)($labels[$index] ?? ''));
+            $fieldType = trim((string)($types[$index] ?? 'text'));
+            $placeholder = trim((string)($placeholders[$index] ?? ''));
+
+            if ($key === '' || $label === '') {
+                continue;
+            }
+
+            $fields[] = [
+                'key' => $key,
+                'label' => $label,
+                'type' => in_array($fieldType, $allowedFieldTypes, true) ? $fieldType : 'text',
+                'placeholder' => $placeholder,
+            ];
+        }
+    } else {
+        // Backwards-compatible parser for older textarea-based submissions.
+        foreach ((string)($data['custom_fields_text'] ?? '') === '' ? [] : preg_split('/\R/', (string)$data['custom_fields_text']) as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+            [$key, $label, $fieldType, $placeholder] = array_pad(array_map('trim', explode('|', $line, 4)), 4, '');
+            $key = preg_replace('/[^a-z0-9_]+/', '_', strtolower($key)) ?: '';
+            if ($key === '' || $label === '') continue;
+            $fields[] = [
+                'key' => $key,
+                'label' => $label,
+                'type' => in_array($fieldType, $allowedFieldTypes, true) ? $fieldType : 'text',
+                'placeholder' => $placeholder,
+            ];
+        }
     }
 
     db()->prepare('INSERT INTO content_type_configs

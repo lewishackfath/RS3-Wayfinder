@@ -1810,3 +1810,117 @@ textarea[readonly] {
         height: 72px;
     }
 }
+
+/* Content type settings accordion */
+.content-type-accordion {
+    display: grid;
+    gap: 1rem;
+}
+
+.content-type-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.content-type-panel[open] {
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.content-type-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.content-type-summary::-webkit-details-marker {
+    display: none;
+}
+
+.content-type-summary::after {
+    content: '▾';
+    opacity: 0.7;
+    transition: transform 160ms ease;
+}
+
+.content-type-panel[open] > .content-type-summary::after {
+    transform: rotate(180deg);
+}
+
+.content-type-summary span:first-child {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.content-type-summary small {
+    color: var(--muted, #9ca3af);
+    font-weight: 500;
+}
+
+.content-type-form {
+    padding: 0 1.15rem 1.15rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.section-title-row h3,
+.settings-section h3 {
+    margin: 0 0 0.25rem;
+}
+
+.requirements-grid {
+    align-items: stretch;
+}
+
+.custom-fields-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.custom-fields-table th,
+.custom-fields-table td {
+    vertical-align: middle;
+}
+
+.custom-fields-table input,
+.custom-fields-table select {
+    min-width: 150px;
+    width: 100%;
+}
+
+.custom-fields-table .action-col {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.small-button {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+}
+
+.button.ghost {
+    background: transparent;
+    box-shadow: none;
+}
+
+.badge.muted-badge {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--muted, #9ca3af);
+}
