@@ -1539,3 +1539,48 @@ textarea[readonly] {
     opacity: .72;
     cursor: wait;
 }
+
+/* Account management */
+.account-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, .8fr);
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+.account-summary-card,
+.account-danger-card {
+    min-height: 100%;
+}
+.inline-title-row {
+    margin-bottom: 1rem;
+}
+.nested-card {
+    background: rgba(255,255,255,.035);
+    box-shadow: none;
+}
+.account-profile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+.profile-interest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin: .85rem 0 1rem;
+}
+.wrap-actions {
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+.compact-form {
+    margin-top: 1.25rem;
+}
+.compact-empty {
+    padding: 1.5rem;
+}
+.subtle-danger {
+    opacity: .9;
+}
+@media (max-width: 840px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+}

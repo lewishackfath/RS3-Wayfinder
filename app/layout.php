@@ -9,7 +9,7 @@ function page_header(string $title): void
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
         echo '<a href="/dashboard.php">Dashboard</a>';
-        echo '<a href="/profiles/index.php">Profiles</a>';
+        echo '<a href="/account/index.php">Account</a>';
         echo '<a href="/journeys/index.php">Journeys</a>';
 
         $profiles = profiles_for_user((int)$user['id']);

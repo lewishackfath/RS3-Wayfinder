@@ -14,6 +14,7 @@ function bootstrap_schema(): void
         discord_id VARCHAR(32) NOT NULL UNIQUE,
         username VARCHAR(100) NOT NULL,
         global_name VARCHAR(100) NULL,
+        nickname VARCHAR(100) NULL,
         discriminator VARCHAR(10) NULL,
         avatar_hash VARCHAR(128) NULL,
         email VARCHAR(255) NULL,
@@ -456,6 +457,15 @@ function run_schema_migrations(): void
             } catch (Throwable $e) {
                 // Column and index are enough for permission-aware screens.
             }
+        }
+    });
+
+
+
+    run_once_migration('20260513_user_nickname', function (PDO $pdo): void {
+        $cols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('nickname', $cols, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN nickname VARCHAR(100) NULL AFTER global_name");
         }
     });
 
