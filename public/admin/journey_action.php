@@ -46,7 +46,16 @@ try {
 
     require_journey_edit_access($backJourneyId);
 
-    if ($action === 'duplicate_chapter') {
+    if ($action === 'reorder_chapters') {
+        reorder_chapters_for_journey($backJourneyId, is_array($_POST['chapter_ids'] ?? null) ? $_POST['chapter_ids'] : []);
+    } elseif ($action === 'reorder_steps') {
+        $chapterId = (int)($_POST['chapter_id'] ?? 0);
+        $chapter = chapter_by_id($chapterId);
+        if (!$chapter || (int)$chapter['journey_id'] !== $backJourneyId) {
+            throw new InvalidArgumentException('Chapter not found for this journey.');
+        }
+        reorder_steps_for_chapter($chapterId, is_array($_POST['step_ids'] ?? null) ? $_POST['step_ids'] : []);
+    } elseif ($action === 'duplicate_chapter') {
         duplicate_chapter((int)($_POST['chapter_id'] ?? 0));
     } elseif ($action === 'duplicate_step') {
         duplicate_step((int)($_POST['step_id'] ?? 0));

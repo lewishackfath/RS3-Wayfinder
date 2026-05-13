@@ -1467,3 +1467,75 @@ textarea[readonly] {
 .journey-filter-form {
     align-items: end;
 }
+
+
+/* Drag-and-drop journey ordering */
+.drag-order-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.journey-chapter-card,
+.drag-steps-table tbody tr {
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, opacity .16s ease, background .16s ease;
+}
+
+.journey-chapter-card.is-dragging,
+.drag-steps-table tbody tr.is-dragging {
+    opacity: .56;
+    transform: scale(.995);
+    border-color: rgba(139,213,255,.42);
+    box-shadow: 0 18px 48px rgba(0,0,0,.32);
+}
+
+.journey-chapter-card.drag-over,
+.drag-steps-table tbody tr.drag-over {
+    outline: 2px dashed rgba(139,213,255,.45);
+    outline-offset: 4px;
+}
+
+.drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin-right: .5rem;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 999px;
+    background: rgba(255,255,255,.075);
+    color: var(--muted);
+    cursor: grab;
+    user-select: none;
+    vertical-align: middle;
+}
+
+.drag-handle:hover,
+.drag-handle:focus {
+    color: var(--text);
+    border-color: rgba(139,213,255,.32);
+    background: rgba(139,213,255,.12);
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.drag-column {
+    width: 2.8rem;
+    text-align: center;
+}
+
+.drag-section-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 .8rem;
+}
+
+.drag-save-button[disabled] {
+    opacity: .72;
+    cursor: wait;
+}

@@ -608,6 +608,85 @@ function normalise_sort_orders_for_steps(int $chapterId): void
     }
 }
 
+
+function reorder_chapters_for_journey(int $journeyId, array $chapterIds): void
+{
+    if ($journeyId <= 0) {
+        throw new InvalidArgumentException('Journey not found.');
+    }
+
+    $existing = chapters_for_journey($journeyId);
+    $existingIds = array_map(static fn(array $chapter): int => (int)$chapter['id'], $existing);
+    $requestedIds = [];
+
+    foreach ($chapterIds as $chapterId) {
+        $chapterId = (int)$chapterId;
+        if ($chapterId > 0 && in_array($chapterId, $existingIds, true) && !in_array($chapterId, $requestedIds, true)) {
+            $requestedIds[] = $chapterId;
+        }
+    }
+
+    foreach ($existingIds as $chapterId) {
+        if (!in_array($chapterId, $requestedIds, true)) {
+            $requestedIds[] = $chapterId;
+        }
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare('UPDATE journey_chapters SET sort_order = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND journey_id = ?');
+        $sort = 10;
+        foreach ($requestedIds as $chapterId) {
+            $stmt->execute([$sort, $chapterId, $journeyId]);
+            $sort += 10;
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function reorder_steps_for_chapter(int $chapterId, array $stepIds): void
+{
+    if ($chapterId <= 0) {
+        throw new InvalidArgumentException('Chapter not found.');
+    }
+
+    $existing = steps_for_chapter($chapterId);
+    $existingIds = array_map(static fn(array $step): int => (int)$step['id'], $existing);
+    $requestedIds = [];
+
+    foreach ($stepIds as $stepId) {
+        $stepId = (int)$stepId;
+        if ($stepId > 0 && in_array($stepId, $existingIds, true) && !in_array($stepId, $requestedIds, true)) {
+            $requestedIds[] = $stepId;
+        }
+    }
+
+    foreach ($existingIds as $stepId) {
+        if (!in_array($stepId, $requestedIds, true)) {
+            $requestedIds[] = $stepId;
+        }
+    }
+
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $stmt = $pdo->prepare('UPDATE journey_steps SET sort_order = ?, updated_at = UTC_TIMESTAMP() WHERE id = ? AND chapter_id = ?');
+        $sort = 10;
+        foreach ($requestedIds as $stepId) {
+            $stmt->execute([$sort, $stepId, $chapterId]);
+            $sort += 10;
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
 function move_chapter(int $chapterId, string $direction): void
 {
     $chapter = chapter_by_id($chapterId);
