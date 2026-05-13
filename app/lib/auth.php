@@ -14,7 +14,7 @@ function current_user(): ?array
         return $cached;
     }
     try {
-        $stmt = db()->prepare("SELECT * FROM users WHERE id = ? AND is_active = 1 AND is_banned = 0 LIMIT 1");
+        $stmt = db()->prepare("SELECT * FROM users WHERE id = ? AND is_active = 1 AND is_banned = 0 AND deletion_requested_at IS NULL AND deleted_at IS NULL LIMIT 1");
         $stmt->execute([(int)$_SESSION['user_id']]);
     } catch (Throwable $e) {
         // Older installs may not have the is_banned migration until setup/check.php or the next OAuth callback runs.
@@ -107,7 +107,7 @@ function restore_user_from_remember_cookie(): void
     }
 
     try {
-        $stmt = db()->prepare("SELECT rt.*, u.is_active, u.is_banned
+        $stmt = db()->prepare("SELECT rt.*, u.is_active, u.is_banned, u.deletion_requested_at, u.deleted_at
             FROM user_remember_tokens rt
             JOIN users u ON u.id = rt.user_id
             WHERE rt.selector = ? AND rt.expires_at > UTC_TIMESTAMP()
@@ -123,7 +123,7 @@ function restore_user_from_remember_cookie(): void
     }
     $token = $stmt->fetch();
 
-    if (!$token || (int)$token['is_active'] !== 1 || (int)($token['is_banned'] ?? 0) === 1) {
+    if (!$token || (int)$token['is_active'] !== 1 || (int)($token['is_banned'] ?? 0) === 1 || !empty($token['deletion_requested_at']) || !empty($token['deleted_at'])) {
         clear_remember_cookie();
         return;
     }
@@ -189,9 +189,13 @@ function upsert_discord_user(array $discordUser): int
         ':email_verified' => !empty($discordUser['verified']) ? 1 : 0,
     ]);
 
-    $select = $pdo->prepare("SELECT id FROM users WHERE discord_id = ? LIMIT 1");
+    $select = $pdo->prepare("SELECT id, is_active, is_banned, deletion_requested_at, deleted_at FROM users WHERE discord_id = ? LIMIT 1");
     $select->execute([$discordId]);
-    $userId = (int)$select->fetchColumn();
+    $row = $select->fetch();
+    $userId = (int)($row['id'] ?? 0);
+    if (!$userId || (int)($row['is_active'] ?? 0) !== 1 || (int)($row['is_banned'] ?? 0) === 1 || !empty($row['deletion_requested_at']) || !empty($row['deleted_at'])) {
+        throw new RuntimeException('This Wayfinder account is disabled or queued for deletion.');
+    }
 
     ensure_default_roles($userId, $discordId);
     log_auth_event($userId, $discordId, true, null);

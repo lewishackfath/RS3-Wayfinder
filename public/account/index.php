@@ -27,7 +27,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             if ($confirm !== 'DELETE') {
                 throw new InvalidArgumentException('Type DELETE to confirm account deletion.');
             }
-            delete_current_user_account($userId);
+            request_current_user_account_deletion($userId);
             logout_user();
             redirect('/index.php');
         }
@@ -80,14 +80,14 @@ page_header('Account');
 
     <section class="card danger-zone account-danger-card">
         <h2>Delete account</h2>
-        <p class="muted">This removes your Wayfinder account and all linked profiles, journey progress and profile data. This does not delete your Discord account.</p>
-        <form method="post" class="form-stack" onsubmit="return confirm('Permanently delete your Wayfinder account and all profiles?');">
+        <p class="muted">This queues your Wayfinder account for deletion and immediately disables access. A cleanup cron removes linked profiles, journey progress and profile data later. This does not delete your Discord account.</p>
+        <form method="post" class="form-stack" onsubmit="return confirm('Queue your Wayfinder account for deletion? You will be logged out immediately.');">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete_account">
             <label>Type DELETE to confirm
                 <input type="text" name="confirm_delete" autocomplete="off" placeholder="DELETE">
             </label>
-            <button class="button danger" type="submit">Delete my account</button>
+            <button class="button danger" type="submit">Queue account deletion</button>
         </form>
     </section>
 </div>

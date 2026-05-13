@@ -55,8 +55,35 @@ function page_header(string $title): void
 
 function page_footer(): void
 {
-    echo '</main><footer class="footer">RS3 Wayfinder is an independent RuneScape journey tool and is not affiliated with Jagex or Discord.</footer><script>
+    echo '</main><div id="global-loading-overlay" class="global-loading-overlay" aria-live="polite" aria-hidden="true"><div class="global-loading-card"><span class="rs-spinner"></span><strong>Loading...</strong><small>Wayfinder is working on that request.</small></div></div><footer class="footer">RS3 Wayfinder is an independent RuneScape journey tool and is not affiliated with Jagex or Discord.</footer><script>
 document.addEventListener("DOMContentLoaded", function () {
+    const overlay = document.getElementById("global-loading-overlay");
+    function showLoading(message) {
+        if (!overlay) return;
+        const strong = overlay.querySelector("strong");
+        if (strong && message) strong.textContent = message;
+        overlay.classList.add("is-visible");
+        overlay.setAttribute("aria-hidden", "false");
+    }
+    document.querySelectorAll("form").forEach(function(form) {
+        form.addEventListener("submit", function(event) {
+            if (event.defaultPrevented || form.dataset.noLoading === "1") return;
+            const submitter = event.submitter;
+            const label = submitter ? (submitter.getAttribute("data-loading-text") || submitter.textContent || "Loading...") : "Loading...";
+            if (submitter && submitter.tagName === "BUTTON") {
+                submitter.classList.add("is-loading");
+                submitter.disabled = true;
+            }
+            showLoading(label.trim() || "Loading...");
+        });
+    });
+    document.querySelectorAll("a.button, a[data-loading-link]").forEach(function(link) {
+        link.addEventListener("click", function(event) {
+            if (event.defaultPrevented || link.target === "_blank" || link.dataset.noLoading === "1" || link.href.indexOf("#") === link.href.length - 1) return;
+            link.classList.add("is-loading");
+            showLoading(link.getAttribute("data-loading-text") || "Loading...");
+        });
+    });
     document.querySelectorAll("select.searchable-select").forEach(function (select) {
         if (select.dataset.enhanced === "1") return;
         select.dataset.enhanced = "1";

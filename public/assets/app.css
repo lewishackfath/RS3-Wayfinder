@@ -1924,3 +1924,190 @@ textarea[readonly] {
     background: rgba(148, 163, 184, 0.15);
     color: var(--muted, #9ca3af);
 }
+
+/* RS3-themed global polish */
+:root {
+    --rs3-bg-deep: #090805;
+    --rs3-bg: #14100a;
+    --rs3-panel: rgba(27, 21, 13, .94);
+    --rs3-panel-2: rgba(45, 34, 19, .92);
+    --rs3-panel-3: rgba(74, 55, 27, .72);
+    --rs3-gold: #d6b25e;
+    --rs3-gold-bright: #f2d17a;
+    --rs3-gold-dark: #7d5a24;
+    --rs3-blue: #6ea8c9;
+    --rs3-red: #9a3f35;
+    --rs3-green: #7fb06a;
+    --rs3-parchment: #e8dcc0;
+    --rs3-muted: #b8a985;
+    --rs3-line: rgba(214,178,94,.30);
+    --bg: var(--rs3-bg-deep);
+    --panel: var(--rs3-panel);
+    --panel2: var(--rs3-panel-2);
+    --text: var(--rs3-parchment);
+    --muted: var(--rs3-muted);
+    --line: var(--rs3-line);
+    --accent: var(--rs3-gold-bright);
+}
+
+body {
+    background:
+        radial-gradient(circle at 20% -10%, rgba(214,178,94,.20), transparent 34rem),
+        radial-gradient(circle at 85% 0%, rgba(80,106,125,.16), transparent 32rem),
+        linear-gradient(180deg, #171109 0%, #090805 58%, #070604 100%);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.014) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.75), transparent 75%);
+    z-index: -1;
+}
+
+.topbar {
+    background: linear-gradient(180deg, rgba(34,25,13,.97), rgba(14,10,6,.94));
+    border-bottom: 1px solid rgba(214,178,94,.35);
+    box-shadow: 0 10px 34px rgba(0,0,0,.35), inset 0 -1px 0 rgba(255,255,255,.04);
+    z-index: 20;
+}
+
+.brand { color: var(--rs3-gold-bright); text-shadow: 0 1px 0 #000; letter-spacing: .02em; }
+nav a, .nav-dropdown-toggle { color: var(--rs3-parchment); }
+nav a:hover, .nav-dropdown-toggle:hover { color: var(--rs3-gold-bright); }
+
+.hero,
+.card,
+.stat-card,
+.notice,
+.alert,
+.nav-dropdown-menu,
+.searchable-dropdown-list {
+    background: linear-gradient(180deg, rgba(37,29,17,.95), rgba(18,14,9,.95));
+    border-color: rgba(214,178,94,.28);
+    box-shadow: 0 18px 70px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.card,
+.hero { border-radius: 18px; }
+.card h1, .card h2, .card h3, .hero h1 { color: var(--rs3-gold-bright); text-shadow: 0 1px 0 #000; }
+
+.button,
+button {
+    position: relative;
+    border: 1px solid rgba(255,238,164,.28);
+    background: linear-gradient(180deg, #f0ce73, #b88935 52%, #6e4d1d);
+    color: #181008;
+    text-shadow: 0 1px 0 rgba(255,255,255,.28);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 16px rgba(0,0,0,.28);
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.button:hover,
+button:hover { transform: translateY(-1px); filter: brightness(1.07); }
+.button:active,
+button:active { transform: translateY(1px); filter: brightness(.95); }
+.button.secondary {
+    background: linear-gradient(180deg, rgba(69,55,34,.96), rgba(31,24,15,.96));
+    color: var(--rs3-parchment);
+    border-color: rgba(214,178,94,.34);
+    text-shadow: 0 1px 0 #000;
+}
+.button.danger,
+button.danger {
+    background: linear-gradient(180deg, #b75b4f, #87372f 56%, #552019);
+    color: #fff4ec;
+    text-shadow: 0 1px 0 rgba(0,0,0,.55);
+}
+
+input,
+select,
+textarea,
+.searchable-dropdown-input,
+.profile-selector {
+    background: linear-gradient(180deg, rgba(12,9,6,.95), rgba(32,24,14,.95)) !important;
+    color: var(--rs3-parchment) !important;
+    border: 1px solid rgba(214,178,94,.30) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,.38), 0 1px 0 rgba(255,255,255,.035);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.searchable-dropdown-input:focus,
+.profile-selector:focus {
+    outline: none;
+    border-color: rgba(242,209,122,.72) !important;
+    box-shadow: 0 0 0 3px rgba(214,178,94,.16), inset 0 1px 5px rgba(0,0,0,.38);
+}
+
+select option,
+.profile-selector option { background: #1b140b; color: var(--rs3-parchment); }
+
+th { color: var(--rs3-gold-bright); }
+th, td { border-bottom-color: rgba(214,178,94,.18); }
+.badge { background: rgba(214,178,94,.12); border-color: rgba(214,178,94,.30); color: var(--rs3-parchment); }
+.badge.success { background: rgba(127,176,106,.16); border-color: rgba(127,176,106,.40); color: #b9ef9f; }
+.badge.accent { background: rgba(110,168,201,.16); border-color: rgba(110,168,201,.38); color: #addfff; }
+
+.progress-bar { background: rgba(0,0,0,.38); border-color: rgba(214,178,94,.22); }
+.progress-bar span { background: linear-gradient(90deg, #7fb06a, #d6b25e); }
+
+.global-loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,4,3,.58);
+    backdrop-filter: blur(3px);
+    z-index: 9999;
+}
+.global-loading-overlay.is-visible { display: flex; }
+.global-loading-card {
+    min-width: min(340px, 88vw);
+    padding: 1.35rem;
+    border-radius: 18px;
+    border: 1px solid rgba(242,209,122,.45);
+    background: linear-gradient(180deg, rgba(45,34,19,.98), rgba(14,10,6,.98));
+    box-shadow: 0 24px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);
+    display: grid;
+    gap: .35rem;
+    place-items: center;
+    text-align: center;
+}
+.global-loading-card strong { color: var(--rs3-gold-bright); }
+.global-loading-card small { color: var(--rs3-muted); }
+.rs-spinner {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 3px solid rgba(214,178,94,.18);
+    border-top-color: var(--rs3-gold-bright);
+    animation: rs-spin .85s linear infinite;
+}
+@keyframes rs-spin { to { transform: rotate(360deg); } }
+
+button.is-loading,
+.button.is-loading { pointer-events: none; filter: saturate(.75) brightness(.9); }
+button.is-loading::after,
+.button.is-loading::after {
+    content: "";
+    width: .9em;
+    height: .9em;
+    margin-left: .55rem;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    animation: rs-spin .7s linear infinite;
+}
+
+.nav-dropdown-menu { border-radius: 14px; padding: .4rem; }
+.nav-dropdown-menu a { border-radius: 10px; }
+.nav-dropdown-menu a:hover { background: rgba(214,178,94,.10); }

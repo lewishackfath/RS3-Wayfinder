@@ -21,11 +21,15 @@ function bootstrap_schema(): void
         email_verified TINYINT(1) NOT NULL DEFAULT 0,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         is_banned TINYINT(1) NOT NULL DEFAULT 0,
+        deletion_requested_at DATETIME NULL,
+        deleted_at DATETIME NULL,
         last_login_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_users_active (is_active),
-        INDEX idx_users_banned (is_banned)
+        INDEX idx_users_banned (is_banned),
+        INDEX idx_users_deletion_requested (deletion_requested_at),
+        INDEX idx_users_deleted (deleted_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS roles (
@@ -515,6 +519,19 @@ function run_schema_migrations(): void
                 // Index may already exist on some repaired installs.
             }
         }
+    });
+
+
+    run_once_migration('20260513_soft_delete_accounts', function (PDO $pdo): void {
+        $cols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('deletion_requested_at', $cols, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN deletion_requested_at DATETIME NULL AFTER is_banned");
+        }
+        if (!in_array('deleted_at', $cols, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN deleted_at DATETIME NULL AFTER deletion_requested_at");
+        }
+        try { $pdo->exec("ALTER TABLE users ADD INDEX idx_users_deletion_requested (deletion_requested_at)"); } catch (Throwable $e) {}
+        try { $pdo->exec("ALTER TABLE users ADD INDEX idx_users_deleted (deleted_at)"); } catch (Throwable $e) {}
     });
 
 
