@@ -398,6 +398,24 @@ function bootstrap_schema(): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
 
+
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_boss_drop_log (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        boss_content_item_id BIGINT UNSIGNED NOT NULL,
+        drop_content_item_id BIGINT UNSIGNED NOT NULL,
+        is_obtained TINYINT(1) NOT NULL DEFAULT 1,
+        obtained_at DATETIME NULL,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (profile_id, boss_content_item_id, drop_content_item_id),
+        INDEX idx_player_boss_drop_log_profile (profile_id),
+        INDEX idx_player_boss_drop_log_boss (boss_content_item_id),
+        INDEX idx_player_boss_drop_log_drop (drop_content_item_id),
+        CONSTRAINT fk_player_boss_drop_log_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+        CONSTRAINT fk_player_boss_drop_log_boss FOREIGN KEY (boss_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
+        CONSTRAINT fk_player_boss_drop_log_drop FOREIGN KEY (drop_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,
