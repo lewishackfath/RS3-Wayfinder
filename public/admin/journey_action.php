@@ -1,52 +1,60 @@
 <?php
 require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_permission('journeys.manage');
-
-function journey_can_manage(array $journey): bool
-{
-    if (current_user_can('journeys.edit.all')) {
-        return true;
-    }
-
-    return (int)($journey['created_by_user_id'] ?? 0) === (int)current_user()['id'];
-}
-
-function journey_can_delete(array $journey): bool
-{
-    if (current_user_can('journeys.delete.all')) {
-        return true;
-    }
-
-    return current_user_can('journeys.delete')
-        && (int)($journey['created_by_user_id'] ?? 0) === (int)current_user()['id'];
-}
 require_post();
 require_csrf();
 
 $action = (string)($_POST['action'] ?? '');
 $backJourneyId = (int)($_POST['journey_id'] ?? 0);
 
+function require_journey_edit_access(int $journeyId): array
+{
+    $journey = journey_by_id($journeyId);
+    if (!$journey) {
+        throw new InvalidArgumentException('Journey not found.');
+    }
+    if (!journey_can_edit($journey)) {
+        throw new RuntimeException('You do not have permission to edit this journey.');
+    }
+    return $journey;
+}
+
+function require_journey_delete_access(int $journeyId): array
+{
+    $journey = journey_by_id($journeyId);
+    if (!$journey) {
+        throw new InvalidArgumentException('Journey not found.');
+    }
+    if (!journey_can_delete_item($journey)) {
+        throw new RuntimeException('You do not have permission to delete this journey.');
+    }
+    return $journey;
+}
+
 try {
     if ($action === 'duplicate_journey') {
+        require_journey_edit_access((int)($_POST['journey_id'] ?? 0));
         $newId = duplicate_journey((int)($_POST['journey_id'] ?? 0));
         redirect('/admin/journey_view.php?id=' . $newId);
     }
 
     if ($action === 'delete_journey') {
-        require_permission('journeys.delete');
+        require_journey_delete_access((int)($_POST['journey_id'] ?? 0));
         delete_journey((int)($_POST['journey_id'] ?? 0));
         redirect('/admin/journeys.php');
     }
+
+    require_journey_edit_access($backJourneyId);
 
     if ($action === 'duplicate_chapter') {
         duplicate_chapter((int)($_POST['chapter_id'] ?? 0));
     } elseif ($action === 'duplicate_step') {
         duplicate_step((int)($_POST['step_id'] ?? 0));
     } elseif ($action === 'delete_chapter') {
-        require_permission('journeys.delete');
+        require_journey_delete_access($backJourneyId);
         delete_chapter((int)($_POST['chapter_id'] ?? 0));
     } elseif ($action === 'delete_step') {
-        require_permission('journeys.delete');
+        require_journey_delete_access($backJourneyId);
         delete_step((int)($_POST['step_id'] ?? 0));
     } elseif ($action === 'move_chapter') {
         move_chapter((int)($_POST['chapter_id'] ?? 0), (string)($_POST['direction'] ?? ''));

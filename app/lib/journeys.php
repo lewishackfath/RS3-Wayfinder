@@ -54,20 +54,60 @@ function journey_unique_slug(string $base, ?int $ignoreJourneyId = null): string
 
 function all_journeys(bool $publishedOnly = false): array
 {
-    $sql = 'SELECT * FROM journeys';
+    $sql = 'SELECT j.*, u.username AS creator_username, u.global_name AS creator_global_name
+        FROM journeys j
+        LEFT JOIN users u ON u.id = j.created_by_user_id';
     if ($publishedOnly) {
-        $sql .= ' WHERE is_published = 1';
+        $sql .= ' WHERE j.is_published = 1';
     }
-    $sql .= ' ORDER BY sort_order ASC, name ASC';
+    $sql .= ' ORDER BY j.sort_order ASC, j.name ASC';
     return db()->query($sql)->fetchAll();
 }
 
 function journey_by_id(int $journeyId): ?array
 {
-    $stmt = db()->prepare('SELECT * FROM journeys WHERE id = ? LIMIT 1');
+    $stmt = db()->prepare('SELECT j.*, u.username AS creator_username, u.global_name AS creator_global_name
+        FROM journeys j
+        LEFT JOIN users u ON u.id = j.created_by_user_id
+        WHERE j.id = ? LIMIT 1');
     $stmt->execute([$journeyId]);
     $row = $stmt->fetch();
     return $row ?: null;
+}
+
+function journey_creator_label(array $journey): string
+{
+    $name = trim((string)($journey['creator_global_name'] ?? ''));
+    if ($name === '') {
+        $name = trim((string)($journey['creator_username'] ?? ''));
+    }
+    return $name !== '' ? $name : 'Unknown / legacy journey';
+}
+
+function journey_can_edit(array $journey): bool
+{
+    if (!current_user_can('journeys.manage')) {
+        return false;
+    }
+    if (current_user_can('journeys.edit.all')) {
+        return true;
+    }
+    $creatorId = (int)($journey['created_by_user_id'] ?? 0);
+    $user = current_user();
+    return $creatorId <= 0 || ($user && $creatorId === (int)$user['id']);
+}
+
+function journey_can_delete_item(array $journey): bool
+{
+    if (current_user_can('journeys.delete.all')) {
+        return true;
+    }
+    if (!current_user_can('journeys.delete')) {
+        return false;
+    }
+    $creatorId = (int)($journey['created_by_user_id'] ?? 0);
+    $user = current_user();
+    return $creatorId <= 0 || ($user && $creatorId === (int)$user['id']);
 }
 
 function journey_by_slug(string $slug): ?array
@@ -132,8 +172,14 @@ function create_journey(string $name, string $slug, string $description, string 
         throw new InvalidArgumentException('Journey name is required.');
     }
     $slug = journey_unique_slug($slug !== '' ? $slug : $name);
-    $stmt = db()->prepare('INSERT INTO journeys (name, slug, description, icon, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$name, $slug, trim($description), trim($icon), $isPublished ? 1 : 0, $sortOrder]);
+    $creatorId = current_user()['id'] ?? null;
+    try {
+        $stmt = db()->prepare('INSERT INTO journeys (name, slug, description, icon, is_published, sort_order, created_by_user_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$name, $slug, trim($description), trim($icon), $isPublished ? 1 : 0, $sortOrder, $creatorId]);
+    } catch (Throwable $e) {
+        $stmt = db()->prepare('INSERT INTO journeys (name, slug, description, icon, is_published, sort_order) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$name, $slug, trim($description), trim($icon), $isPublished ? 1 : 0, $sortOrder]);
+    }
     return (int)db()->lastInsertId();
 }
 

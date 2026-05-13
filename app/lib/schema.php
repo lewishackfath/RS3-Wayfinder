@@ -199,9 +199,12 @@ function bootstrap_schema(): void
         icon VARCHAR(120) NULL,
         is_published TINYINT(1) NOT NULL DEFAULT 0,
         sort_order INT NOT NULL DEFAULT 0,
+        created_by_user_id BIGINT UNSIGNED NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_journeys_published (is_published, sort_order)
+        INDEX idx_journeys_published (is_published, sort_order),
+        INDEX idx_journeys_created_by (created_by_user_id),
+        CONSTRAINT fk_journeys_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS journey_chapters (
@@ -437,6 +440,24 @@ function run_schema_migrations(): void
     });
 
 
+
+
+    run_once_migration('20260513_journey_creator_tracking', function (PDO $pdo): void {
+        $cols = $pdo->query("SHOW COLUMNS FROM journeys")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('created_by_user_id', $cols, true)) {
+            $pdo->exec("ALTER TABLE journeys ADD COLUMN created_by_user_id BIGINT UNSIGNED NULL AFTER sort_order");
+            try {
+                $pdo->exec("ALTER TABLE journeys ADD INDEX idx_journeys_created_by (created_by_user_id)");
+            } catch (Throwable $e) {
+                // Index may already exist on repaired installs.
+            }
+            try {
+                $pdo->exec("ALTER TABLE journeys ADD CONSTRAINT fk_journeys_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL");
+            } catch (Throwable $e) {
+                // Column and index are enough for permission-aware screens.
+            }
+        }
+    });
 
     run_once_migration('20260513_user_ban_flag', function (PDO $pdo): void {
         $cols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);

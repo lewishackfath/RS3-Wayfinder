@@ -10,6 +10,9 @@ $journey = journey_by_id($journeyId);
 if (!$journey || ($id && !$chapter)) {
     abort_page(404, 'Chapter or journey not found.');
 }
+if (!journey_can_edit($journey)) {
+    abort_page(403, 'You do not have permission to edit this journey.');
+}
 $error = null;
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {

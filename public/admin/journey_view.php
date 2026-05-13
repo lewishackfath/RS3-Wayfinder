@@ -8,11 +8,33 @@ $journey = journey_by_id($journeyId);
 if (!$journey) {
     abort_page(404, 'Journey not found.');
 }
+$canEditJourney = journey_can_edit($journey);
+$canDeleteJourney = journey_can_delete_item($journey);
 $notice = null;
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && current_user_can('journeys.manage')) {
+$error = null;
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     require_csrf();
     try {
         $action = (string)($_POST['action'] ?? '');
+        if (!$canEditJourney) {
+            throw new RuntimeException('You do not have permission to edit this journey.');
+        }
+
+        if ($action === 'save_journey_details') {
+            update_journey(
+                $journeyId,
+                (string)($_POST['name'] ?? ''),
+                (string)($journey['slug'] ?? ''),
+                (string)($_POST['description'] ?? ''),
+                (string)($_POST['icon'] ?? ''),
+                !empty($_POST['is_published']),
+                (int)($_POST['sort_order'] ?? 0)
+            );
+            set_journey_tags($journeyId, is_array($_POST['tag_ids'] ?? null) ? $_POST['tag_ids'] : []);
+            redirect('/admin/journey_view.php?id=' . $journeyId);
+        }
+
         if ($action === 'expand_content_prereqs') {
             $step = step_by_id((int)($_POST['step_id'] ?? 0));
             if (!$step || empty($step['content_item_id'])) {
@@ -22,54 +44,70 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && current_user_can('journe
             $notice = count($created) . ' prerequisite step' . (count($created) === 1 ? '' : 's') . ' added.';
         }
     } catch (Throwable $e) {
-        $notice = $e->getMessage();
+        $error = $e->getMessage();
     }
 }
+
+$journey = journey_by_id($journeyId) ?: $journey;
 $chapters = chapters_for_journey($journeyId);
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-    $action = (string)($_POST['action'] ?? '');
-    if ($action === 'update_journey_details') {
-        update_journey(
-            $journeyId,
-            (string)($_POST['name'] ?? ''),
-            (string)($_POST['description'] ?? ''),
-            (string)($_POST['difficulty'] ?? ''),
-            !empty($_POST['is_active'])
-        );
-        redirect('/admin/journey_view.php?id=' . $journeyId);
-    }
-}
+$allTags = all_journey_tags();
+$selectedTagIds = journey_tag_ids_for_journey($journeyId);
+
 page_header('Manage Journey');
 ?>
-<details class="card content-inline-edit-card" open>
-    <summary>Journey Details</summary>
-    <form method="post" class="enhanced-form">
-        <?= csrf_field() ?>
-        <input type="hidden" name="action" value="update_journey_details">
+<?php if ($error): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
+<?php if ($notice): ?><div class="notice journey-prereq-notice"><?= e($notice) ?></div><?php endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+    <div class="notice error"><?= e((string)$_SESSION['flash_error']) ?></div>
+    <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>
 
-        <div class="form-grid">
-            <label>Name
-                <input name="name" value="<?= e($journey['name']) ?>" required>
+<details class="card content-inline-edit-card" <?= $canEditJourney ? 'open' : '' ?>>
+    <summary>Journey details</summary>
+    <?php if (!$canEditJourney): ?>
+        <p class="muted">You can view this journey, but your current role cannot edit it.</p>
+    <?php else: ?>
+        <form method="post" class="enhanced-form">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="save_journey_details">
+
+            <div class="form-grid">
+                <label>Journey name
+                    <input name="name" value="<?= e((string)$journey['name']) ?>" required>
+                </label>
+                <label>Icon / Emoji
+                    <input name="icon" value="<?= e((string)($journey['icon'] ?: '🧭')) ?>" placeholder="🧭">
+                </label>
+                <label>Sort order
+                    <input type="number" name="sort_order" value="<?= e((string)($journey['sort_order'] ?? 0)) ?>">
+                </label>
+            </div>
+
+            <label>Description
+                <textarea name="description" rows="4"><?= e((string)($journey['description'] ?? '')) ?></textarea>
             </label>
 
-            <label>Difficulty
-                <input name="difficulty" value="<?= e($journey['difficulty'] ?? '') ?>">
+            <?php if ($allTags): ?>
+                <div class="choice-grid tag-choice-grid">
+                    <?php foreach ($allTags as $tag): ?>
+                        <label class="choice-card tag-choice-card">
+                            <input type="checkbox" name="tag_ids[]" value="<?= (int)$tag['id'] ?>" <?= in_array((int)$tag['id'], $selectedTagIds, true) ? 'checked' : '' ?>>
+                            <span><strong><?= e($tag['name']) ?></strong><small><?= e($tag['description'] ?: $tag['slug']) ?></small></span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <label class="toggle-row">
+                <input type="checkbox" name="is_published" value="1" <?= !empty($journey['is_published']) ? 'checked' : '' ?>>
+                <span><strong>Published</strong><small>Published journeys are visible to players.</small></span>
             </label>
-        </div>
 
-        <label>Description
-            <textarea name="description" rows="4"><?= e($journey['description'] ?? '') ?></textarea>
-        </label>
+            <p class="muted small">Slug: <code><?= e((string)$journey['slug']) ?></code> · Created by: <?= e(journey_creator_label($journey)) ?></p>
 
-        <label class="toggle-row">
-            <input type="checkbox" name="is_active" value="1" <?= !empty($journey['is_active']) ? 'checked' : '' ?>>
-            <span><strong>Active</strong></span>
-        </label>
-
-        <div class="form-actions">
-            <button class="button" type="submit">Save Journey</button>
-        </div>
-    </form>
+            <div class="form-actions"><button class="button" type="submit">Save journey details</button></div>
+        </form>
+    <?php endif; ?>
 </details>
 
 <div class="page-title-row">
@@ -83,16 +121,15 @@ page_header('Manage Journey');
     </div>
     <div class="form-actions">
         <a class="button secondary" href="/admin/journeys.php">All journeys</a>
-        <?php if (current_user_can('journeys.manage')): ?>
+        <?php if ($canEditJourney): ?>
             <a class="button secondary" href="/journeys/view.php?id=<?= (int)$journey['id'] ?>&preview=1">Preview as player</a>
-            <a class="button secondary" href="/admin/journey_edit.php?id=<?= (int)$journey['id'] ?>">Edit journey</a>
             <form class="inline-form" method="post" action="/admin/journey_action.php">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="duplicate_journey">
                 <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                 <button class="button secondary" type="submit">Duplicate journey</button>
             </form>
-            <?php if (current_user_can('journeys.delete')): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this journey? This will remove its chapters, steps and player progress for this journey.');">
+            <?php if ($canDeleteJourney): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this journey? This will remove its chapters, steps and player progress for this journey.');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete_journey">
                 <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
@@ -102,13 +139,6 @@ page_header('Manage Journey');
         <?php endif; ?>
     </div>
 </div>
-
-<?php if ($notice): ?><div class="notice journey-prereq-notice"><?= e($notice) ?></div><?php endif; ?>
-
-<?php if (!empty($_SESSION['flash_error'])): ?>
-    <div class="notice error"><?= e((string)$_SESSION['flash_error']) ?></div>
-    <?php unset($_SESSION['flash_error']); ?>
-<?php endif; ?>
 
 <?php if (!$chapters): ?>
     <div class="card"><p class="muted">No chapters yet. Add your first chapter to start building this journey.</p></div>
@@ -123,7 +153,7 @@ page_header('Manage Journey');
                 <p class="muted"><?= nl2br(e($chapter['description'] ?: 'No description.')) ?></p>
                 <p class="muted small">Sort order: <?= (int)$chapter['sort_order'] ?></p>
             </div>
-            <?php if (current_user_can('journeys.manage')): ?>
+            <?php if ($canEditJourney): ?>
                 <div class="form-actions">
                     <form class="inline-form" method="post" action="/admin/journey_action.php">
                         <?= csrf_field() ?>
@@ -148,7 +178,7 @@ page_header('Manage Journey');
                         <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                         <button class="button secondary" type="submit">Duplicate</button>
                     </form>
-                    <?php if (current_user_can('journeys.delete')): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this chapter? This will remove all steps inside it.');">
+                    <?php if ($canDeleteJourney): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this chapter? This will remove all steps inside it.');">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="delete_chapter">
                         <input type="hidden" name="chapter_id" value="<?= (int)$chapter['id'] ?>">
@@ -187,7 +217,7 @@ page_header('Manage Journey');
                         </td>
                         <td><?= (int)$step['sort_order'] ?></td>
                         <td>
-                            <?php if (current_user_can('journeys.manage')): ?>
+                            <?php if ($canEditJourney): ?>
                                 <div class="admin-step-actions">
                                     <form class="inline-form" method="post" action="/admin/journey_action.php">
                                         <?= csrf_field() ?>
@@ -220,7 +250,7 @@ page_header('Manage Journey');
                                             <button class="button secondary" type="submit">Add prereqs</button>
                                         </form>
                                     <?php endif; ?>
-                                    <?php if (current_user_can('journeys.delete')): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this step?');">
+                                    <?php if ($canDeleteJourney): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this step?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete_step">
                                         <input type="hidden" name="step_id" value="<?= (int)$step['id'] ?>">
