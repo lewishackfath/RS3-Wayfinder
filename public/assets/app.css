@@ -2584,3 +2584,481 @@ tr:hover td {
         max-width: 760px;
     }
 }
+
+/* =====================================================================
+   RS3 Wayfinder - Ancient Codex / Arcane Journal Theme (safe layer)
+   ---------------------------------------------------------------------
+   This is intentionally a visual-only layer. It avoids changing the
+   structural display/flex/grid rules used by navigation, menu bars, and
+   page layout so existing behaviour remains intact.
+   ===================================================================== */
+
+:root {
+    --wf-codex-bg-0: #07090d;
+    --wf-codex-bg-1: #0d1219;
+    --wf-codex-bg-2: #15110d;
+    --wf-codex-panel: rgba(22, 23, 25, .84);
+    --wf-codex-panel-strong: rgba(28, 26, 23, .92);
+    --wf-codex-panel-soft: rgba(255, 238, 193, .055);
+    --wf-codex-ink: #f4ead4;
+    --wf-codex-muted: #b9a987;
+    --wf-codex-line: rgba(204, 163, 84, .25);
+    --wf-codex-line-strong: rgba(232, 190, 95, .42);
+    --wf-codex-gold: #d8b45f;
+    --wf-codex-gold-soft: #f0d58c;
+    --wf-codex-bronze: #9b6f34;
+    --wf-codex-cyan: #67d7d2;
+    --wf-codex-violet: #9d7cff;
+    --wf-codex-ember: #df7d45;
+    --wf-codex-shadow: rgba(0, 0, 0, .48);
+
+    --bg: var(--wf-codex-bg-0);
+    --panel: #171717;
+    --panel2: #22201b;
+    --text: var(--wf-codex-ink);
+    --muted: var(--wf-codex-muted);
+    --line: var(--wf-codex-line);
+    --accent: var(--wf-codex-cyan);
+}
+
+html {
+    background: var(--wf-codex-bg-0);
+}
+
+body {
+    color: var(--wf-codex-ink);
+    background:
+        radial-gradient(circle at 18% 0%, rgba(103, 215, 210, .12), transparent 34rem),
+        radial-gradient(circle at 84% 10%, rgba(216, 180, 95, .105), transparent 34rem),
+        radial-gradient(circle at 62% 96%, rgba(157, 124, 255, .075), transparent 32rem),
+        linear-gradient(145deg, rgba(7, 9, 13, .98), rgba(13, 18, 25, .98) 50%, rgba(18, 14, 10, .98));
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        linear-gradient(90deg, rgba(255,255,255,.026) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.018) 1px, transparent 1px),
+        radial-gradient(circle at center, transparent 0 45%, rgba(0,0,0,.25) 100%);
+    background-size: 76px 76px, 76px 76px, 100% 100%;
+    opacity: .32;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.38));
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 22% 24%, rgba(216,180,95,.05), transparent 16rem),
+        radial-gradient(circle at 70% 44%, rgba(103,215,210,.045), transparent 18rem),
+        repeating-linear-gradient(135deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px);
+    opacity: .38;
+    mix-blend-mode: screen;
+}
+
+/* Keep navigation readable without changing its structure. */
+.topbar {
+    background:
+        linear-gradient(180deg, rgba(13, 15, 18, .96), rgba(16, 15, 13, .92)) !important;
+    border-bottom-color: rgba(216, 180, 95, .24) !important;
+    box-shadow: 0 14px 42px rgba(0,0,0,.28), inset 0 -1px 0 rgba(255,240,190,.07);
+}
+
+.brand {
+    color: var(--wf-codex-gold-soft) !important;
+    text-shadow: 0 0 18px rgba(216,180,95,.18);
+    letter-spacing: .015em;
+}
+
+nav a,
+.nav-dropdown-toggle,
+.profile-select-link {
+    color: rgba(244,234,212,.88) !important;
+}
+
+nav a:hover,
+.nav-dropdown-toggle:hover,
+.profile-select-link:hover {
+    color: var(--wf-codex-gold-soft) !important;
+    text-shadow: 0 0 14px rgba(216,180,95,.22);
+}
+
+/* Codex panels: target common surfaces only, not layout containers. */
+.hero,
+.card,
+.stat-card,
+.notice,
+.alert,
+.table-card,
+.panel,
+.dashboard-card,
+.profile-card,
+.journey-card,
+.content-card,
+.boss-log-boss-card,
+.account-summary-card,
+.account-danger-card,
+.empty-state {
+    position: relative;
+    background:
+        linear-gradient(145deg, rgba(255, 238, 193, .075), rgba(255, 238, 193, .028)),
+        radial-gradient(circle at 12% 0%, rgba(216,180,95,.105), transparent 18rem),
+        radial-gradient(circle at 88% 100%, rgba(103,215,210,.05), transparent 18rem),
+        var(--wf-codex-panel) !important;
+    border: 1px solid var(--wf-codex-line) !important;
+    border-radius: 20px !important;
+    box-shadow:
+        0 22px 70px var(--wf-codex-shadow),
+        inset 0 1px 0 rgba(255, 243, 204, .10),
+        inset 0 -1px 0 rgba(0,0,0,.34) !important;
+}
+
+.hero::before,
+.card::before,
+.stat-card::before,
+.table-card::before,
+.panel::before,
+.dashboard-card::before,
+.profile-card::before,
+.journey-card::before,
+.content-card::before,
+.boss-log-boss-card::before,
+.account-summary-card::before,
+.account-danger-card::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    pointer-events: none;
+    border: 1px solid rgba(216,180,95,.09);
+    border-radius: calc(20px - 8px);
+    background:
+        linear-gradient(135deg, rgba(216,180,95,.16), transparent 18px) top left / 38px 38px no-repeat,
+        linear-gradient(225deg, rgba(216,180,95,.14), transparent 18px) top right / 38px 38px no-repeat,
+        linear-gradient(45deg, rgba(103,215,210,.09), transparent 18px) bottom left / 38px 38px no-repeat,
+        linear-gradient(315deg, rgba(103,215,210,.08), transparent 18px) bottom right / 38px 38px no-repeat;
+    opacity: .85;
+}
+
+.hero > *,
+.card > *,
+.stat-card > *,
+.table-card > *,
+.panel > *,
+.dashboard-card > *,
+.profile-card > *,
+.journey-card > *,
+.content-card > *,
+.boss-log-boss-card > *,
+.account-summary-card > *,
+.account-danger-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+h1,
+h2,
+h3,
+.page-title,
+.hero h1,
+.card h1,
+.card h2,
+.card h3 {
+    color: var(--wf-codex-gold-soft);
+    text-shadow: 0 2px 18px rgba(216,180,95,.13);
+    letter-spacing: .01em;
+}
+
+h1::after,
+.hero h1::after {
+    content: "";
+    display: block;
+    width: min(220px, 42vw);
+    height: 2px;
+    margin-top: .55rem;
+    background: linear-gradient(90deg, transparent, rgba(216,180,95,.65), rgba(103,215,210,.35), transparent);
+}
+
+.muted,
+small,
+.table th,
+th {
+    color: rgba(224, 207, 169, .72) !important;
+}
+
+a {
+    color: var(--wf-codex-cyan);
+}
+
+a:hover {
+    color: #a6fff9;
+}
+
+/* Buttons: tactile relic controls. */
+.button,
+button,
+input[type="submit"] {
+    border: 1px solid rgba(216,180,95,.32) !important;
+    background:
+        linear-gradient(180deg, rgba(240,213,140,.98), rgba(171,116,45,.96)) !important;
+    color: #171008 !important;
+    box-shadow:
+        0 10px 24px rgba(0,0,0,.22),
+        inset 0 1px 0 rgba(255,255,255,.38),
+        inset 0 -1px 0 rgba(77,48,13,.44) !important;
+    text-shadow: 0 1px 0 rgba(255,255,255,.28);
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, filter .16s ease;
+}
+
+.button:hover,
+button:hover,
+input[type="submit"]:hover {
+    transform: translateY(-1px);
+    border-color: rgba(103,215,210,.48) !important;
+    box-shadow:
+        0 14px 34px rgba(0,0,0,.28),
+        0 0 22px rgba(103,215,210,.12),
+        inset 0 1px 0 rgba(255,255,255,.42),
+        inset 0 -1px 0 rgba(77,48,13,.44) !important;
+    filter: brightness(1.04);
+}
+
+.button:active,
+button:active,
+input[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.button.secondary,
+button.secondary,
+.button.ghost,
+.button.profile-select-link {
+    background:
+        linear-gradient(180deg, rgba(255,238,193,.10), rgba(255,238,193,.045)),
+        rgba(21, 20, 18, .78) !important;
+    color: var(--wf-codex-ink) !important;
+    border-color: rgba(216,180,95,.25) !important;
+    text-shadow: none;
+}
+
+.button.danger,
+button.danger,
+.subtle-danger {
+    background:
+        linear-gradient(180deg, rgba(223,125,69,.95), rgba(113,47,37,.95)) !important;
+    color: #fff7ef !important;
+    border-color: rgba(255,177,116,.36) !important;
+}
+
+/* Forms: journal/etched input styling. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select,
+textarea,
+.searchable-select-input,
+.searchable-dropdown-input,
+.profile-selector {
+    background:
+        linear-gradient(180deg, rgba(7, 9, 13, .58), rgba(30, 24, 17, .56)) !important;
+    border-color: rgba(216,180,95,.26) !important;
+    color: var(--wf-codex-ink) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,243,204,.08),
+        inset 0 0 0 1px rgba(0,0,0,.18),
+        0 8px 22px rgba(0,0,0,.14) !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+select:focus,
+textarea:focus,
+.searchable-select-input:focus,
+.searchable-dropdown-input:focus,
+.profile-selector:focus {
+    border-color: rgba(103,215,210,.62) !important;
+    box-shadow:
+        0 0 0 4px rgba(103,215,210,.12),
+        0 0 24px rgba(103,215,210,.10),
+        inset 0 1px 0 rgba(255,243,204,.09) !important;
+}
+
+select option,
+.profile-selector option {
+    background: #14120f !important;
+    color: var(--wf-codex-ink) !important;
+}
+
+label,
+.form-stack label {
+    color: rgba(244,234,212,.90);
+}
+
+/* Tables: archive ledger styling. */
+table,
+.table {
+    background: rgba(8,10,12,.22);
+    border: 1px solid rgba(216,180,95,.14);
+    border-radius: 16px;
+}
+
+th {
+    color: var(--wf-codex-gold-soft) !important;
+    background: rgba(216,180,95,.055);
+}
+
+td,
+th {
+    border-bottom-color: rgba(216,180,95,.13) !important;
+}
+
+tr:hover td {
+    background: rgba(103,215,210,.045) !important;
+}
+
+/* Badges and status marks. */
+.badge {
+    background: rgba(216,180,95,.105) !important;
+    border-color: rgba(216,180,95,.25) !important;
+    color: rgba(244,234,212,.93) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.badge.accent,
+.badge.info {
+    background: rgba(103,215,210,.13) !important;
+    border-color: rgba(103,215,210,.34) !important;
+    color: #b9fffb !important;
+}
+
+.badge.success,
+.success-badge {
+    background: rgba(145,210,128,.13) !important;
+    border-color: rgba(145,210,128,.32) !important;
+    color: #d7ffc9 !important;
+}
+
+.badge.danger {
+    background: rgba(223,125,69,.14) !important;
+    border-color: rgba(223,125,69,.34) !important;
+    color: #ffd0ad !important;
+}
+
+/* Progress: magical route lines. */
+.progress-bar,
+.boss-log-progress-bar {
+    background: rgba(0,0,0,.34) !important;
+    border-color: rgba(216,180,95,.20) !important;
+    box-shadow: inset 0 1px 6px rgba(0,0,0,.36) !important;
+}
+
+.progress-bar span,
+.boss-log-progress-bar span {
+    background: linear-gradient(90deg, var(--wf-codex-cyan), var(--wf-codex-gold), var(--wf-codex-violet)) !important;
+    box-shadow: 0 0 16px rgba(103,215,210,.18), 0 0 18px rgba(216,180,95,.13) !important;
+}
+
+/* Journey, skill and boss collection details. */
+.journey-icon,
+.journey-list-icon,
+.recommendation-icon,
+.step-status,
+.drag-handle,
+.profile-avatar,
+.profile-select-avatar-wrap,
+.skill-row,
+.boss-drop-tile button,
+.boss-log-boss-image {
+    background:
+        linear-gradient(145deg, rgba(255,238,193,.09), rgba(255,238,193,.025)),
+        rgba(11, 12, 14, .46) !important;
+    border-color: rgba(216,180,95,.22) !important;
+}
+
+.journey-step {
+    border-top-color: rgba(216,180,95,.14) !important;
+}
+
+.journey-step.complete .step-status {
+    color: #09201f !important;
+    background: linear-gradient(180deg, #9ff8ef, #56c7bd) !important;
+    border-color: rgba(159,248,239,.7) !important;
+    box-shadow: 0 0 18px rgba(103,215,210,.18) !important;
+}
+
+.boss-drop-tile button {
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.boss-drop-tile button:hover,
+.boss-drop-tile button:focus,
+.recommended-step:hover,
+.searchable-dropdown-item:hover,
+.searchable-dropdown-item:focus {
+    background: rgba(103,215,210,.095) !important;
+    border-color: rgba(103,215,210,.42) !important;
+    box-shadow: 0 0 24px rgba(103,215,210,.10), inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.boss-drop-tile button:hover {
+    transform: translateY(-1px);
+}
+
+/* Dropdown surfaces only; do not alter menu layout. */
+.nav-dropdown-menu,
+.searchable-dropdown-list,
+.searchable-select-results {
+    background:
+        linear-gradient(145deg, rgba(255,238,193,.08), rgba(255,238,193,.025)),
+        rgba(13, 14, 16, .96) !important;
+    border-color: rgba(216,180,95,.30) !important;
+    box-shadow: 0 22px 60px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+
+.nav-dropdown-menu a:hover {
+    background: rgba(216,180,95,.10) !important;
+}
+
+/* Loading overlay fits the arcane theme. */
+.global-loading-overlay {
+    background: rgba(4, 5, 7, .66) !important;
+    backdrop-filter: blur(8px) saturate(1.05);
+    -webkit-backdrop-filter: blur(8px) saturate(1.05);
+}
+
+.global-loading-card {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(103,215,210,.12), transparent 16rem),
+        linear-gradient(145deg, rgba(255,238,193,.10), rgba(255,238,193,.035)),
+        rgba(14, 15, 17, .90) !important;
+    border-color: rgba(216,180,95,.35) !important;
+}
+
+.rs-spinner {
+    border-color: rgba(216,180,95,.20) !important;
+    border-top-color: var(--wf-codex-cyan) !important;
+}
+
+.footer {
+    color: rgba(185,169,135,.72) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .button,
+    button,
+    input[type="submit"],
+    .boss-drop-tile button {
+        transition: none !important;
+    }
+
+    .button:hover,
+    button:hover,
+    input[type="submit"]:hover,
+    .boss-drop-tile button:hover {
+        transform: none !important;
+    }
+}
