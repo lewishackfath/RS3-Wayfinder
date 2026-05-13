@@ -8,7 +8,7 @@ function content_types(): array
         'achievement' => 'Achievement',
         'task' => 'Task',
         'boss' => 'Boss',
-        'drop' => 'Drop / Item',
+        'drop' => 'Drop (legacy)',
         'unlock' => 'Unlock',
         'item' => 'Item',
     ];
@@ -78,7 +78,7 @@ function content_items(array $filters = []): array
     if ($where) {
         $sql .= ' WHERE ' . implode(' AND ', $where);
     }
-    $sql .= ' ORDER BY FIELD(type, "quest","achievement","task","boss","drop","unlock","item"), name ASC LIMIT 500';
+    $sql .= ' ORDER BY FIELD(type, "quest","achievement","task","boss","item","drop","unlock"), name ASC LIMIT 500';
 
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
@@ -113,7 +113,7 @@ function create_content_item(string $type, string $name, string $description, st
     $stmt->execute([$type, $name, $slug, trim($description), trim($category), trim($sourceUrl), trim($iconUrl), $isActive ? 1 : 0]);
     $id = (int)db()->lastInsertId();
 
-    if ($type === 'drop') {
+    if (in_array($type, ['drop', 'item'], true)) {
         upsert_drop_item($id, $name, $sourceUrl, $iconUrl, '');
     }
 
@@ -138,7 +138,7 @@ function update_content_item(int $id, string $type, string $name, string $descri
     db()->prepare('UPDATE content_items SET type = ?, name = ?, slug = ?, description = ?, category = ?, source_url = ?, icon_url = ?, is_active = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')
         ->execute([$type, $name, $slug, trim($description), trim($category), trim($sourceUrl), trim($iconUrl), $isActive ? 1 : 0, $id]);
 
-    if ($type === 'drop') {
+    if (in_array($type, ['drop', 'item'], true)) {
         upsert_drop_item($id, $name, $sourceUrl, $iconUrl, '');
     }
 }
@@ -484,3 +484,116 @@ function import_quests_from_runemetrics(string $rsn): array
     ];
 }
 
+
+function content_type_configs(): array
+{
+    try {
+        $rows = db()->query('SELECT * FROM content_type_configs ORDER BY sort_order ASC, label ASC')->fetchAll();
+    } catch (Throwable $e) {
+        $rows = [];
+    }
+    $configs = [];
+    foreach ($rows as $row) {
+        $row['custom_fields'] = json_decode((string)($row['custom_fields_json'] ?? '[]'), true) ?: [];
+        $configs[(string)$row['type_slug']] = $row;
+    }
+    return $configs;
+}
+
+function content_type_config(string $type): array
+{
+    $configs = content_type_configs();
+    return $configs[$type] ?? [
+        'type_slug' => $type,
+        'label' => content_types()[$type] ?? ucfirst($type),
+        'description' => '',
+        'is_enabled' => 1,
+        'allow_skill_requirements' => 0,
+        'allow_quest_requirements' => 0,
+        'allow_achievement_requirements' => 0,
+        'allow_boss_drop_links' => $type === 'boss' ? 1 : 0,
+        'custom_fields' => [],
+    ];
+}
+
+function enabled_content_types(): array
+{
+    $configs = content_type_configs();
+    if (!$configs) return content_types();
+    $types = [];
+    foreach ($configs as $slug => $config) {
+        if ((int)($config['is_enabled'] ?? 1) === 1 && isset(content_types()[$slug])) {
+            $types[$slug] = (string)$config['label'];
+        }
+    }
+    return $types;
+}
+
+function update_content_type_config(string $type, array $data): void
+{
+    if (!isset(content_types()[$type])) {
+        throw new InvalidArgumentException('Invalid content type.');
+    }
+    $fields = [];
+    foreach ((string)($data['custom_fields_text'] ?? '') === '' ? [] : preg_split('/\R/', (string)$data['custom_fields_text']) as $line) {
+        $line = trim($line);
+        if ($line === '') continue;
+        [$key, $label, $fieldType, $placeholder] = array_pad(array_map('trim', explode('|', $line, 4)), 4, '');
+        $key = preg_replace('/[^a-z0-9_]+/', '_', strtolower($key)) ?: '';
+        if ($key === '' || $label === '') continue;
+        $fields[] = ['key' => $key, 'label' => $label, 'type' => in_array($fieldType, ['text','textarea','url','number'], true) ? $fieldType : 'text', 'placeholder' => $placeholder];
+    }
+
+    db()->prepare('INSERT INTO content_type_configs
+        (type_slug, label, description, is_enabled, allow_skill_requirements, allow_quest_requirements, allow_achievement_requirements, allow_boss_drop_links, custom_fields_json, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE label = VALUES(label), description = VALUES(description), is_enabled = VALUES(is_enabled), allow_skill_requirements = VALUES(allow_skill_requirements), allow_quest_requirements = VALUES(allow_quest_requirements), allow_achievement_requirements = VALUES(allow_achievement_requirements), allow_boss_drop_links = VALUES(allow_boss_drop_links), custom_fields_json = VALUES(custom_fields_json), sort_order = VALUES(sort_order)')
+        ->execute([
+            $type,
+            trim((string)($data['label'] ?? content_types()[$type])),
+            trim((string)($data['description'] ?? '')),
+            !empty($data['is_enabled']) ? 1 : 0,
+            !empty($data['allow_skill_requirements']) ? 1 : 0,
+            !empty($data['allow_quest_requirements']) ? 1 : 0,
+            !empty($data['allow_achievement_requirements']) ? 1 : 0,
+            !empty($data['allow_boss_drop_links']) ? 1 : 0,
+            json_encode($fields, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            (int)($data['sort_order'] ?? 0),
+        ]);
+}
+
+function content_custom_metadata_from_post(string $type, array $post, array $existing = []): array
+{
+    $metadata = $existing;
+    foreach (content_type_config($type)['custom_fields'] ?? [] as $field) {
+        $key = (string)($field['key'] ?? '');
+        if ($key === '') continue;
+        $metadata[$key] = trim((string)($post['meta_' . $key] ?? ($metadata[$key] ?? '')));
+    }
+    return $metadata;
+}
+
+function content_achievement_requirements(int $contentItemId): array
+{
+    $stmt = db()->prepare('SELECT car.*, ci.name AS required_name FROM content_achievement_requirements car JOIN content_items ci ON ci.id = car.required_content_item_id WHERE car.content_item_id = ? ORDER BY ci.name ASC');
+    $stmt->execute([$contentItemId]);
+    return $stmt->fetchAll();
+}
+
+function add_content_achievement_requirement(int $contentItemId, int $requiredContentItemId, string $notes = ''): void
+{
+    if ($contentItemId === $requiredContentItemId) {
+        throw new InvalidArgumentException('A content item cannot require itself.');
+    }
+    $required = content_item_by_id($requiredContentItemId);
+    if (!$required || ($required['type'] ?? '') !== 'achievement') {
+        throw new InvalidArgumentException('Required content must be an achievement.');
+    }
+    db()->prepare('INSERT IGNORE INTO content_achievement_requirements (content_item_id, required_content_item_id, notes) VALUES (?, ?, ?)')
+        ->execute([$contentItemId, $requiredContentItemId, trim($notes)]);
+}
+
+function delete_content_achievement_requirement(int $id): void
+{
+    db()->prepare('DELETE FROM content_achievement_requirements WHERE id = ?')->execute([$id]);
+}

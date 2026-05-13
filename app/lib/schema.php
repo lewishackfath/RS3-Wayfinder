@@ -333,6 +333,34 @@ function bootstrap_schema(): void
         FULLTEXT KEY ft_content_search (name, description, category)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_type_configs (
+        type_slug VARCHAR(40) PRIMARY KEY,
+        label VARCHAR(120) NOT NULL,
+        description TEXT NULL,
+        is_enabled TINYINT(1) NOT NULL DEFAULT 1,
+        allow_skill_requirements TINYINT(1) NOT NULL DEFAULT 0,
+        allow_quest_requirements TINYINT(1) NOT NULL DEFAULT 0,
+        allow_achievement_requirements TINYINT(1) NOT NULL DEFAULT 0,
+        allow_boss_drop_links TINYINT(1) NOT NULL DEFAULT 0,
+        custom_fields_json JSON NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS content_achievement_requirements (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        content_item_id BIGINT UNSIGNED NOT NULL,
+        required_content_item_id BIGINT UNSIGNED NOT NULL,
+        notes TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uniq_content_achievement_req (content_item_id, required_content_item_id),
+        INDEX idx_content_achievement_req_item (content_item_id),
+        CONSTRAINT fk_content_achievement_req_item FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
+        CONSTRAINT fk_content_achievement_req_required FOREIGN KEY (required_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS content_skill_requirements (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         content_item_id BIGINT UNSIGNED NOT NULL,
@@ -432,6 +460,7 @@ function bootstrap_schema(): void
 
     seed_permissions_and_roles();
     seed_default_journey_tags();
+    seed_content_type_configs();
     run_schema_migrations();
 
     run_once_migration('20260513_journey_steps_content_item_link', function (PDO $pdo): void {
@@ -540,6 +569,45 @@ function run_once_migration(string $key, callable $callback): void
     }
 }
 
+
+function seed_content_type_configs(): void
+{
+    $configs = [
+        ['quest', 'Quest', 'Story quests imported from RuneMetrics or maintained by admins.', 1, 1, 1, 0, 0, json_encode([
+            ['key' => 'quest_timeline', 'label' => 'Timeline', 'type' => 'text', 'placeholder' => 'Fifth Age / Sixth Age / Fort Forinthry'],
+            ['key' => 'quest_series', 'label' => 'Series', 'type' => 'text', 'placeholder' => 'Mahjarrat / Elf / Pirate'],
+        ]), 10],
+        ['achievement', 'Achievement', 'Achievement, task and RuneScore-style progression records.', 1, 1, 1, 1, 0, json_encode([
+            ['key' => 'category', 'label' => 'Achievement Category', 'type' => 'text', 'placeholder' => 'Exploration / Combat / Skills'],
+            ['key' => 'subcategory', 'label' => 'Subcategory', 'type' => 'text', 'placeholder' => 'Area Tasks / Bosses / Lore'],
+            ['key' => 'subsubcategory', 'label' => 'Sub-subcategory', 'type' => 'text', 'placeholder' => 'Desert / Morytania / God Wars'],
+        ]), 20],
+        ['task', 'Task', 'General manually tracked progression tasks.', 1, 1, 1, 1, 0, json_encode([]), 30],
+        ['boss', 'Boss', 'Bosses that can have unlock requirements and drop table links.', 1, 1, 1, 0, 1, json_encode([
+            ['key' => 'boss_image_url', 'label' => 'Boss Image URL', 'type' => 'url', 'placeholder' => 'Optional large boss image URL'],
+            ['key' => 'combat_style', 'label' => 'Combat Style', 'type' => 'text', 'placeholder' => 'Melee / Magic / Necromancy / Hybrid'],
+        ]), 40],
+        ['item', 'Item', 'Reusable items, drops, unlocks and collection log entries.', 1, 1, 1, 0, 0, json_encode([
+            ['key' => 'item_source', 'label' => 'Item Source', 'type' => 'text', 'placeholder' => 'Boss drop / skilling / shop / quest reward'],
+        ]), 50],
+        ['drop', 'Drop (legacy)', 'Legacy alias kept for older drop-log records. Prefer Item for new entries.', 1, 1, 1, 0, 0, json_encode([
+            ['key' => 'item_source', 'label' => 'Item Source', 'type' => 'text', 'placeholder' => 'Boss drop / skilling / shop / quest reward'],
+        ]), 60],
+        ['unlock', 'Unlock', 'Unlockable features, areas, abilities and account access.', 1, 1, 1, 0, 0, json_encode([]), 70],
+    ];
+
+    $stmt = db()->prepare("INSERT INTO content_type_configs
+        (type_slug, label, description, is_enabled, allow_skill_requirements, allow_quest_requirements, allow_achievement_requirements, allow_boss_drop_links, custom_fields_json, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            label = VALUES(label),
+            description = VALUES(description),
+            is_enabled = VALUES(is_enabled),
+            sort_order = VALUES(sort_order)");
+    foreach ($configs as $config) {
+        $stmt->execute($config);
+    }
+}
 
 function seed_default_journey_tags(): void
 {
