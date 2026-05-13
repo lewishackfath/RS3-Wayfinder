@@ -67,7 +67,7 @@ $skills = runemetrics_skill_names();
 $bossOptions = content_items_for_select('boss');
 $dropOptions = array_merge(content_items_for_select('drop'), content_items_for_select('item'));
 $bossDrops = $item['type'] === 'boss' ? boss_drop_sources_for_boss($id) : [];
-$dropSources = in_array($item['type'], ['item'], true) ? boss_sources_for_drop($id) : [];
+$dropSources = in_array($item['type'], ['drop','item'], true) ? boss_sources_for_drop($id) : [];
 
 page_header('Manage Content');
 ?>
@@ -317,7 +317,7 @@ page_header('Manage Content');
     </div>
 <?php endif; ?>
 
-<?php if (in_array($item['type'], ['item'], true)): ?>
+<?php if (in_array($item['type'], ['drop','item'], true)): ?>
     <div class="card">
         <h2>Dropped By</h2>
         <?php if (!$dropSources): ?>

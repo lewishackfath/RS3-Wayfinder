@@ -64,7 +64,7 @@ page_header($id ? 'Edit Content' : 'Add Content');
 <div class="page-title-row">
     <div>
         <h1><?= $id ? 'Edit Content' : 'Add Content' ?></h1>
-        <p class="muted">Create reusable records for quests, achievements, bosses, items, unlocks and other progression items.</p>
+        <p class="muted">Create reusable records for quests, achievements, bosses, drops, unlocks and other progression items.</p>
     </div>
     <a class="button secondary" href="<?= $id ? '/admin/content_view.php?id=' . (int)$id : '/admin/content.php' ?>">Back</a>
 </div>
