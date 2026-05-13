@@ -134,8 +134,13 @@ $selectedTagIds = $_POST && isset($_POST['tag_ids']) && is_array($_POST['tag_ids
     </section>
 
     <div class="sticky-form-actions">
+        <?php if ($id): ?>
+            <button class="button danger" type="submit" name="delete_journey_inline" value="1" formaction="/admin/journey_action.php" onclick="this.form.action='/admin/journey_action.php'; return confirm('Delete this journey? This will remove its chapters, steps and player progress for this journey.');">Delete journey</button>
+            <input type="hidden" name="action" value="delete_journey">
+            <input type="hidden" name="journey_id" value="<?= (int)$id ?>">
+        <?php endif; ?>
         <a class="button secondary" href="<?= $id ? '/admin/journey_view.php?id=' . (int)$id : '/admin/journeys.php' ?>">Cancel</a>
-        <button class="button" type="submit">Save journey</button>
+        <button class="button" type="submit" onclick="this.form.action=''; const actionInput=this.form.querySelector('input[name=action]'); if(actionInput){actionInput.remove();}">Save journey</button>
     </div>
 </form>
 <?php page_footer(); ?>

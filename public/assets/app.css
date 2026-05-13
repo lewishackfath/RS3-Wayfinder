@@ -1120,3 +1120,10 @@ code {
 .admin-step-actions form button {
     white-space: nowrap;
 }
+
+/* Journey delete controls */
+.button.danger {
+    background: rgba(255,90,90,.18);
+    border-color: rgba(255,90,90,.35);
+    color: #ffb4b4;
+}

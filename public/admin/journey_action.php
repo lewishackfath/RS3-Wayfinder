@@ -13,10 +13,19 @@ try {
         redirect('/admin/journey_view.php?id=' . $newId);
     }
 
+    if ($action === 'delete_journey') {
+        delete_journey((int)($_POST['journey_id'] ?? 0));
+        redirect('/admin/journeys.php');
+    }
+
     if ($action === 'duplicate_chapter') {
         duplicate_chapter((int)($_POST['chapter_id'] ?? 0));
     } elseif ($action === 'duplicate_step') {
         duplicate_step((int)($_POST['step_id'] ?? 0));
+    } elseif ($action === 'delete_chapter') {
+        delete_chapter((int)($_POST['chapter_id'] ?? 0));
+    } elseif ($action === 'delete_step') {
+        delete_step((int)($_POST['step_id'] ?? 0));
     } elseif ($action === 'move_chapter') {
         move_chapter((int)($_POST['chapter_id'] ?? 0), (string)($_POST['direction'] ?? ''));
     } elseif ($action === 'move_step') {
