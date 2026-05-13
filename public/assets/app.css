@@ -983,3 +983,10 @@ code {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Quest import */
+.notice.error {
+    border-color: rgba(255,90,90,.35);
+    background: rgba(255,90,90,.08);
+}

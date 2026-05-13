@@ -157,6 +157,7 @@ page_header('Admin');
             <?php if (current_user_can('profiles.view')): ?><a class="button secondary" href="/admin/profiles.php">Player profiles</a><?php endif; ?>
             <?php if (current_user_can('journeys.manage')): ?><a class="button" href="/admin/journey_edit.php">Create journey</a><?php endif; ?>
             <?php if (current_user_can('content.view')): ?><a class="button secondary" href="/admin/content.php">Content library</a><?php endif; ?>
+            <?php if (current_user_can('content.manage')): ?><a class="button secondary" href="/admin/content_import_quests.php">Import quests</a><?php endif; ?>
         </div>
     </div>
 </div>

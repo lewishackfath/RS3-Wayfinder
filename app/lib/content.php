@@ -252,3 +252,172 @@ function content_library_counts(): array
     }
     return $counts;
 }
+
+
+
+function runemetrics_quest_import_url(string $rsn): string
+{
+    return 'https://apps.runescape.com/runemetrics/quests?user=' . rawurlencode($rsn);
+}
+
+function fetch_runemetrics_quest_list_for_import(string $rsn): array
+{
+    $rsn = clean_rsn_display($rsn);
+    if ($rsn === '') {
+        throw new InvalidArgumentException('A valid RSN is required for the quest import.');
+    }
+
+    $url = runemetrics_quest_import_url($rsn);
+    $headers = [
+        'Accept: application/json,text/plain,*/*',
+        'User-Agent: RS3-Wayfinder/0.1'
+    ];
+
+    $body = false;
+    $httpCode = null;
+    $error = null;
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_CONNECTTIMEOUT => 8,
+            CURLOPT_TIMEOUT => 20,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+        $body = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        if ($body === false) {
+            $error = curl_error($ch) ?: 'cURL request failed.';
+        }
+        curl_close($ch);
+    } else {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 20,
+                'header' => implode("\r\n", $headers),
+            ],
+        ]);
+        $body = @file_get_contents($url, false, $context);
+        if (isset($http_response_header) && preg_match('/\s(\d{3})\s/', $http_response_header[0] ?? '', $m)) {
+            $httpCode = (int)$m[1];
+        }
+        if ($body === false) {
+            $error = 'HTTP request failed.';
+        }
+    }
+
+    if ($httpCode !== null && $httpCode >= 400) {
+        throw new RuntimeException('RuneMetrics returned HTTP ' . $httpCode . '.');
+    }
+    if ($body === false || $body === '') {
+        throw new RuntimeException($error ?: 'RuneMetrics did not return a response.');
+    }
+
+    $decoded = json_decode((string)$body, true);
+    if (!is_array($decoded)) {
+        throw new RuntimeException('RuneMetrics returned invalid JSON.');
+    }
+    if (isset($decoded['error'])) {
+        throw new RuntimeException(is_string($decoded['error']) ? $decoded['error'] : 'RuneMetrics returned an error.');
+    }
+
+    if (isset($decoded['quests']) && is_array($decoded['quests'])) {
+        return $decoded['quests'];
+    }
+
+    // Some mirrors/examples return the list directly.
+    if (array_is_list($decoded)) {
+        return $decoded;
+    }
+
+    throw new RuntimeException('RuneMetrics quest response did not contain a quest list.');
+}
+
+function normalise_imported_quest_title(array $quest): string
+{
+    foreach (['title', 'name', 'questName'] as $key) {
+        if (!empty($quest[$key]) && is_string($quest[$key])) {
+            return trim($quest[$key]);
+        }
+    }
+    return '';
+}
+
+function import_quests_from_runemetrics(string $rsn): array
+{
+    $quests = fetch_runemetrics_quest_list_for_import($rsn);
+
+    $created = 0;
+    $updated = 0;
+    $skipped = 0;
+    $errors = [];
+
+    $pdo = db();
+
+    foreach ($quests as $quest) {
+        if (!is_array($quest)) {
+            $skipped++;
+            continue;
+        }
+
+        $title = normalise_imported_quest_title($quest);
+        if ($title === '') {
+            $skipped++;
+            continue;
+        }
+
+        try {
+            $slug = content_slugify($title);
+            $metadata = json_encode([
+                'runemetrics_imported' => true,
+                'last_imported_at_utc' => gmdate('Y-m-d H:i:s'),
+                'raw' => $quest,
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+            $existing = $pdo->prepare("SELECT id FROM content_items WHERE type = 'quest' AND (slug = ? OR name = ?) LIMIT 1");
+            $existing->execute([$slug, $title]);
+            $existingId = (int)($existing->fetchColumn() ?: 0);
+
+            $category = '';
+            if (!empty($quest['difficulty'])) {
+                $category = (string)$quest['difficulty'];
+            } elseif (!empty($quest['status'])) {
+                $category = 'Imported';
+            }
+
+            if ($existingId > 0) {
+                // Preserve admin-managed fields wherever possible. Only fill blanks and refresh import metadata.
+                $stmt = $pdo->prepare("UPDATE content_items
+                    SET
+                        name = IF(name = '' OR name IS NULL, ?, name),
+                        category = IF(category = '' OR category IS NULL, ?, category),
+                        metadata_json = ?,
+                        is_active = 1,
+                        updated_at = UTC_TIMESTAMP()
+                    WHERE id = ?");
+                $stmt->execute([$title, $category, $metadata, $existingId]);
+                $updated++;
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO content_items
+                    (type, name, slug, description, category, source_url, icon_url, metadata_json, is_active)
+                    VALUES ('quest', ?, ?, '', ?, '', '', ?, 1)");
+                $stmt->execute([$title, content_unique_slug($title), $category, $metadata]);
+                $created++;
+            }
+        } catch (Throwable $e) {
+            $errors[] = $title . ': ' . $e->getMessage();
+        }
+    }
+
+    return [
+        'created' => $created,
+        'updated' => $updated,
+        'skipped' => $skipped,
+        'errors' => $errors,
+        'total_received' => count($quests),
+    ];
+}
+
