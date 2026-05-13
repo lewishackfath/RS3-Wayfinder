@@ -164,7 +164,7 @@ page_header($id ? 'Edit Content' : 'Add Content');
 
     <div class="sticky-form-actions">
         <?php if ($id && current_user_can('content.delete') && ($item['type'] ?? '') !== 'quest'): ?>
-            <button class="button danger" type="submit" name="delete_content" value="1" onclick="return confirm('Delete this content item and all related requirements/item sources?');">Delete</button>
+            <button class="button danger" type="submit" name="delete_content" value="1" onclick="return confirm('Delete this content item and all related requirements/drop sources?');">Delete</button>
         <?php endif; ?>
         <a class="button secondary" href="<?= $id ? '/admin/content_view.php?id=' . (int)$id : '/admin/content.php' ?>">Cancel</a>
         <button class="button" type="submit">Save content</button>

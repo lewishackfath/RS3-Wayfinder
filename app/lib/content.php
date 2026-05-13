@@ -113,6 +113,10 @@ function create_content_item(string $type, string $name, string $description, st
     $stmt->execute([$type, $name, $slug, trim($description), trim($category), trim($sourceUrl), trim($iconUrl), $isActive ? 1 : 0]);
     $id = (int)db()->lastInsertId();
 
+    if ($type === 'drop') {
+        upsert_drop_item($id, $name, $sourceUrl, $iconUrl, '');
+    }
+
     return $id;
 }
 
@@ -133,6 +137,18 @@ function update_content_item(int $id, string $type, string $name, string $descri
     $slug = content_unique_slug($name, $id);
     db()->prepare('UPDATE content_items SET type = ?, name = ?, slug = ?, description = ?, category = ?, source_url = ?, icon_url = ?, is_active = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')
         ->execute([$type, $name, $slug, trim($description), trim($category), trim($sourceUrl), trim($iconUrl), $isActive ? 1 : 0, $id]);
+
+    if ($type === 'drop') {
+        upsert_drop_item($id, $name, $sourceUrl, $iconUrl, '');
+    }
+}
+
+function upsert_drop_item(int $contentItemId, string $itemName, string $wikiUrl, string $iconUrl, string $notes): void
+{
+    db()->prepare('INSERT INTO drop_items (content_item_id, item_name, wiki_url, icon_url, notes)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE item_name = VALUES(item_name), wiki_url = VALUES(wiki_url), icon_url = VALUES(icon_url), notes = VALUES(notes), updated_at = UTC_TIMESTAMP()')
+        ->execute([$contentItemId, trim($itemName), trim($wikiUrl), trim($iconUrl), trim($notes)]);
 }
 
 function delete_content_item(int $id): void

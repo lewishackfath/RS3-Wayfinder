@@ -126,7 +126,7 @@ page_header($id ? 'Edit Step' : 'Create Step');
                     </option>
                 <?php endforeach; ?>
             </select>
-            <span class="field-help">Use this for quests, bosses, achievements, items or unlocks already configured in the Content Library.</span>
+            <span class="field-help">Use this for quests, bosses, achievements, drops or unlocks already configured in the Content Library.</span>
         </label>
 
         <label>Step title
