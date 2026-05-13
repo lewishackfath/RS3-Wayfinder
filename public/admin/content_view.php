@@ -26,10 +26,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (string)($_POST['icon_url'] ?? ''),
                 !empty($_POST['is_active'])
             );
-            $savedItem = content_item_by_id($id);
-            $savedType = (string)($savedItem['type'] ?? ($_POST['type'] ?? $item['type']));
-            $existingMetadata = $savedItem ? content_metadata($savedItem) : [];
-            update_content_metadata($id, content_custom_metadata_from_post($savedType, $_POST, $existingMetadata));
+            if ((string)($_POST['type'] ?? $item['type']) === 'quest') {
+                $savedItem = content_item_by_id($id);
+                $existingMetadata = $savedItem ? content_metadata($savedItem) : [];
+                update_content_metadata($id, quest_metadata_from_post($_POST, $existingMetadata));
+            }
         } elseif ($action === 'delete_content_item') {
             require_permission('content.delete');
             if (($item['type'] ?? '') === 'quest') {
@@ -45,10 +46,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             add_content_quest_requirement($id, (int)($_POST['required_content_item_id'] ?? 0), (string)($_POST['notes'] ?? ''));
         } elseif ($action === 'delete_quest_requirement') {
             delete_content_quest_requirement((int)($_POST['requirement_id'] ?? 0));
-        } elseif ($action === 'add_achievement_requirement') {
-            add_content_achievement_requirement($id, (int)($_POST['required_content_item_id'] ?? 0), (string)($_POST['notes'] ?? ''));
-        } elseif ($action === 'delete_achievement_requirement') {
-            delete_content_achievement_requirement((int)($_POST['requirement_id'] ?? 0));
         } elseif ($action === 'add_boss_drop_source') {
             add_boss_drop_source($id, (int)($_POST['drop_content_item_id'] ?? 0), (string)($_POST['rarity'] ?? ''), (string)($_POST['quantity'] ?? ''), (string)($_POST['notes'] ?? ''), (int)($_POST['sort_order'] ?? 0));
         } elseif ($action === 'add_drop_to_boss') {
@@ -65,11 +62,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 $metadata = content_metadata($item);
 $skillRequirements = content_skill_requirements($id);
 $questRequirements = content_quest_requirements($id);
-$achievementRequirements = content_achievement_requirements($id);
-$typeConfig = content_type_config((string)$item['type']);
 $questOptions = content_items_for_select('quest');
 $skills = runemetrics_skill_names();
-$achievementOptions = content_items_for_select('achievement');
 $bossOptions = content_items_for_select('boss');
 $dropOptions = array_merge(content_items_for_select('drop'), content_items_for_select('item'));
 $bossDrops = $item['type'] === 'boss' ? boss_drop_sources_for_boss($id) : [];
@@ -94,18 +88,13 @@ page_header('Manage Content');
     <h2>Overview</h2>
     <p><?= nl2br(e($item['description'] ?: 'No description yet.')) ?></p>
     <?php if (!empty($item['source_url'])): ?><p><a href="<?= e($item['source_url']) ?>" target="_blank" rel="noopener">Source / Wiki</a></p><?php endif; ?>
-    <?php $displayFields = $typeConfig['custom_fields'] ?? []; ?>
-    <?php if ($item['type'] === 'quest' || $displayFields): ?>
+    <?php if ($item['type'] === 'quest'): ?>
         <div class="content-meta-grid">
-            <?php if ($item['type'] === 'quest'): ?>
-                <div><span>Difficulty</span><strong><?= e($metadata['difficulty_label'] ?? 'Unknown') ?></strong></div>
-                <div><span>Quest Points</span><strong><?= isset($metadata['quest_points']) ? e((string)$metadata['quest_points']) : '—' ?></strong></div>
-                <div><span>Membership</span><strong><?= array_key_exists('members', $metadata) ? (!empty($metadata['members']) ? 'Members' : 'Free-to-play') : '—' ?></strong></div>
-            <?php endif; ?>
-            <?php foreach ($displayFields as $field): ?>
-                <?php $fieldKey = (string)($field['key'] ?? ''); if ($fieldKey === '') continue; ?>
-                <div><span><?= e($field['label'] ?? $fieldKey) ?></span><strong><?= e((string)($metadata[$fieldKey] ?? '—')) ?></strong></div>
-            <?php endforeach; ?>
+            <div><span>Difficulty</span><strong><?= e($metadata['difficulty_label'] ?? 'Unknown') ?></strong></div>
+            <div><span>Quest Points</span><strong><?= isset($metadata['quest_points']) ? e((string)$metadata['quest_points']) : '—' ?></strong></div>
+            <div><span>Membership</span><strong><?= array_key_exists('members', $metadata) ? (!empty($metadata['members']) ? 'Members' : 'Free-to-play') : '—' ?></strong></div>
+            <div><span>Timeline</span><strong><?= e($metadata['quest_timeline'] ?? '—') ?></strong></div>
+            <div><span>Series</span><strong><?= e($metadata['quest_series'] ?? '—') ?></strong></div>
         </div>
     <?php endif; ?>
 </div>
@@ -121,7 +110,7 @@ page_header('Manage Content');
                 <div class="form-grid">
                     <label>Content type
                         <select name="type" id="content-type-select">
-                            <?php foreach (enabled_content_types() as $value => $label): ?>
+                            <?php foreach (content_types() as $value => $label): ?>
                                 <option value="<?= e($value) ?>" <?= $item['type'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
                             <?php endforeach; ?>
                         </select>
@@ -148,24 +137,16 @@ page_header('Manage Content');
                     <input name="icon_url" value="<?= e($item['icon_url'] ?? '') ?>">
                 </label>
 
-                <?php foreach (content_type_configs() as $configType => $config): ?>
-                    <?php if (!empty($config['custom_fields'])): ?>
-                        <div data-content-fields="<?= e($configType) ?>">
-                            <div class="form-grid">
-                                <?php foreach ($config['custom_fields'] as $field): ?>
-                                    <?php $fieldKey = (string)($field['key'] ?? ''); if ($fieldKey === '') continue; $fieldName = 'meta_' . $fieldKey; $fieldType = (string)($field['type'] ?? 'text'); ?>
-                                    <label><?= e($field['label'] ?? $fieldKey) ?>
-                                        <?php if ($fieldType === 'textarea'): ?>
-                                            <textarea name="<?= e($fieldName) ?>" rows="3"><?= e($metadata[$fieldKey] ?? '') ?></textarea>
-                                        <?php else: ?>
-                                            <input type="<?= e(in_array($fieldType, ['url','number'], true) ? $fieldType : 'text') ?>" name="<?= e($fieldName) ?>" value="<?= e($metadata[$fieldKey] ?? '') ?>" placeholder="<?= e($field['placeholder'] ?? '') ?>">
-                                        <?php endif; ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                <div data-quest-fields>
+                    <div class="form-grid">
+                        <label>Timeline
+                            <input name="quest_timeline" value="<?= e($metadata['quest_timeline'] ?? '') ?>">
+                        </label>
+                        <label>Series
+                            <input name="quest_series" value="<?= e($metadata['quest_series'] ?? '') ?>">
+                        </label>
+                    </div>
+                </div>
 
                 <label class="toggle-row">
                     <input type="checkbox" name="is_active" value="1" <?= ((int)$item['is_active'] === 1) ? 'checked' : '' ?>>
@@ -183,9 +164,7 @@ page_header('Manage Content');
     </details>
 <?php endif; ?>
 
-<?php if (!empty($typeConfig['allow_skill_requirements']) || !empty($typeConfig['allow_quest_requirements']) || !empty($typeConfig['allow_achievement_requirements'])): ?>
 <div class="grid two-col-grid admin-dashboard-grid">
-    <?php if (!empty($typeConfig['allow_skill_requirements'])): ?>
     <div class="card">
         <h2>Skill Requirements</h2>
         <?php if (!$skillRequirements): ?>
@@ -236,9 +215,7 @@ page_header('Manage Content');
             </form>
         <?php endif; ?>
     </div>
-    <?php endif; ?>
 
-    <?php if (!empty($typeConfig['allow_quest_requirements'])): ?>
     <div class="card">
         <h2>Quest Requirements</h2>
         <?php if (!$questRequirements): ?>
@@ -285,61 +262,9 @@ page_header('Manage Content');
             </form>
         <?php endif; ?>
     </div>
-    <?php endif; ?>
-
-
-    <?php if (!empty($typeConfig['allow_achievement_requirements'])): ?>
-    <div class="card">
-        <h2>Achievement Requirements</h2>
-        <?php if (!$achievementRequirements): ?>
-            <p class="muted">No achievement requirements configured.</p>
-        <?php else: ?>
-            <table class="table compact-table">
-                <thead><tr><th>Achievement</th><th>Notes</th><th></th></tr></thead>
-                <tbody>
-                <?php foreach ($achievementRequirements as $req): ?>
-                    <tr>
-                        <td><?= e($req['required_name']) ?></td>
-                        <td><?= e($req['notes'] ?: '—') ?></td>
-                        <td>
-                            <?php if (current_user_can('content.manage')): ?>
-                                <form method="post" class="inline-form">
-                                    <?= csrf_field() ?>
-                                    <input type="hidden" name="action" value="delete_achievement_requirement">
-                                    <input type="hidden" name="requirement_id" value="<?= (int)$req['id'] ?>">
-                                    <button class="button secondary" type="submit">Remove</button>
-                                </form>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-
-        <?php if (current_user_can('content.manage')): ?>
-            <form method="post" class="mini-admin-form">
-                <?= csrf_field() ?>
-                <input type="hidden" name="action" value="add_achievement_requirement">
-                <label>Required achievement
-                    <select name="required_content_item_id" class="searchable-select">
-                        <?php foreach ($achievementOptions as $achievement): if ((int)$achievement['id'] === $id) continue; ?>
-                            <option value="<?= (int)$achievement['id'] ?>"><?= e($achievement['name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </label>
-                <label>Notes
-                    <input name="notes">
-                </label>
-                <button class="button secondary" type="submit">Add achievement requirement</button>
-            </form>
-        <?php endif; ?>
-    </div>
-    <?php endif; ?>
 </div>
-<?php endif; ?>
 
-<?php if (!empty($typeConfig['allow_boss_drop_links']) && $item['type'] === 'boss'): ?>
+<?php if ($item['type'] === 'boss'): ?>
     <div class="card">
         <h2>Boss Drop Sources</h2>
         <p class="muted">Drops are reusable content items. The same drop can be linked to multiple bosses.</p>
@@ -444,18 +369,4 @@ page_header('Manage Content');
     </div>
 <?php endif; ?>
 
-<script>
-(function () {
-    const typeSelect = document.getElementById('content-type-select');
-    const sections = document.querySelectorAll('[data-content-fields]');
-    function updateTypeFields() {
-        if (!typeSelect) return;
-        sections.forEach(section => {
-            section.hidden = section.getAttribute('data-content-fields') !== typeSelect.value;
-        });
-    }
-    if (typeSelect) typeSelect.addEventListener('change', updateTypeFields);
-    updateTypeFields();
-})();
-</script>
 <?php page_footer(); ?>

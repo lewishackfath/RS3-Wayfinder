@@ -9,7 +9,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         require_csrf();
         $profileId = create_profile((int)$user['id'], (string)($_POST['rsn'] ?? ''), (string)($_POST['account_type'] ?? 'main'), (string)($_POST['visibility'] ?? 'private'));
         set_active_profile((int)$profileId, (int)$user['id']);
-        redirect('/account/index.php');
+        redirect('/profiles/index.php');
     } catch (Throwable $e) {
         $error = $e->getMessage();
     }
@@ -40,7 +40,7 @@ page_header('Add Profile');
         </label>
         <div class="form-actions">
             <button class="button" type="submit">Save profile</button>
-            <a class="button secondary" href="/account/index.php">Cancel</a>
+            <a class="button secondary" href="/profiles/index.php">Cancel</a>
         </div>
     </form>
 </div>
