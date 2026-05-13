@@ -109,7 +109,7 @@ page_header($id ? 'Edit Step' : 'Create Step');
         </div>
 
         <label>Linked Content Library item
-            <select name="content_item_id" id="content-item-select">
+            <select name="content_item_id" id="content-item-select" class="searchable-select">
                 <option value="">No linked content item</option>
                 <?php foreach ($contentOptions as $contentOption): ?>
                     <option

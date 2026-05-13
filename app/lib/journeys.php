@@ -902,16 +902,14 @@ function add_content_prerequisite_steps_to_chapter(int $chapterId, int $contentI
     $seen[$contentItemId] = true;
 
     $created = [];
-    $orderedPrereqStepIds = [];
+    $questPrereqStepIds = [];
+    $skillPrereqStepIds = [];
 
-    // Direct quest prerequisites. Each quest is recursively expanded first,
-    // then the quest step itself is created/linked, so dependency order is preserved.
     foreach (content_quest_requirements($contentItemId) as $req) {
         $reqContentId = (int)$req['required_content_item_id'];
 
         $nestedCreated = add_content_prerequisite_steps_to_chapter($chapterId, $reqContentId, null, $seen);
         $created = array_merge($created, $nestedCreated);
-        $orderedPrereqStepIds = array_merge($orderedPrereqStepIds, $nestedCreated);
 
         $existing = journey_step_for_content($journeyId, $reqContentId);
         if ($existing) {
@@ -939,16 +937,23 @@ function add_content_prerequisite_steps_to_chapter(int $chapterId, int $contentI
             $created[] = $reqStepId;
         }
 
-        $orderedPrereqStepIds[] = $reqStepId;
+        $questPrereqStepIds[] = $reqStepId;
     }
 
-    // Direct skill prerequisites.
     foreach (content_skill_requirements($contentItemId) as $skillReq) {
-        $skillTitle = 'Reach ' . (int)$skillReq['required_level'] . ' ' . (string)$skillReq['skill_name'];
+        $skillName = (string)$skillReq['skill_name'];
+        $requiredLevel = (int)$skillReq['required_level'];
+        $skillTitle = 'Reach ' . $requiredLevel . ' ' . $skillName;
         $existingSkill = find_step_by_title_in_journey($journeyId, $skillTitle);
+
+        $lowerSkillStep = find_highest_lower_skill_step_in_journey($journeyId, $skillName, $requiredLevel);
 
         if ($existingSkill) {
             $skillStepId = (int)$existingSkill['id'];
+            if ($lowerSkillStep) {
+                db()->prepare('UPDATE journey_steps SET requires_step_id = ? WHERE id = ? AND (requires_step_id IS NULL OR requires_step_id = 0)')
+                    ->execute([(int)$lowerSkillStep['id'], $skillStepId]);
+            }
         } else {
             $skillStepId = create_step(
                 $chapterId,
@@ -956,34 +961,35 @@ function add_content_prerequisite_steps_to_chapter(int $chapterId, int $contentI
                 (string)($skillReq['notes'] ?? ''),
                 'auto_only',
                 'skill_level',
-                (string)$skillReq['skill_name'],
-                (int)$skillReq['required_level'],
+                $skillName,
+                $requiredLevel,
                 null,
                 next_step_sort_order($chapterId),
                 false,
-                null,
+                $lowerSkillStep ? (int)$lowerSkillStep['id'] : null,
                 null
             );
             $created[] = $skillStepId;
         }
 
-        $orderedPrereqStepIds[] = $skillStepId;
+        $skillPrereqStepIds[] = $skillStepId;
     }
 
-    // Chain prerequisites in the order they were produced, then place the parent after the last prereq.
-    $orderedPrereqStepIds = array_values(array_unique(array_filter(array_map('intval', $orderedPrereqStepIds))));
-    for ($i = 1; $i < count($orderedPrereqStepIds); $i++) {
+    $questPrereqStepIds = array_values(array_unique(array_filter(array_map('intval', $questPrereqStepIds))));
+    for ($i = 1; $i < count($questPrereqStepIds); $i++) {
         db()->prepare('UPDATE journey_steps SET requires_step_id = COALESCE(requires_step_id, ?) WHERE id = ?')
-            ->execute([$orderedPrereqStepIds[$i - 1], $orderedPrereqStepIds[$i]]);
+            ->execute([$questPrereqStepIds[$i - 1], $questPrereqStepIds[$i]]);
     }
 
-    if ($parentStepId && $orderedPrereqStepIds) {
-        $lastPrereqId = end($orderedPrereqStepIds);
+    // The target step can only store one lock. Prefer quest locks because skills are independently visible/checkable.
+    if ($parentStepId && $questPrereqStepIds) {
+        $lastQuestPrereqId = end($questPrereqStepIds);
         db()->prepare('UPDATE journey_steps SET requires_step_id = ? WHERE id = ?')
-            ->execute([(int)$lastPrereqId, $parentStepId]);
+            ->execute([(int)$lastQuestPrereqId, $parentStepId]);
     }
 
-    reorder_chapter_steps_with_prerequisites_first($chapterId, $parentStepId ?: null, $orderedPrereqStepIds);
+    $orderedPrereqs = array_merge($questPrereqStepIds, $skillPrereqStepIds);
+    reorder_chapter_steps_with_prerequisites_first($chapterId, $parentStepId ?: null, $orderedPrereqs);
 
     return array_values(array_unique($created));
 }
@@ -997,10 +1003,9 @@ function reorder_chapter_steps_with_prerequisites_first(int $chapterId, ?int $ta
     }
 
     $steps = steps_for_chapter($chapterId);
-    $before = [];
-    $after = [];
     $target = null;
     $prereqs = [];
+    $others = [];
 
     foreach ($steps as $step) {
         $stepId = (int)$step['id'];
@@ -1008,17 +1013,11 @@ function reorder_chapter_steps_with_prerequisites_first(int $chapterId, ?int $ta
             $target = $step;
             continue;
         }
-
         if (in_array($stepId, $prereqStepIds, true)) {
             $prereqs[$stepId] = $step;
             continue;
         }
-
-        if ((int)$step['sort_order'] < (int)($target['sort_order'] ?? PHP_INT_MAX)) {
-            $before[] = $step;
-        } else {
-            $after[] = $step;
-        }
+        $others[] = $step;
     }
 
     if (!$target) {
@@ -1026,7 +1025,6 @@ function reorder_chapter_steps_with_prerequisites_first(int $chapterId, ?int $ta
         return;
     }
 
-    // Preserve the dependency order given by the recursive generator.
     $orderedPrereqs = [];
     foreach ($prereqStepIds as $id) {
         if (isset($prereqs[$id])) {
@@ -1034,7 +1032,7 @@ function reorder_chapter_steps_with_prerequisites_first(int $chapterId, ?int $ta
         }
     }
 
-    $ordered = array_merge($before, $orderedPrereqs, [$target], $after);
+    $ordered = array_merge($orderedPrereqs, [$target], $others);
 
     $sort = 10;
     $stmt = db()->prepare('UPDATE journey_steps SET sort_order = ? WHERE id = ?');
@@ -1042,6 +1040,22 @@ function reorder_chapter_steps_with_prerequisites_first(int $chapterId, ?int $ta
         $stmt->execute([$sort, (int)$step['id']]);
         $sort += 10;
     }
+}
+
+function find_highest_lower_skill_step_in_journey(int $journeyId, string $skillName, int $requiredLevel): ?array
+{
+    $stmt = db()->prepare("SELECT js.*
+        FROM journey_steps js
+        JOIN journey_chapters jc ON jc.id = js.chapter_id
+        WHERE jc.journey_id = ?
+          AND js.auto_rule_type = 'skill_level'
+          AND LOWER(js.rule_skill_name) = LOWER(?)
+          AND js.rule_level < ?
+        ORDER BY js.rule_level DESC
+        LIMIT 1");
+    $stmt->execute([$journeyId, $skillName, $requiredLevel]);
+    $row = $stmt->fetch();
+    return $row ?: null;
 }
 
 function next_step_sort_order(int $chapterId): int

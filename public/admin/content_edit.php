@@ -12,6 +12,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     require_csrf();
     try {
         if (isset($_POST['delete_content'])) {
+            require_permission('content.delete');
             delete_content_item($id);
             redirect('/admin/content.php');
         }
@@ -158,7 +159,7 @@ page_header($id ? 'Edit Content' : 'Add Content');
     </section>
 
     <div class="sticky-form-actions">
-        <?php if ($id): ?>
+        <?php if ($id && current_user_can('content.delete')): ?>
             <button class="button danger" type="submit" name="delete_content" value="1" onclick="return confirm('Delete this content item and all related requirements/drop sources?');">Delete</button>
         <?php endif; ?>
         <a class="button secondary" href="<?= $id ? '/admin/content_view.php?id=' . (int)$id : '/admin/content.php' ?>">Cancel</a>

@@ -1127,3 +1127,26 @@ code {
     border-color: rgba(255,90,90,.35);
     color: #ffb4b4;
 }
+
+
+/* Searchable admin selects */
+.searchable-select-wrap {
+    display: grid;
+    gap: .35rem;
+}
+
+.searchable-select-input {
+    width: 100%;
+}
+
+/* Combined content manage/edit */
+.content-inline-edit-card summary {
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1.15rem;
+    margin-bottom: .75rem;
+}
+
+.content-inline-edit-card[open] summary {
+    margin-bottom: 1rem;
+}

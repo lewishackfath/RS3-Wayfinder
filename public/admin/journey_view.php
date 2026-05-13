@@ -48,12 +48,12 @@ page_header('Manage Journey');
                 <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                 <button class="button secondary" type="submit">Duplicate journey</button>
             </form>
-            <form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this journey? This will remove its chapters, steps and player progress for this journey.');">
+            <?php if (current_user_can('journeys.delete')): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this journey? This will remove its chapters, steps and player progress for this journey.');">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="delete_journey">
                 <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                 <button class="button danger" type="submit">Delete journey</button>
-            </form>
+            </form><?php endif; ?>
             <a class="button" href="/admin/chapter_edit.php?journey_id=<?= (int)$journey['id'] ?>">Add chapter</a>
         <?php endif; ?>
     </div>
@@ -104,13 +104,13 @@ page_header('Manage Journey');
                         <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                         <button class="button secondary" type="submit">Duplicate</button>
                     </form>
-                    <form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this chapter? This will remove all steps inside it.');">
+                    <?php if (current_user_can('journeys.delete')): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this chapter? This will remove all steps inside it.');">
                         <?= csrf_field() ?>
                         <input type="hidden" name="action" value="delete_chapter">
                         <input type="hidden" name="chapter_id" value="<?= (int)$chapter['id'] ?>">
                         <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                         <button class="button danger" type="submit">Delete</button>
-                    </form>
+                    </form><?php endif; ?>
                     <a class="button secondary" href="/admin/chapter_edit.php?id=<?= (int)$chapter['id'] ?>">Edit chapter</a>
                     <a class="button" href="/admin/step_edit.php?chapter_id=<?= (int)$chapter['id'] ?>">Add step</a>
                 </div>
@@ -176,13 +176,13 @@ page_header('Manage Journey');
                                             <button class="button secondary" type="submit">Add prereqs</button>
                                         </form>
                                     <?php endif; ?>
-                                    <form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this step?');">
+                                    <?php if (current_user_can('journeys.delete')): ?><form class="inline-form" method="post" action="/admin/journey_action.php" onsubmit="return confirm('Delete this step?');">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete_step">
                                         <input type="hidden" name="step_id" value="<?= (int)$step['id'] ?>">
                                         <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                                         <button class="button danger" type="submit">Delete</button>
-                                    </form>
+                                    </form><?php endif; ?>
                                     <a class="button secondary" href="/admin/step_edit.php?id=<?= (int)$step['id'] ?>">Edit</a>
                                 </div>
                             <?php endif; ?>

@@ -65,10 +65,7 @@ page_header('Content Library');
                     <td><?= e($item['category'] ?: '—') ?></td>
                     <td><?= ((int)$item['is_active'] === 1) ? '<span class="badge success">Active</span>' : '<span class="badge">Inactive</span>' ?></td>
                     <td class="actions">
-                        <a class="button secondary" href="/admin/content_view.php?id=<?= (int)$item['id'] ?>">Manage</a>
-                        <?php if (current_user_can('content.manage')): ?>
-                            <a class="button secondary" href="/admin/content_edit.php?id=<?= (int)$item['id'] ?>">Edit</a>
-                        <?php endif; ?>
+                        <a class="button secondary" href="/admin/content_view.php?id=<?= (int)$item['id'] ?>">Manage / Edit</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

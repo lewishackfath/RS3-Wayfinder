@@ -510,8 +510,10 @@ function seed_permissions_and_roles(): void
         ['profiles.manage', 'Manage profiles', 'Allows moderating player profiles.'],
         ['journeys.view', 'View journeys', 'Allows viewing journeys in the admin area.'],
         ['journeys.manage', 'Manage journeys', 'Allows creating and editing journeys, chapters and steps.'],
+        ['journeys.delete', 'Delete journeys', 'Allows deleting journeys, chapters and steps.'],
         ['content.view', 'View content library', 'Allows viewing the admin content library.'],
         ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses and drops.'],
+        ['content.delete', 'Delete content library items', 'Allows deleting content library items and related records.'],
     ];
 
     $stmt = $pdo->prepare("INSERT INTO permissions (slug, name, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)");
@@ -529,8 +531,8 @@ function seed_permissions_and_roles(): void
         $stmt->execute($role);
     }
 
-    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'journeys.view', 'journeys.manage', 'content.view', 'content.manage']);
-    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'journeys.view', 'journeys.manage', 'content.view', 'content.manage']);
+    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'journeys.view', 'journeys.manage', 'journeys.delete', 'content.view', 'content.manage', 'content.delete']);
+    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'journeys.view', 'journeys.manage', 'journeys.delete', 'content.view', 'content.manage', 'content.delete']);
 }
 
 function grant_role_permissions(string $roleSlug, array $permissionSlugs): void

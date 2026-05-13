@@ -15,7 +15,27 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
         $action = (string)($_POST['action'] ?? '');
 
-        if ($action === 'add_skill_requirement') {
+        if ($action === 'update_content_details') {
+            update_content_item(
+                $id,
+                (string)($_POST['type'] ?? $item['type']),
+                (string)($_POST['name'] ?? $item['name']),
+                (string)($_POST['description'] ?? ''),
+                (string)($_POST['category'] ?? ''),
+                (string)($_POST['source_url'] ?? ''),
+                (string)($_POST['icon_url'] ?? ''),
+                !empty($_POST['is_active'])
+            );
+            if ((string)($_POST['type'] ?? $item['type']) === 'quest') {
+                $savedItem = content_item_by_id($id);
+                $existingMetadata = $savedItem ? content_metadata($savedItem) : [];
+                update_content_metadata($id, quest_metadata_from_post($_POST, $existingMetadata));
+            }
+        } elseif ($action === 'delete_content_item') {
+            require_permission('content.delete');
+            delete_content_item($id);
+            redirect('/admin/content.php');
+        } elseif ($action === 'add_skill_requirement') {
             add_content_skill_requirement($id, (string)($_POST['skill_name'] ?? ''), (int)($_POST['required_level'] ?? 0), (string)($_POST['notes'] ?? ''));
         } elseif ($action === 'delete_skill_requirement') {
             delete_content_skill_requirement((int)($_POST['requirement_id'] ?? 0));
@@ -75,6 +95,71 @@ page_header('Manage Content');
         </div>
     <?php endif; ?>
 </div>
+
+<?php if (current_user_can('content.manage')): ?>
+    <details class="card content-inline-edit-card">
+        <summary>Edit Details</summary>
+        <form method="post" class="enhanced-form content-editor-form">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="update_content_details">
+
+            <section class="form-section">
+                <div class="form-grid">
+                    <label>Content type
+                        <select name="type" id="content-type-select">
+                            <?php foreach (content_types() as $value => $label): ?>
+                                <option value="<?= e($value) ?>" <?= $item['type'] === $value ? 'selected' : '' ?>><?= e($label) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <label>Name
+                        <input name="name" required value="<?= e($item['name']) ?>">
+                    </label>
+                </div>
+
+                <label>Description
+                    <textarea name="description" rows="4"><?= e($item['description'] ?? '') ?></textarea>
+                </label>
+
+                <div class="form-grid">
+                    <label>Category
+                        <input name="category" value="<?= e($item['category'] ?? '') ?>">
+                    </label>
+                    <label>Source / Wiki URL
+                        <input name="source_url" value="<?= e($item['source_url'] ?? '') ?>">
+                    </label>
+                </div>
+
+                <label>Icon URL
+                    <input name="icon_url" value="<?= e($item['icon_url'] ?? '') ?>">
+                </label>
+
+                <div data-quest-fields>
+                    <div class="form-grid">
+                        <label>Timeline
+                            <input name="quest_timeline" value="<?= e($metadata['quest_timeline'] ?? '') ?>">
+                        </label>
+                        <label>Series
+                            <input name="quest_series" value="<?= e($metadata['quest_series'] ?? '') ?>">
+                        </label>
+                    </div>
+                </div>
+
+                <label class="toggle-row">
+                    <input type="checkbox" name="is_active" value="1" <?= ((int)$item['is_active'] === 1) ? 'checked' : '' ?>>
+                    <span><strong>Active</strong><small>Hidden content can stay stored without appearing in selectors.</small></span>
+                </label>
+            </section>
+
+            <div class="form-actions">
+                <?php if (current_user_can('content.delete')): ?>
+                    <button class="button danger" type="submit" name="action" value="delete_content_item" onclick="return confirm('Delete this content item and related records?');">Delete content</button>
+                <?php endif; ?>
+                <button class="button" type="submit">Save details</button>
+            </div>
+        </form>
+    </details>
+<?php endif; ?>
 
 <div class="grid two-col-grid admin-dashboard-grid">
     <div class="card">
@@ -161,7 +246,7 @@ page_header('Manage Content');
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="add_quest_requirement">
                 <label>Required quest
-                    <select name="required_content_item_id">
+                    <select name="required_content_item_id" class="searchable-select">
                         <?php foreach ($questOptions as $quest): if ((int)$quest['id'] === $id) continue; ?>
                             <option value="<?= (int)$quest['id'] ?>"><?= e($quest['name']) ?></option>
                         <?php endforeach; ?>
@@ -213,7 +298,7 @@ page_header('Manage Content');
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="add_boss_drop_source">
                 <label>Drop / Item
-                    <select name="drop_content_item_id">
+                    <select name="drop_content_item_id" class="searchable-select">
                         <?php foreach ($dropOptions as $drop): ?><option value="<?= (int)$drop['id'] ?>"><?= e($drop['name']) ?></option><?php endforeach; ?>
                     </select>
                 </label>
@@ -265,7 +350,7 @@ page_header('Manage Content');
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="add_drop_to_boss">
                 <label>Boss
-                    <select name="boss_content_item_id">
+                    <select name="boss_content_item_id" class="searchable-select">
                         <?php foreach ($bossOptions as $boss): ?><option value="<?= (int)$boss['id'] ?>"><?= e($boss['name']) ?></option><?php endforeach; ?>
                     </select>
                 </label>

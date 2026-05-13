@@ -14,6 +14,7 @@ try {
     }
 
     if ($action === 'delete_journey') {
+        require_permission('journeys.delete');
         delete_journey((int)($_POST['journey_id'] ?? 0));
         redirect('/admin/journeys.php');
     }
@@ -23,8 +24,10 @@ try {
     } elseif ($action === 'duplicate_step') {
         duplicate_step((int)($_POST['step_id'] ?? 0));
     } elseif ($action === 'delete_chapter') {
+        require_permission('journeys.delete');
         delete_chapter((int)($_POST['chapter_id'] ?? 0));
     } elseif ($action === 'delete_step') {
+        require_permission('journeys.delete');
         delete_step((int)($_POST['step_id'] ?? 0));
     } elseif ($action === 'move_chapter') {
         move_chapter((int)($_POST['chapter_id'] ?? 0), (string)($_POST['direction'] ?? ''));
