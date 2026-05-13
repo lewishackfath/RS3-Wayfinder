@@ -281,7 +281,14 @@ page_header($id ? 'Edit Step' : 'Create Step');
             questFields.hidden = rule !== 'quest_complete';
         }
 
-        if (mode === 'manual_only' && ruleSelect) {
+        if ((rule === 'skill_level' || rule === 'quest_complete') && mode !== 'auto_only') {
+            const autoOnly = modeInputs.find(input => input.value === 'auto_only');
+            if (autoOnly) {
+                autoOnly.checked = true;
+            }
+        }
+
+        if (selectedMode() === 'manual_only' && ruleSelect) {
             ruleSelect.value = '';
             if (skillFields) skillFields.hidden = true;
             if (questFields) questFields.hidden = true;
@@ -304,7 +311,7 @@ if (contentItemSelect) {
         const contentType = selected.dataset.type || '';
         const contentName = selected.dataset.name || '';
         const titleInput = document.querySelector('input[name="title"]');
-        const modeAutoManual = document.querySelector('input[name="completion_mode"][value="auto_or_manual"]');
+        const modeAutoOnly = document.querySelector('input[name="completion_mode"][value="auto_only"]');
         const modeManual = document.querySelector('input[name="completion_mode"][value="manual_only"]');
         const ruleSelect = document.getElementById('auto-rule-type');
         const questInput = document.querySelector('input[name="rule_quest_title"]');
@@ -314,7 +321,7 @@ if (contentItemSelect) {
         }
 
         if (contentType === 'quest') {
-            if (modeAutoManual) modeAutoManual.checked = true;
+            if (modeAutoOnly) modeAutoOnly.checked = true;
             if (ruleSelect) ruleSelect.value = 'quest_complete';
             if (questInput && !questInput.value.trim()) questInput.value = contentName;
         } else if (modeManual) {

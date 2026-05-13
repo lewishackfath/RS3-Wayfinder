@@ -57,62 +57,6 @@ function page_footer(): void
     echo '</main><footer class="footer">RS3 Wayfinder is an independent RuneScape journey tool and is not affiliated with Jagex or Discord.</footer><script>
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("select.searchable-select").forEach(function (select) {
-        if (select.dataset.searchReady === "1") return;
-        select.dataset.searchReady = "1";
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "searchable-select-wrap";
-
-        const input = document.createElement("input");
-        input.type = "search";
-        input.className = "searchable-select-input";
-        input.placeholder = "Search options…";
-        input.setAttribute("aria-label", "Search options");
-
-        select.parentNode.insertBefore(wrapper, select);
-        wrapper.appendChild(input);
-        wrapper.appendChild(select);
-
-        const allOptions = Array.from(select.options).map(function (option) {
-            return {
-                value: option.value,
-                text: option.text,
-                selected: option.selected,
-                dataset: Object.assign({}, option.dataset)
-            };
-        });
-
-        input.addEventListener("input", function () {
-            const term = input.value.trim().toLowerCase();
-            const currentValue = select.value;
-            select.innerHTML = "";
-
-            allOptions.forEach(function (item) {
-                if (term && !item.text.toLowerCase().includes(term)) return;
-
-                const option = document.createElement("option");
-                option.value = item.value;
-                option.text = item.text;
-                Object.keys(item.dataset).forEach(function (key) {
-                    option.dataset[key] = item.dataset[key];
-                });
-                if (item.value === currentValue) option.selected = true;
-                select.appendChild(option);
-            });
-
-            if (!select.options.length) {
-                const option = document.createElement("option");
-                option.value = "";
-                option.text = "No matching results";
-                select.appendChild(option);
-            }
-        });
-    });
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll("select.searchable-select").forEach(function (select) {
         if (select.dataset.enhanced === "1") return;
         select.dataset.enhanced = "1";
 
