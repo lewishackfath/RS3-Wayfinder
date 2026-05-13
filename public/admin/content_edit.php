@@ -44,11 +44,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             );
         }
 
-        if ((string)($_POST['type'] ?? $typeValue ?? '') === 'quest') {
-            $savedItem = content_item_by_id($id);
-            $existingMetadata = $savedItem ? content_metadata($savedItem) : [];
-            update_content_metadata($id, quest_metadata_from_post($_POST, $existingMetadata));
-        }
+        $savedItem = content_item_by_id($id);
+        $savedType = (string)($savedItem['type'] ?? ($_POST['type'] ?? ''));
+        $existingMetadata = $savedItem ? content_metadata($savedItem) : [];
+        update_content_metadata($id, content_custom_metadata_from_post($savedType, $_POST, $existingMetadata));
 
         redirect('/admin/content_view.php?id=' . $id);
     } catch (Throwable $e) {
@@ -84,7 +83,7 @@ page_header($id ? 'Edit Content' : 'Add Content');
         <div class="form-grid">
             <label>Content type
                 <select name="type" id="content-type-select">
-                    <?php foreach (content_types() as $value => $label): ?>
+                    <?php foreach (enabled_content_types() as $value => $label): ?>
                         <option value="<?= e($value) ?>" <?= $typeValue === $value ? 'selected' : '' ?>><?= e($label) ?></option>
                     <?php endforeach; ?>
                 </select>
@@ -123,32 +122,48 @@ page_header($id ? 'Edit Content' : 'Add Content');
         </label>
     </section>
 
-    <section class="form-section quest-extra-fields" data-quest-fields>
-        <div class="form-section-intro">
-            <h2>Quest details</h2>
-            <p class="muted">Optional admin-managed quest metadata. RuneMetrics import will not overwrite these values.</p>
-        </div>
+    <?php $typeConfigs = content_type_configs(); ?>
+    <?php foreach ($typeConfigs as $configType => $config): ?>
+        <?php $fields = $config['custom_fields'] ?? []; ?>
+        <?php if ($fields): ?>
+            <section class="form-section content-extra-fields" data-content-fields="<?= e($configType) ?>">
+                <div class="form-section-intro">
+                    <h2><?= e($config['label'] ?? ucfirst((string)$configType)) ?> details</h2>
+                    <p class="muted">Extra fields configured for this content type.</p>
+                </div>
 
-        <div class="form-grid">
-            <label>Timeline
-                <input name="quest_timeline" value="<?= e($_POST['quest_timeline'] ?? $metadata['quest_timeline'] ?? '') ?>" placeholder="Fifth Age / Sixth Age / Fort Forinthry">
-            </label>
-            <label>Series
-                <input name="quest_series" value="<?= e($_POST['quest_series'] ?? $metadata['quest_series'] ?? '') ?>" placeholder="Mahjarrat / Elf / Pirate">
-            </label>
-        </div>
+                <div class="form-grid">
+                    <?php foreach ($fields as $field): ?>
+                        <?php
+                            $fieldKey = (string)($field['key'] ?? '');
+                            if ($fieldKey === '') continue;
+                            $fieldName = 'meta_' . $fieldKey;
+                            $fieldType = (string)($field['type'] ?? 'text');
+                            $fieldValue = (string)($_POST[$fieldName] ?? $metadata[$fieldKey] ?? '');
+                        ?>
+                        <label><?= e($field['label'] ?? $fieldKey) ?>
+                            <?php if ($fieldType === 'textarea'): ?>
+                                <textarea name="<?= e($fieldName) ?>" rows="3" placeholder="<?= e($field['placeholder'] ?? '') ?>"><?= e($fieldValue) ?></textarea>
+                            <?php else: ?>
+                                <input type="<?= e(in_array($fieldType, ['url','number'], true) ? $fieldType : 'text') ?>" name="<?= e($fieldName) ?>" value="<?= e($fieldValue) ?>" placeholder="<?= e($field['placeholder'] ?? '') ?>">
+                            <?php endif; ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
 
-        <?php if (!empty($metadata['difficulty_label']) || isset($metadata['quest_points']) || array_key_exists('members', $metadata)): ?>
-            <div class="imported-meta-note">
-                <strong>Imported quest data</strong>
-                <span>
-                    <?= e($metadata['difficulty_label'] ?? 'Unknown difficulty') ?>
-                    <?php if (isset($metadata['quest_points'])): ?> • <?= e((string)$metadata['quest_points']) ?> QP<?php endif; ?>
-                    <?php if (array_key_exists('members', $metadata)): ?> • <?= !empty($metadata['members']) ? 'Members' : 'Free-to-play' ?><?php endif; ?>
-                </span>
-            </div>
+                <?php if ($configType === 'quest' && (!empty($metadata['difficulty_label']) || isset($metadata['quest_points']) || array_key_exists('members', $metadata))): ?>
+                    <div class="imported-meta-note">
+                        <strong>Imported quest data</strong>
+                        <span>
+                            <?= e($metadata['difficulty_label'] ?? 'Unknown difficulty') ?>
+                            <?php if (isset($metadata['quest_points'])): ?> • <?= e((string)$metadata['quest_points']) ?> QP<?php endif; ?>
+                            <?php if (array_key_exists('members', $metadata)): ?> • <?= !empty($metadata['members']) ? 'Members' : 'Free-to-play' ?><?php endif; ?>
+                        </span>
+                    </div>
+                <?php endif; ?>
+            </section>
         <?php endif; ?>
-    </section>
+    <?php endforeach; ?>
 
     <section class="form-section">
         <div class="form-section-intro">
@@ -174,13 +189,15 @@ page_header($id ? 'Edit Content' : 'Add Content');
 <script>
 (function () {
     const typeSelect = document.getElementById('content-type-select');
-    const questFields = document.querySelector('[data-quest-fields]');
-    function updateQuestFields() {
-        if (!typeSelect || !questFields) return;
-        questFields.hidden = typeSelect.value !== 'quest';
+    const fieldSections = document.querySelectorAll('[data-content-fields]');
+    function updateTypeFields() {
+        if (!typeSelect) return;
+        fieldSections.forEach(section => {
+            section.hidden = section.getAttribute('data-content-fields') !== typeSelect.value;
+        });
     }
-    if (typeSelect) typeSelect.addEventListener('change', updateQuestFields);
-    updateQuestFields();
+    if (typeSelect) typeSelect.addEventListener('change', updateTypeFields);
+    updateTypeFields();
 })();
 </script>
 <?php page_footer(); ?>

@@ -12,11 +12,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         require_csrf();
         if (isset($_POST['delete_profile'])) {
             delete_profile($profileId, (int)$user['id']);
-            redirect('/profiles/index.php');
+            redirect('/account/index.php');
         }
         update_profile($profileId, (int)$user['id'], (string)($_POST['rsn'] ?? ''), (string)($_POST['account_type'] ?? 'main'), (string)($_POST['visibility'] ?? 'private'), !empty($_POST['is_primary']));
         set_profile_interests($profileId, (int)$user['id'], is_array($_POST['interest_tag_ids'] ?? null) ? $_POST['interest_tag_ids'] : []);
-        redirect('/profiles/index.php');
+        redirect('/account/index.php');
     } catch (Throwable $e) {
         $error = $e->getMessage();
         $profile = array_merge($profile, $_POST);
@@ -72,7 +72,7 @@ page_header('Edit Profile');
         <label class="checkbox-label"><input type="checkbox" name="is_primary" value="1" <?= ((int)$profile['is_primary'] === 1) ? 'checked' : '' ?>> Make this my primary profile</label>
         <div class="form-actions">
             <button class="button" type="submit">Save changes</button>
-            <a class="button secondary" href="/profiles/index.php">Cancel</a>
+            <a class="button secondary" href="/account/index.php">Cancel</a>
         </div>
     </form>
     <form method="post" onsubmit="return confirm('Delete this profile?');" class="danger-zone">
