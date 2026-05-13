@@ -6,6 +6,7 @@ require_login();
 $user = current_user();
 $active = active_profile();
 $journeys = all_journeys(true);
+$allTags = all_journey_tags();
 $notice = null;
 
 if ($active && (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST')) {
@@ -36,7 +37,74 @@ $startedIds = [];
 foreach ($started as $row) {
     $startedIds[(int)$row['id']] = $row;
 }
-$recommendedJourneys = $active ? recommended_journeys_for_profile((int)$active['id'], 6) : [];
+
+$q = trim((string)($_GET['q'] ?? ''));
+$statusFilter = (string)($_GET['status'] ?? 'all');
+$tagFilter = (int)($_GET['tag_id'] ?? 0);
+$sort = (string)($_GET['sort'] ?? 'default');
+$allowedStatuses = ['all', 'enabled', 'available'];
+$allowedSorts = ['default', 'name', 'progress_desc', 'steps_desc'];
+if (!in_array($statusFilter, $allowedStatuses, true)) {
+    $statusFilter = 'all';
+}
+if (!in_array($sort, $allowedSorts, true)) {
+    $sort = 'default';
+}
+
+$journeyCards = [];
+foreach ($journeys as $journey) {
+    $journeyId = (int)$journey['id'];
+    $isStarted = isset($startedIds[$journeyId]);
+    $tags = journey_tags_for_journey($journeyId);
+    $tagIds = array_map(static fn(array $tag): int => (int)$tag['id'], $tags);
+    $steps = steps_for_journey($journeyId);
+    $progress = $active && $isStarted
+        ? evaluate_journey_progress((int)$active['id'], $journeyId)
+        : ['percent' => 0, 'completed' => 0, 'total' => count($steps), 'required_completed' => 0, 'required_total' => count(array_filter($steps, static fn(array $step): bool => (int)$step['is_optional'] !== 1))];
+
+    $searchText = strtolower(trim((string)$journey['name'] . ' ' . (string)($journey['description'] ?? '') . ' ' . implode(' ', array_column($tags, 'name'))));
+
+    if ($q !== '' && strpos($searchText, strtolower($q)) === false) {
+        continue;
+    }
+    if ($statusFilter === 'enabled' && !$isStarted) {
+        continue;
+    }
+    if ($statusFilter === 'available' && $isStarted) {
+        continue;
+    }
+    if ($tagFilter > 0 && !in_array($tagFilter, $tagIds, true)) {
+        continue;
+    }
+
+    $journeyCards[] = [
+        'journey' => $journey,
+        'is_started' => $isStarted,
+        'tags' => $tags,
+        'progress' => $progress,
+        'step_count' => count($steps),
+    ];
+}
+
+usort($journeyCards, static function (array $a, array $b) use ($sort): int {
+    if ($sort === 'name') {
+        return strcasecmp((string)$a['journey']['name'], (string)$b['journey']['name']);
+    }
+    if ($sort === 'progress_desc') {
+        return ((int)$b['progress']['percent'] <=> (int)$a['progress']['percent'])
+            ?: strcasecmp((string)$a['journey']['name'], (string)$b['journey']['name']);
+    }
+    if ($sort === 'steps_desc') {
+        return ((int)$b['step_count'] <=> (int)$a['step_count'])
+            ?: strcasecmp((string)$a['journey']['name'], (string)$b['journey']['name']);
+    }
+
+    return ((int)$a['journey']['sort_order'] <=> (int)$b['journey']['sort_order'])
+        ?: strcasecmp((string)$a['journey']['name'], (string)$b['journey']['name']);
+});
+
+$enabledCount = count($startedIds);
+$totalCount = count($journeys);
 
 page_header('Journeys');
 ?>
@@ -52,31 +120,6 @@ page_header('Journeys');
 
 <?php if ($notice): ?><div class="notice"><?= e($notice) ?></div><?php endif; ?>
 
-<?php if ($active && $recommendedJourneys): ?>
-    <div class="card journey-recommendation-strip">
-        <div class="page-title-row compact">
-            <div>
-                <h2>Recommended for <?= e($active['rsn']) ?></h2>
-                <p class="muted">These suggestions use your profile interests and current account progression.</p>
-            </div>
-            <a class="button secondary" href="/profiles/edit.php?id=<?= (int)$active['id'] ?>">Edit interests</a>
-        </div>
-        <div class="recommended-journey-grid compact">
-            <?php foreach ($recommendedJourneys as $item): ?>
-                <?php $recJourney = $item['journey']; ?>
-                <article class="recommended-journey-card compact">
-                    <div class="journey-list-icon small"><?= e($recJourney['icon'] ?: '🧭') ?></div>
-                    <div>
-                        <h3><?= e($recJourney['name']) ?></h3>
-                        <p class="muted small"><?= e($item['reasons'][0] ?? 'Recommended journey') ?></p>
-                        <a class="button secondary" href="/journeys/view.php?id=<?= (int)$recJourney['id'] ?>">View</a>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </div>
-<?php endif; ?>
-
 <?php if (!$active): ?>
     <div class="card">
         <p class="muted">Add a RuneScape profile before enabling a journey.</p>
@@ -87,57 +130,111 @@ page_header('Journeys');
         <p class="muted">No published journeys are available yet.</p>
     </div>
 <?php else: ?>
-    <div class="journey-list">
-        <?php foreach ($journeys as $journey): ?>
-            <?php
-                $journeyId = (int)$journey['id'];
-                $isStarted = isset($startedIds[$journeyId]);
-                $progress = $isStarted ? evaluate_journey_progress((int)$active['id'], $journeyId) : ['percent' => 0, 'completed' => 0, 'total' => count(steps_for_journey($journeyId))];
-            ?>
-            <article class="card journey-list-item<?= $isStarted ? ' is-enabled' : '' ?>">
-                <div class="journey-list-icon"><?= e($journey['icon'] ?: '🧭') ?></div>
+    <div class="card journey-filter-card">
+        <div class="page-title-row compact">
+            <div>
+                <h2>Find a journey</h2>
+                <p class="muted"><?= (int)$enabledCount ?> enabled • <?= (int)$totalCount ?> published journeys available</p>
+            </div>
+        </div>
 
-                <div class="journey-list-main">
-                    <div class="journey-list-heading">
-                        <h2><?= e($journey['name']) ?></h2>
-                        <?php if ($isStarted): ?><span class="badge success">Enabled</span><?php endif; ?>
-                    </div>
-                    <p class="muted"><?= e($journey['description'] ?: 'No description yet.') ?></p>
-                    <?php $tags = journey_tags_for_journey($journeyId); ?>
-                    <?php if ($tags): ?><p class="journey-tags-row"><?php foreach ($tags as $tag): ?><span class="badge"><?= e($tag['name']) ?></span><?php endforeach; ?></p><?php endif; ?>
-
-                    <div class="journey-list-progress">
-                        <div class="progress-bar"><span style="width: <?= e((string)$progress['percent']) ?>%"></span></div>
-                        <p class="muted small">
-                            <?php if ($isStarted): ?>
-                                <?= (int)($progress['required_completed'] ?? $progress['completed']) ?> / <?= (int)($progress['required_total'] ?? $progress['total']) ?> required steps complete
-                            <?php else: ?>
-                                <?= (int)$progress['total'] ?> steps available • not tracking yet
-                            <?php endif; ?>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="journey-list-actions">
-                    <a class="button secondary" href="/journeys/view.php?id=<?= $journeyId ?>"><?= $isStarted ? 'Continue' : 'View' ?></a>
-                    <?php if ($isStarted): ?>
-                        <form method="post">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="action" value="disable">
-                            <input type="hidden" name="journey_id" value="<?= $journeyId ?>">
-                            <button class="button secondary" type="submit">Disable</button>
-                        </form>
-                    <?php else: ?>
-                        <form method="post">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="action" value="enable">
-                            <input type="hidden" name="journey_id" value="<?= $journeyId ?>">
-                            <button class="button" type="submit">Enable journey</button>
-                        </form>
-                    <?php endif; ?>
-                </div>
-            </article>
-        <?php endforeach; ?>
+        <form class="filter-form journey-filter-form" method="get">
+            <label>
+                Search
+                <input type="search" name="q" value="<?= e($q) ?>" placeholder="Search name, description or tag">
+            </label>
+            <label>
+                Status
+                <select name="status">
+                    <option value="all"<?= $statusFilter === 'all' ? ' selected' : '' ?>>All journeys</option>
+                    <option value="enabled"<?= $statusFilter === 'enabled' ? ' selected' : '' ?>>Enabled only</option>
+                    <option value="available"<?= $statusFilter === 'available' ? ' selected' : '' ?>>Not enabled yet</option>
+                </select>
+            </label>
+            <label>
+                Tag
+                <select name="tag_id">
+                    <option value="0">All tags</option>
+                    <?php foreach ($allTags as $tag): ?>
+                        <option value="<?= (int)$tag['id'] ?>"<?= $tagFilter === (int)$tag['id'] ? ' selected' : '' ?>><?= e($tag['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label>
+                Sort
+                <select name="sort">
+                    <option value="default"<?= $sort === 'default' ? ' selected' : '' ?>>Default order</option>
+                    <option value="name"<?= $sort === 'name' ? ' selected' : '' ?>>Name A-Z</option>
+                    <option value="progress_desc"<?= $sort === 'progress_desc' ? ' selected' : '' ?>>Progress highest first</option>
+                    <option value="steps_desc"<?= $sort === 'steps_desc' ? ' selected' : '' ?>>Most steps first</option>
+                </select>
+            </label>
+            <div class="filter-actions">
+                <button class="button" type="submit">Apply filters</button>
+                <a class="button secondary" href="/journeys/">Reset</a>
+            </div>
+        </form>
     </div>
+
+    <?php if (!$journeyCards): ?>
+        <div class="card">
+            <p class="muted">No journeys matched those filters.</p>
+            <a class="button secondary" href="/journeys/">Clear filters</a>
+        </div>
+    <?php else: ?>
+        <div class="journey-list">
+            <?php foreach ($journeyCards as $card): ?>
+                <?php
+                    $journey = $card['journey'];
+                    $journeyId = (int)$journey['id'];
+                    $isStarted = (bool)$card['is_started'];
+                    $progress = $card['progress'];
+                    $tags = $card['tags'];
+                ?>
+                <article class="card journey-list-item<?= $isStarted ? ' is-enabled' : '' ?>">
+                    <div class="journey-list-icon"><?= e($journey['icon'] ?: '🧭') ?></div>
+
+                    <div class="journey-list-main">
+                        <div class="journey-list-heading">
+                            <h2><?= e($journey['name']) ?></h2>
+                            <?php if ($isStarted): ?><span class="badge success">Enabled</span><?php endif; ?>
+                        </div>
+                        <p class="muted"><?= e($journey['description'] ?: 'No description yet.') ?></p>
+                        <?php if ($tags): ?><p class="journey-tags-row"><?php foreach ($tags as $tag): ?><span class="badge"><?= e($tag['name']) ?></span><?php endforeach; ?></p><?php endif; ?>
+
+                        <div class="journey-list-progress">
+                            <div class="progress-bar"><span style="width: <?= e((string)$progress['percent']) ?>%"></span></div>
+                            <p class="muted small">
+                                <?php if ($isStarted): ?>
+                                    <?= (int)($progress['required_completed'] ?? $progress['completed']) ?> / <?= (int)($progress['required_total'] ?? $progress['total']) ?> required steps complete
+                                <?php else: ?>
+                                    <?= (int)$progress['total'] ?> steps available • not tracking yet
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="journey-list-actions">
+                        <a class="button secondary" href="/journeys/view.php?id=<?= $journeyId ?>"><?= $isStarted ? 'Continue' : 'View' ?></a>
+                        <?php if ($isStarted): ?>
+                            <form method="post">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="action" value="disable">
+                                <input type="hidden" name="journey_id" value="<?= $journeyId ?>">
+                                <button class="button secondary" type="submit">Disable</button>
+                            </form>
+                        <?php else: ?>
+                            <form method="post">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="action" value="enable">
+                                <input type="hidden" name="journey_id" value="<?= $journeyId ?>">
+                                <button class="button" type="submit">Enable journey</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>
 <?php page_footer(); ?>

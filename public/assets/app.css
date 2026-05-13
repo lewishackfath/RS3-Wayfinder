@@ -1245,3 +1245,40 @@ button[disabled] { opacity: .45; cursor: not-allowed; }
 @media (max-width: 980px) {
     .admin-rich-table { display: block; overflow-x: auto; }
 }
+
+/* Journey listing filters */
+.journey-filter-card {
+    margin-bottom: 1rem;
+}
+
+.journey-filter-form {
+    grid-template-columns: minmax(220px, 1.4fr) minmax(150px, .8fr) minmax(150px, .8fr) minmax(170px, .9fr) auto;
+}
+
+.filter-actions {
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.journey-filter-form input[type="search"],
+.journey-filter-form select {
+    width: 100%;
+}
+
+@media (max-width: 980px) {
+    .journey-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .journey-filter-form .filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 620px) {
+    .journey-filter-form {
+        grid-template-columns: 1fr;
+    }
+}
