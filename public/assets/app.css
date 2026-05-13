@@ -1539,3 +1539,274 @@ textarea[readonly] {
     opacity: .72;
     cursor: wait;
 }
+
+/* Account management */
+.account-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(280px, .8fr);
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+.account-summary-card,
+.account-danger-card {
+    min-height: 100%;
+}
+.inline-title-row {
+    margin-bottom: 1rem;
+}
+.nested-card {
+    background: rgba(255,255,255,.035);
+    box-shadow: none;
+}
+.account-profile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+.profile-interest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin: .85rem 0 1rem;
+}
+.wrap-actions {
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+.compact-form {
+    margin-top: 1.25rem;
+}
+.compact-empty {
+    padding: 1.5rem;
+}
+.subtle-danger {
+    opacity: .9;
+}
+@media (max-width: 840px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Topbar active profile selector fix
+   Keep the compact profile select readable on hover/focus and avoid the global form field styles making it look like a full-width light input. */
+.profile-selector-form {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: .18rem;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 999px;
+    background: rgba(255,255,255,.065);
+}
+
+.profile-selector-form .profile-selector,
+.profile-selector {
+    width: auto;
+    min-width: 120px;
+    max-width: 190px;
+    min-height: 36px;
+    padding: .42rem 2rem .42rem .85rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background-color: rgba(255,255,255,.075);
+    background-image:
+        linear-gradient(45deg, transparent 50%, rgba(238,243,255,.78) 50%),
+        linear-gradient(135deg, rgba(238,243,255,.78) 50%, transparent 50%);
+    background-position: calc(100% - .95rem) 50%, calc(100% - .65rem) 50%;
+    background-size: .32rem .32rem, .32rem .32rem;
+    background-repeat: no-repeat;
+    color: var(--text);
+    font-weight: 800;
+    box-shadow: none;
+    line-height: 1.2;
+}
+
+.profile-selector-form .profile-selector:hover,
+.profile-selector:hover,
+.profile-selector-form .profile-selector:focus,
+.profile-selector:focus {
+    color: var(--text);
+    border-color: rgba(139,213,255,.32);
+    background-color: rgba(139,213,255,.12);
+    background-image:
+        linear-gradient(45deg, transparent 50%, rgba(238,243,255,.95) 50%),
+        linear-gradient(135deg, rgba(238,243,255,.95) 50%, transparent 50%);
+    box-shadow: 0 0 0 3px rgba(139,213,255,.10);
+}
+
+.profile-selector-form .profile-selector option,
+.profile-selector option {
+    background: #151b2d;
+    color: #eef3ff;
+}
+
+/* Boss drop log */
+.boss-log-filter-card {
+    margin-bottom: 1.4rem;
+}
+
+.boss-log-filters {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) minmax(180px, .8fr) minmax(180px, .8fr) auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+.boss-log-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 1.25rem;
+}
+
+.boss-log-card {
+    overflow: hidden;
+}
+
+.boss-log-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.boss-log-boss-image {
+    width: 92px;
+    height: 92px;
+    object-fit: cover;
+    border-radius: 1.25rem;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.06);
+    box-shadow: 0 12px 30px rgba(0,0,0,.22);
+}
+
+.boss-log-title-block {
+    min-width: 0;
+    flex: 1;
+}
+
+.boss-log-title-block h2 {
+    margin: 0;
+}
+
+.boss-log-progress {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    margin-top: .65rem;
+}
+
+.boss-log-progress-bar {
+    flex: 1;
+    min-width: 80px;
+    height: .55rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.boss-log-progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(139,213,255,.92), rgba(171,139,255,.92));
+}
+
+.boss-drop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    gap: .75rem;
+}
+
+.boss-drop-tile {
+    margin: 0;
+}
+
+.boss-drop-tile button {
+    width: 100%;
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: .45rem;
+    padding: .75rem .55rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255,255,255,.11);
+    background: rgba(255,255,255,.045);
+    color: var(--text);
+    cursor: pointer;
+    transition: transform .16s ease, border-color .16s ease, background .16s ease, opacity .16s ease, filter .16s ease;
+}
+
+.boss-drop-tile button:hover,
+.boss-drop-tile button:focus {
+    transform: translateY(-1px);
+    border-color: rgba(139,213,255,.38);
+    background: rgba(139,213,255,.10);
+    outline: none;
+}
+
+.boss-drop-tile img {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    image-rendering: auto;
+}
+
+.boss-drop-tile span {
+    display: block;
+    max-width: 100%;
+    font-size: .86rem;
+    line-height: 1.2;
+    font-weight: 750;
+    text-align: center;
+}
+
+.boss-drop-tile small {
+    color: var(--muted);
+    font-size: .74rem;
+    text-align: center;
+}
+
+.boss-drop-tile.is-missing button {
+    opacity: .52;
+    filter: grayscale(1);
+}
+
+.boss-drop-tile.is-missing button:hover,
+.boss-drop-tile.is-missing button:focus {
+    opacity: .86;
+    filter: grayscale(.55);
+}
+
+.boss-drop-tile.is-obtained button {
+    border-color: rgba(139,213,255,.26);
+    background: rgba(139,213,255,.085);
+}
+
+.success-badge {
+    background: rgba(104, 211, 145, .14);
+    border-color: rgba(104, 211, 145, .28);
+    color: #b7f5cc;
+}
+
+@media (max-width: 900px) {
+    .boss-log-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .boss-log-grid,
+    .boss-log-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .boss-log-header {
+        align-items: flex-start;
+    }
+
+    .boss-log-boss-image {
+        width: 72px;
+        height: 72px;
+    }
+}
