@@ -8,6 +8,23 @@ $journey = journey_by_id($journeyId);
 if (!$journey) {
     abort_page(404, 'Journey not found.');
 }
+$notice = null;
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && current_user_can('journeys.manage')) {
+    require_csrf();
+    try {
+        $action = (string)($_POST['action'] ?? '');
+        if ($action === 'expand_content_prereqs') {
+            $step = step_by_id((int)($_POST['step_id'] ?? 0));
+            if (!$step || empty($step['content_item_id'])) {
+                throw new InvalidArgumentException('This step is not linked to a content item.');
+            }
+            $created = add_content_prerequisite_steps_to_chapter((int)$step['chapter_id'], (int)$step['content_item_id'], (int)$step['id']);
+            $notice = count($created) . ' prerequisite step' . (count($created) === 1 ? '' : 's') . ' added.';
+        }
+    } catch (Throwable $e) {
+        $notice = $e->getMessage();
+    }
+}
 $chapters = chapters_for_journey($journeyId);
 page_header('Manage Journey');
 ?>
@@ -35,6 +52,8 @@ page_header('Manage Journey');
         <?php endif; ?>
     </div>
 </div>
+
+<?php if ($notice): ?><div class="notice journey-prereq-notice"><?= e($notice) ?></div><?php endif; ?>
 
 <?php if (!empty($_SESSION['flash_error'])): ?>
     <div class="notice error"><?= e((string)$_SESSION['flash_error']) ?></div>
@@ -89,13 +108,21 @@ page_header('Manage Journey');
             <p class="muted">No steps in this chapter yet.</p>
         <?php else: ?>
             <table class="table">
-                <thead><tr><th>Step</th><th>Completion</th><th>Rule</th><th>Logic</th><th>Sort</th><th></th></tr></thead>
+                <thead><tr><th>Step</th><th>Completion</th><th>Rule</th><th>Content</th><th>Logic</th><th>Sort</th><th></th></tr></thead>
                 <tbody>
                 <?php foreach ($steps as $step): ?>
                     <tr>
                         <td><strong><?= e($step['title']) ?></strong><br><span class="muted small"><?= e($step['description'] ?: '') ?></span></td>
                         <td><?= e(completion_mode_label((string)$step['completion_mode'])) ?></td>
                         <td><?= e(rule_summary($step)) ?></td>
+                        <td>
+                            <?php if (!empty($step['content_name'])): ?>
+                                <span class="badge"><?= e(content_types()[$step['content_type']] ?? $step['content_type']) ?></span><br>
+                                <span class="muted small"><?= e($step['content_name']) ?></span>
+                            <?php else: ?>
+                                <span class="muted small">—</span>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <?php if (!empty($step['is_optional'])): ?><span class="badge">Optional</span><?php endif; ?>
                             <?php if (!empty($step['requires_step_id'])): ?><span class="badge">Locked by prerequisite</span><?php endif; ?>
@@ -128,6 +155,14 @@ page_header('Manage Journey');
                                         <input type="hidden" name="journey_id" value="<?= (int)$journey['id'] ?>">
                                         <button class="button secondary" type="submit">Copy</button>
                                     </form>
+                                    <?php if (!empty($step['content_item_id'])): ?>
+                                        <form class="inline-form" method="post">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="action" value="expand_content_prereqs">
+                                            <input type="hidden" name="step_id" value="<?= (int)$step['id'] ?>">
+                                            <button class="button secondary" type="submit">Add prereqs</button>
+                                        </form>
+                                    <?php endif; ?>
                                     <a class="button secondary" href="/admin/step_edit.php?id=<?= (int)$step['id'] ?>">Edit</a>
                                 </div>
                             <?php endif; ?>

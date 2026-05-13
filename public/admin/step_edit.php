@@ -27,7 +27,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (string)($_POST['rule_quest_title'] ?? ''),
                 (int)($_POST['sort_order'] ?? 0),
                 !empty($_POST['is_optional']),
-                ($_POST['requires_step_id'] ?? '') === '' ? null : (int)$_POST['requires_step_id']
+                ($_POST['requires_step_id'] ?? '') === '' ? null : (int)$_POST['requires_step_id'],
+                ($_POST['content_item_id'] ?? '') === '' ? null : (int)$_POST['content_item_id']
             );
         } else {
             create_step(
@@ -41,7 +42,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 (string)($_POST['rule_quest_title'] ?? ''),
                 (int)($_POST['sort_order'] ?? 0),
                 !empty($_POST['is_optional']),
-                ($_POST['requires_step_id'] ?? '') === '' ? null : (int)$_POST['requires_step_id']
+                ($_POST['requires_step_id'] ?? '') === '' ? null : (int)$_POST['requires_step_id'],
+                ($_POST['content_item_id'] ?? '') === '' ? null : (int)$_POST['content_item_id']
             );
         }
         redirect('/admin/journey_view.php?id=' . (int)$chapter['journey_id']);
@@ -68,6 +70,8 @@ if (!$id && !$_POST && $template !== '') {
     $selectedRule = (string)($_POST['auto_rule_type'] ?? $selectedRule);
 }
 $prereqOptions = prerequisite_options_for_journey((int)$chapter['journey_id'], $id ?: null);
+$contentOptions = content_items(['is_active' => 1]);
+$selectedContentItemId = (int)($_POST['content_item_id'] ?? $step['content_item_id'] ?? 0);
 $selectedRequiresStepId = (int)($_POST['requires_step_id'] ?? $step['requires_step_id'] ?? 0);
 $isOptional = !empty($_POST['is_optional']) || (!$_POST && !empty($step['is_optional']));
 page_header($id ? 'Edit Step' : 'Create Step');
@@ -104,8 +108,25 @@ page_header($id ? 'Edit Step' : 'Create Step');
             <p class="muted">Describe a single action or milestone for the player.</p>
         </div>
 
+        <label>Linked Content Library item
+            <select name="content_item_id" id="content-item-select">
+                <option value="">No linked content item</option>
+                <?php foreach ($contentOptions as $contentOption): ?>
+                    <option
+                        value="<?= (int)$contentOption['id'] ?>"
+                        data-type="<?= e($contentOption['type']) ?>"
+                        data-name="<?= e($contentOption['name']) ?>"
+                        <?= $selectedContentItemId === (int)$contentOption['id'] ? 'selected' : '' ?>
+                    >
+                        <?= e(content_types()[$contentOption['type']] ?? $contentOption['type']) ?> — <?= e($contentOption['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <span class="field-help">Use this for quests, bosses, achievements, drops or unlocks already configured in the Content Library.</span>
+        </label>
+
         <label>Step title
-            <input name="title" value="<?= e($_POST['title'] ?? $step['title'] ?? '') ?>" required placeholder="Reach 70 Herblore">
+            <input name="title" value="<?= e($_POST['title'] ?? $step['title'] ?? '') ?>" placeholder="Reach 70 Herblore">
             <span class="field-help">Keep this short. It should be easy to scan in a checklist.</span>
         </label>
 
@@ -269,5 +290,40 @@ page_header($id ? 'Edit Step' : 'Create Step');
     modeInputs.forEach(input => input.addEventListener('change', updateRuleVisibility));
     updateRuleVisibility();
 })();
+
+const contentItemSelect = document.getElementById('content-item-select');
+if (contentItemSelect) {
+    contentItemSelect.addEventListener('change', function () {
+        const selected = contentItemSelect.options[contentItemSelect.selectedIndex];
+        if (!selected || !selected.value) return;
+
+        const contentType = selected.dataset.type || '';
+        const contentName = selected.dataset.name || '';
+        const titleInput = document.querySelector('input[name="title"]');
+        const modeAutoManual = document.querySelector('input[name="completion_mode"][value="auto_or_manual"]');
+        const modeManual = document.querySelector('input[name="completion_mode"][value="manual_only"]');
+        const ruleSelect = document.getElementById('auto-rule-type');
+        const questInput = document.querySelector('input[name="rule_quest_title"]');
+
+        if (titleInput && !titleInput.value.trim()) {
+            titleInput.value = contentType === 'quest' ? 'Complete ' + contentName : contentName;
+        }
+
+        if (contentType === 'quest') {
+            if (modeAutoManual) modeAutoManual.checked = true;
+            if (ruleSelect) ruleSelect.value = 'quest_complete';
+            if (questInput && !questInput.value.trim()) questInput.value = contentName;
+        } else if (modeManual) {
+            modeManual.checked = true;
+            if (ruleSelect) ruleSelect.value = '';
+        }
+
+        if (typeof updateRuleVisibility === 'function') {
+            updateRuleVisibility();
+        } else if (ruleSelect) {
+            ruleSelect.dispatchEvent(new Event('change'));
+        }
+    });
+}
 </script>
 <?php page_footer(); ?>

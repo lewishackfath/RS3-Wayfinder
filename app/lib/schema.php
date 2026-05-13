@@ -227,12 +227,15 @@ function bootstrap_schema(): void
         sort_order INT NOT NULL DEFAULT 0,
         is_optional TINYINT(1) NOT NULL DEFAULT 0,
         requires_step_id BIGINT UNSIGNED NULL,
+        content_item_id BIGINT UNSIGNED NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_journey_steps_chapter (chapter_id, sort_order),
         INDEX idx_journey_steps_rule (auto_rule_type),
         INDEX idx_journey_steps_requires (requires_step_id),
+        INDEX idx_journey_steps_content (content_item_id),
         CONSTRAINT fk_journey_steps_chapter FOREIGN KEY (chapter_id) REFERENCES journey_chapters(id) ON DELETE CASCADE,
+        CONSTRAINT fk_journey_steps_content FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE SET NULL,
         CONSTRAINT fk_journey_steps_requires FOREIGN KEY (requires_step_id) REFERENCES journey_steps(id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
@@ -406,7 +409,21 @@ function bootstrap_schema(): void
     seed_permissions_and_roles();
     seed_default_journey_tags();
     run_schema_migrations();
+
+    run_once_migration('20260513_journey_steps_content_item_link', function (PDO $pdo): void {
+        $cols = $pdo->query("SHOW COLUMNS FROM journey_steps")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('content_item_id', $cols, true)) {
+            $pdo->exec("ALTER TABLE journey_steps ADD COLUMN content_item_id BIGINT UNSIGNED NULL AFTER requires_step_id");
+            $pdo->exec("ALTER TABLE journey_steps ADD INDEX idx_journey_steps_content (content_item_id)");
+            try {
+                $pdo->exec("ALTER TABLE journey_steps ADD CONSTRAINT fk_journey_steps_content FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE SET NULL");
+            } catch (Throwable $e) {
+                // Shared hosts may block FK creation. Column + index are enough for the app.
+            }
+        }
+    });
 }
+
 
 function run_schema_migrations(): void
 {

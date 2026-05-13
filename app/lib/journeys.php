@@ -102,9 +102,10 @@ function steps_for_chapter(int $chapterId): array
 
 function steps_for_journey(int $journeyId): array
 {
-    $stmt = db()->prepare('SELECT js.*, jc.title AS chapter_title, jc.sort_order AS chapter_sort_order
+    $stmt = db()->prepare('SELECT js.*, jc.title AS chapter_title, jc.sort_order AS chapter_sort_order, ci.name AS content_name, ci.type AS content_type
         FROM journey_steps js
         JOIN journey_chapters jc ON jc.id = js.chapter_id
+        LEFT JOIN content_items ci ON ci.id = js.content_item_id
         WHERE jc.journey_id = ?
         ORDER BY jc.sort_order ASC, jc.id ASC, js.sort_order ASC, js.id ASC');
     $stmt->execute([$journeyId]);
@@ -113,10 +114,11 @@ function steps_for_journey(int $journeyId): array
 
 function step_by_id(int $stepId): ?array
 {
-    $stmt = db()->prepare('SELECT js.*, jc.journey_id, jc.title AS chapter_title, j.name AS journey_name
+    $stmt = db()->prepare('SELECT js.*, jc.journey_id, jc.title AS chapter_title, j.name AS journey_name, ci.name AS content_name, ci.type AS content_type
         FROM journey_steps js
         JOIN journey_chapters jc ON jc.id = js.chapter_id
         JOIN journeys j ON j.id = jc.journey_id
+        LEFT JOIN content_items ci ON ci.id = js.content_item_id
         WHERE js.id = ? LIMIT 1');
     $stmt->execute([$stepId]);
     $row = $stmt->fetch();
@@ -177,8 +179,51 @@ function delete_chapter(int $chapterId): void
     db()->prepare('DELETE FROM journey_chapters WHERE id = ?')->execute([$chapterId]);
 }
 
-function create_step(int $chapterId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder, bool $isOptional = false, ?int $requiresStepId = null): int
+
+function apply_content_defaults_to_step_values(?int $contentItemId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleQuestTitle): array
 {
+    $contentItemId = (int)($contentItemId ?? 0);
+    if ($contentItemId <= 0) {
+        return [$title, $description, $completionMode, $ruleType, $ruleQuestTitle, null];
+    }
+
+    $content = content_item_by_id($contentItemId);
+    if (!$content) {
+        return [$title, $description, $completionMode, $ruleType, $ruleQuestTitle, null];
+    }
+
+    if (trim($title) === '') {
+        $title = (string)$content['name'];
+    }
+
+    if (trim($description) === '' && !empty($content['description'])) {
+        $description = (string)$content['description'];
+    }
+
+    if ($content['type'] === 'quest') {
+        if ($completionMode === '' || $completionMode === 'manual_only') {
+            $completionMode = 'auto_or_manual';
+        }
+        if ($ruleType === '') {
+            $ruleType = 'quest_complete';
+        }
+        if (!$ruleQuestTitle) {
+            $ruleQuestTitle = (string)$content['name'];
+        }
+    } elseif (in_array($content['type'], ['achievement', 'task', 'boss', 'drop', 'unlock', 'item'], true)) {
+        if ($completionMode === '') {
+            $completionMode = 'manual_only';
+        }
+    }
+
+    return [$title, $description, $completionMode, $ruleType, $ruleQuestTitle, $contentItemId];
+}
+
+
+function create_step(int $chapterId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder, bool $isOptional = false, ?int $requiresStepId = null, ?int $contentItemId = null): int
+{
+    [$title, $description, $completionMode, $ruleType, $ruleQuestTitle, $contentItemId] = apply_content_defaults_to_step_values($contentItemId, $title, $description, $completionMode, $ruleType, $ruleQuestTitle);
+    [$title, $description, $completionMode, $ruleType, $ruleQuestTitle, $contentItemId] = apply_content_defaults_to_step_values($contentItemId, $title, $description, $completionMode, $ruleType, $ruleQuestTitle);
     $title = trim($title);
     if ($title === '') {
         throw new InvalidArgumentException('Step title is required.');
@@ -189,13 +234,13 @@ function create_step(int $chapterId, string $title, string $description, string 
 
     $requiresStepId = valid_requires_step_id($requiresStepId, $chapterId);
     $stmt = db()->prepare('INSERT INTO journey_steps
-        (chapter_id, title, description, completion_mode, auto_rule_type, rule_skill_name, rule_level, rule_quest_title, sort_order, is_optional, requires_step_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$chapterId, $title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $isOptional ? 1 : 0, $requiresStepId]);
+        (chapter_id, title, description, completion_mode, auto_rule_type, rule_skill_name, rule_level, rule_quest_title, sort_order, is_optional, requires_step_id, content_item_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$chapterId, $title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $isOptional ? 1 : 0, $requiresStepId, $contentItemId]);
     return (int)db()->lastInsertId();
 }
 
-function update_step(int $stepId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder, bool $isOptional = false, ?int $requiresStepId = null): void
+function update_step(int $stepId, string $title, string $description, string $completionMode, string $ruleType, ?string $ruleSkillName, ?int $ruleLevel, ?string $ruleQuestTitle, int $sortOrder, bool $isOptional = false, ?int $requiresStepId = null, ?int $contentItemId = null): void
 {
     $title = trim($title);
     if ($title === '') {
@@ -208,9 +253,9 @@ function update_step(int $stepId, string $title, string $description, string $co
     $step = step_by_id($stepId);
     $requiresStepId = valid_requires_step_id($requiresStepId, (int)($step['chapter_id'] ?? 0), $stepId);
     db()->prepare('UPDATE journey_steps
-        SET title = ?, description = ?, completion_mode = ?, auto_rule_type = ?, rule_skill_name = ?, rule_level = ?, rule_quest_title = ?, sort_order = ?, is_optional = ?, requires_step_id = ?, updated_at = UTC_TIMESTAMP()
+        SET title = ?, description = ?, completion_mode = ?, auto_rule_type = ?, rule_skill_name = ?, rule_level = ?, rule_quest_title = ?, sort_order = ?, is_optional = ?, requires_step_id = ?, content_item_id = ?, updated_at = UTC_TIMESTAMP()
         WHERE id = ?')
-        ->execute([$title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $isOptional ? 1 : 0, $requiresStepId, $stepId]);
+        ->execute([$title, trim($description), $completionMode, $ruleType ?: null, clean_nullable($ruleSkillName), $ruleLevel, clean_nullable($ruleQuestTitle), $sortOrder, $isOptional ? 1 : 0, $requiresStepId, $contentItemId, $stepId]);
 }
 
 function delete_step(int $stepId): void
@@ -827,5 +872,111 @@ function journeys_with_tags(bool $publishedOnly = false): array
     }
     unset($journey);
     return $journeys;
+}
+
+
+function journey_step_for_content(int $journeyId, int $contentItemId): ?array
+{
+    $stmt = db()->prepare('SELECT js.* FROM journey_steps js JOIN journey_chapters jc ON jc.id = js.chapter_id WHERE jc.journey_id = ? AND js.content_item_id = ? LIMIT 1');
+    $stmt->execute([$journeyId, $contentItemId]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+}
+
+function add_content_prerequisite_steps_to_chapter(int $chapterId, int $contentItemId, ?int $parentStepId = null, array &$seen = []): array
+{
+    $chapter = chapter_by_id($chapterId);
+    if (!$chapter) {
+        throw new InvalidArgumentException('Chapter not found.');
+    }
+
+    $journeyId = (int)$chapter['journey_id'];
+    $content = content_item_by_id($contentItemId);
+    if (!$content) {
+        throw new InvalidArgumentException('Content item not found.');
+    }
+
+    if (isset($seen[$contentItemId])) {
+        return [];
+    }
+    $seen[$contentItemId] = true;
+
+    $created = [];
+
+    // Add quest prerequisites first.
+    foreach (content_quest_requirements($contentItemId) as $req) {
+        $reqContentId = (int)$req['required_content_item_id'];
+        $existing = journey_step_for_content($journeyId, $reqContentId);
+
+        $createdNested = add_content_prerequisite_steps_to_chapter($chapterId, $reqContentId, $existing ? (int)$existing['id'] : null, $seen);
+        $created = array_merge($created, $createdNested);
+
+        if (!$existing) {
+            $reqContent = content_item_by_id($reqContentId);
+            if ($reqContent) {
+                $newStepId = create_step(
+                    $chapterId,
+                    'Complete ' . (string)$reqContent['name'],
+                    (string)($reqContent['description'] ?? ''),
+                    'auto_or_manual',
+                    'quest_complete',
+                    null,
+                    null,
+                    (string)$reqContent['name'],
+                    next_step_sort_order($chapterId),
+                    false,
+                    null,
+                    $reqContentId
+                );
+                $created[] = $newStepId;
+            }
+        }
+    }
+
+    // Add skill requirements as auto-only prerequisite steps.
+    foreach (content_skill_requirements($contentItemId) as $skillReq) {
+        $skillTitle = 'Reach ' . (int)$skillReq['required_level'] . ' ' . (string)$skillReq['skill_name'];
+        $existingSkill = find_step_by_title_in_journey($journeyId, $skillTitle);
+        if (!$existingSkill) {
+            $newStepId = create_step(
+                $chapterId,
+                $skillTitle,
+                (string)($skillReq['notes'] ?? ''),
+                'auto_only',
+                'skill_level',
+                (string)$skillReq['skill_name'],
+                (int)$skillReq['required_level'],
+                null,
+                next_step_sort_order($chapterId),
+                false,
+                null,
+                null
+            );
+            $created[] = $newStepId;
+        }
+    }
+
+    // Link the parent step behind the last created direct prerequisite where practical.
+    if ($parentStepId && $created) {
+        $lastCreated = end($created);
+        db()->prepare('UPDATE journey_steps SET requires_step_id = ? WHERE id = ? AND requires_step_id IS NULL')->execute([(int)$lastCreated, $parentStepId]);
+    }
+
+    return $created;
+}
+
+function next_step_sort_order(int $chapterId): int
+{
+    $stmt = db()->prepare('SELECT COALESCE(MAX(sort_order), 0) + 10 FROM journey_steps WHERE chapter_id = ?');
+    $stmt->execute([$chapterId]);
+    return (int)$stmt->fetchColumn();
+}
+
+function find_step_by_title_in_journey(int $journeyId, string $title): ?array
+{
+    $stmt = db()->prepare('SELECT js.* FROM journey_steps js JOIN journey_chapters jc ON jc.id = js.chapter_id WHERE jc.journey_id = ? AND LOWER(js.title) = LOWER(?) LIMIT 1');
+    $stmt->execute([$journeyId, $title]);
+    $row = $stmt->fetch();
+    return $row ?: null;
 }
 

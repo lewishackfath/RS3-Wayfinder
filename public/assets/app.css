@@ -1106,3 +1106,17 @@ code {
 .nav-dropdown-menu:hover {
     display: grid !important;
 }
+
+
+/* Journey content linking */
+#content-item-select {
+    width: 100%;
+}
+
+.journey-prereq-notice {
+    margin-bottom: 1rem;
+}
+
+.admin-step-actions form button {
+    white-space: nowrap;
+}
