@@ -13,8 +13,14 @@ function current_user(): ?array
     if (is_array($cached) && (int)$cached['id'] === (int)$_SESSION['user_id']) {
         return $cached;
     }
-    $stmt = db()->prepare("SELECT * FROM users WHERE id = ? AND is_active = 1 LIMIT 1");
-    $stmt->execute([(int)$_SESSION['user_id']]);
+    try {
+        $stmt = db()->prepare("SELECT * FROM users WHERE id = ? AND is_active = 1 AND is_banned = 0 LIMIT 1");
+        $stmt->execute([(int)$_SESSION['user_id']]);
+    } catch (Throwable $e) {
+        // Older installs may not have the is_banned migration until setup/check.php or the next OAuth callback runs.
+        $stmt = db()->prepare("SELECT * FROM users WHERE id = ? AND is_active = 1 LIMIT 1");
+        $stmt->execute([(int)$_SESSION['user_id']]);
+    }
     $user = $stmt->fetch();
     $cached = $user ?: null;
     return $cached;
@@ -100,15 +106,24 @@ function restore_user_from_remember_cookie(): void
         return;
     }
 
-    $stmt = db()->prepare("SELECT rt.*, u.is_active
-        FROM user_remember_tokens rt
-        JOIN users u ON u.id = rt.user_id
-        WHERE rt.selector = ? AND rt.expires_at > UTC_TIMESTAMP()
-        LIMIT 1");
-    $stmt->execute([$selector]);
+    try {
+        $stmt = db()->prepare("SELECT rt.*, u.is_active, u.is_banned
+            FROM user_remember_tokens rt
+            JOIN users u ON u.id = rt.user_id
+            WHERE rt.selector = ? AND rt.expires_at > UTC_TIMESTAMP()
+            LIMIT 1");
+        $stmt->execute([$selector]);
+    } catch (Throwable $e) {
+        $stmt = db()->prepare("SELECT rt.*, u.is_active
+            FROM user_remember_tokens rt
+            JOIN users u ON u.id = rt.user_id
+            WHERE rt.selector = ? AND rt.expires_at > UTC_TIMESTAMP()
+            LIMIT 1");
+        $stmt->execute([$selector]);
+    }
     $token = $stmt->fetch();
 
-    if (!$token || (int)$token['is_active'] !== 1) {
+    if (!$token || (int)$token['is_active'] !== 1 || (int)($token['is_banned'] ?? 0) === 1) {
         clear_remember_cookie();
         return;
     }

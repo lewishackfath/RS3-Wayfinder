@@ -19,10 +19,12 @@ function bootstrap_schema(): void
         email VARCHAR(255) NULL,
         email_verified TINYINT(1) NOT NULL DEFAULT 0,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
+        is_banned TINYINT(1) NOT NULL DEFAULT 0,
         last_login_at DATETIME NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_users_active (is_active)
+        INDEX idx_users_active (is_active),
+        INDEX idx_users_banned (is_banned)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS roles (
@@ -434,6 +436,20 @@ function run_schema_migrations(): void
         $pdo->exec('UPDATE player_skill_snapshots SET xp = FLOOR(xp / 10) WHERE xp IS NOT NULL');
     });
 
+
+
+    run_once_migration('20260513_user_ban_flag', function (PDO $pdo): void {
+        $cols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('is_banned', $cols, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN is_banned TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
+            try {
+                $pdo->exec("ALTER TABLE users ADD INDEX idx_users_banned (is_banned)");
+            } catch (Throwable $e) {
+                // Index may already exist on some repaired installs.
+            }
+        }
+    });
+
     run_once_migration('20260512_smart_journey_step_fields', function (PDO $pdo): void {
         $cols = $pdo->query("SHOW COLUMNS FROM journey_steps")->fetchAll(PDO::FETCH_COLUMN);
         if (!in_array('is_optional', $cols, true)) {
@@ -535,8 +551,8 @@ function seed_permissions_and_roles(): void
         $stmt->execute($role);
     }
 
-    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'journeys.view', 'journeys.manage', 'journeys.delete', 'content.view', 'content.manage', 'content.delete']);
-    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'journeys.view', 'journeys.manage', 'journeys.delete', 'content.view', 'content.manage', 'content.delete']);
+    grant_role_permissions('owner', ['admin.access', 'users.view', 'users.manage', 'roles.manage', 'profiles.view', 'profiles.manage', 'profiles.delete', 'journeys.view', 'journeys.manage', 'journeys.delete', 'journeys.delete.all', 'journeys.edit.all', 'content.view', 'content.manage', 'content.delete']);
+    grant_role_permissions('admin', ['admin.access', 'users.view', 'users.manage', 'profiles.view', 'profiles.manage', 'profiles.delete', 'journeys.view', 'journeys.manage', 'journeys.delete', 'content.view', 'content.manage', 'content.delete']);
 }
 
 function grant_role_permissions(string $roleSlug, array $permissionSlugs): void
