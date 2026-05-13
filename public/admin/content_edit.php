@@ -38,6 +38,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 !empty($_POST['is_active'])
             );
         }
+        if ((string)($_POST['type'] ?? $typeValue) === 'quest') {
+            $savedItem = content_item_by_id($id);
+            $existingMetadata = $savedItem ? content_metadata($savedItem) : [];
+            update_content_metadata($id, quest_metadata_from_post($_POST, $existingMetadata));
+        }
         redirect('/admin/content_view.php?id=' . $id);
     } catch (Throwable $e) {
         $error = $e->getMessage();
@@ -46,6 +51,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 }
 
 $typeValue = (string)($item['type'] ?? $_GET['type'] ?? 'quest');
+$metadata = $item ? content_metadata($item) : [];
 page_header($id ? 'Edit Content' : 'Add Content');
 ?>
 <div class="page-title-row">
@@ -98,6 +104,28 @@ page_header($id ? 'Edit Content' : 'Add Content');
         <label>Icon URL
             <input name="icon_url" value="<?= e($item['icon_url'] ?? '') ?>" placeholder="Optional icon URL">
         </label>
+
+        <div class="quest-extra-fields">
+            <div class="form-section-intro">
+                <h2>Quest details</h2>
+                <p class="muted">Optional admin-managed quest metadata. RuneMetrics import will not overwrite these values.</p>
+            </div>
+            <div class="form-grid">
+                <label>Timeline
+                    <input name="quest_timeline" value="<?= e($_POST['quest_timeline'] ?? $metadata['quest_timeline'] ?? '') ?>" placeholder="Fifth Age / Sixth Age / Fort Forinthry">
+                </label>
+                <label>Series
+                    <input name="quest_series" value="<?= e($_POST['quest_series'] ?? $metadata['quest_series'] ?? '') ?>" placeholder="Mahjarrat / Elf / Pirate">
+                </label>
+            </div>
+            <?php if (!empty($metadata['difficulty_label']) || isset($metadata['quest_points']) || array_key_exists('members', $metadata)): ?>
+                <p class="muted small">
+                    Imported: <?= e($metadata['difficulty_label'] ?? 'Unknown difficulty') ?>
+                    <?php if (isset($metadata['quest_points'])): ?> • <?= e((string)$metadata['quest_points']) ?> QP<?php endif; ?>
+                    <?php if (array_key_exists('members', $metadata)): ?> • <?= !empty($metadata['members']) ? 'Members' : 'Free-to-play' ?><?php endif; ?>
+                </p>
+            <?php endif; ?>
+        </div>
 
         <label class="toggle-row">
             <input type="checkbox" name="is_active" value="1" <?= ((int)($item['is_active'] ?? 1) === 1) ? 'checked' : '' ?>>

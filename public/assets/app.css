@@ -990,3 +990,39 @@ code {
     border-color: rgba(255,90,90,.35);
     background: rgba(255,90,90,.08);
 }
+
+
+/* Quest metadata display */
+.quest-extra-fields {
+    display: grid;
+    gap: .8rem;
+    padding: 1rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 16px;
+    background: rgba(255,255,255,.035);
+}
+
+.content-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: .75rem;
+    margin-top: 1rem;
+}
+
+.content-meta-grid > div {
+    padding: .75rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 12px;
+    background: rgba(255,255,255,.04);
+}
+
+.content-meta-grid span {
+    display: block;
+    color: var(--muted);
+    font-size: .85rem;
+}
+
+.content-meta-grid strong {
+    display: block;
+    margin-top: .2rem;
+}

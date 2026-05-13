@@ -36,6 +36,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 }
 
+$metadata = content_metadata($item);
 $skillRequirements = content_skill_requirements($id);
 $questRequirements = content_quest_requirements($id);
 $questOptions = content_items_for_select('quest');
@@ -65,6 +66,16 @@ page_header('Manage Content');
     <p><?= nl2br(e($item['description'] ?: 'No description yet.')) ?></p>
     <?php if (!empty($item['source_url'])): ?><p><a href="<?= e($item['source_url']) ?>" target="_blank" rel="noopener">Source / Wiki</a></p><?php endif; ?>
     <p class="muted small">Slug: <code><?= e($item['slug']) ?></code></p>
+
+    <?php if ($item['type'] === 'quest'): ?>
+        <div class="content-meta-grid">
+            <div><span>Difficulty</span><strong><?= e($metadata['difficulty_label'] ?? 'Unknown') ?></strong></div>
+            <div><span>Quest Points</span><strong><?= isset($metadata['quest_points']) ? e((string)$metadata['quest_points']) : '—' ?></strong></div>
+            <div><span>Membership</span><strong><?= array_key_exists('members', $metadata) ? (!empty($metadata['members']) ? 'Members' : 'Free-to-play') : '—' ?></strong></div>
+            <div><span>Timeline</span><strong><?= e($metadata['quest_timeline'] ?? '—') ?></strong></div>
+            <div><span>Series</span><strong><?= e($metadata['quest_series'] ?? '—') ?></strong></div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <div class="grid two-col-grid admin-dashboard-grid">

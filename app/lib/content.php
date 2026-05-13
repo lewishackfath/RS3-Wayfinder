@@ -255,6 +255,52 @@ function content_library_counts(): array
 
 
 
+
+function quest_difficulty_label(int|string|null $difficulty): string
+{
+    if ($difficulty === null || $difficulty === '') {
+        return 'Unknown';
+    }
+
+    if (is_numeric($difficulty)) {
+        return [
+            0 => 'Novice',
+            1 => 'Intermediate',
+            2 => 'Experienced',
+            3 => 'Master',
+            4 => 'Grandmaster',
+            5 => 'Special',
+        ][(int)$difficulty] ?? 'Unknown';
+    }
+
+    return (string)$difficulty;
+}
+
+function content_metadata(array $item): array
+{
+    if (empty($item['metadata_json'])) {
+        return [];
+    }
+
+    $decoded = json_decode((string)$item['metadata_json'], true);
+    return is_array($decoded) ? $decoded : [];
+}
+
+function update_content_metadata(int $contentItemId, array $metadata): void
+{
+    db()->prepare('UPDATE content_items SET metadata_json = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?')
+        ->execute([json_encode($metadata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $contentItemId]);
+}
+
+function quest_metadata_from_post(array $post, array $existing = []): array
+{
+    $metadata = $existing;
+    $metadata['quest_timeline'] = trim((string)($post['quest_timeline'] ?? ($metadata['quest_timeline'] ?? '')));
+    $metadata['quest_series'] = trim((string)($post['quest_series'] ?? ($metadata['quest_series'] ?? '')));
+    return $metadata;
+}
+
+
 function runemetrics_quest_import_url(string $rsn): string
 {
     return 'https://apps.runescape.com/runemetrics/quests?user=' . rawurlencode($rsn);
@@ -371,34 +417,51 @@ function import_quests_from_runemetrics(string $rsn): array
 
         try {
             $slug = content_slugify($title);
-            $metadata = json_encode([
+            $difficultyRaw = $quest['difficulty'] ?? null;
+            $difficultyLabel = quest_difficulty_label($difficultyRaw);
+            $metadataArray = [
                 'runemetrics_imported' => true,
                 'last_imported_at_utc' => gmdate('Y-m-d H:i:s'),
+                'difficulty' => is_numeric($difficultyRaw) ? (int)$difficultyRaw : $difficultyRaw,
+                'difficulty_label' => $difficultyLabel,
+                'members' => isset($quest['members']) ? (bool)$quest['members'] : null,
+                'quest_points' => isset($quest['questPoints']) ? (int)$quest['questPoints'] : null,
+                'user_eligible' => isset($quest['userEligible']) ? (bool)$quest['userEligible'] : null,
                 'raw' => $quest,
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            ];
 
-            $existing = $pdo->prepare("SELECT id FROM content_items WHERE type = 'quest' AND (slug = ? OR name = ?) LIMIT 1");
+            $metadata = json_encode($metadataArray, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+            $existing = $pdo->prepare("SELECT id, metadata_json FROM content_items WHERE type = 'quest' AND (slug = ? OR name = ?) LIMIT 1");
             $existing->execute([$slug, $title]);
             $existingId = (int)($existing->fetchColumn() ?: 0);
 
             $category = '';
-            if (!empty($quest['difficulty'])) {
-                $category = (string)$quest['difficulty'];
-            } elseif (!empty($quest['status'])) {
-                $category = 'Imported';
-            }
 
             if ($existingId > 0) {
-                // Preserve admin-managed fields wherever possible. Only fill blanks and refresh import metadata.
+                $existingRow = $pdo->prepare('SELECT metadata_json FROM content_items WHERE id = ? LIMIT 1');
+                $existingRow->execute([$existingId]);
+                $existingMetadata = json_decode((string)($existingRow->fetchColumn() ?: '{}'), true);
+                if (!is_array($existingMetadata)) {
+                    $existingMetadata = [];
+                }
+                $mergedMetadata = array_merge($existingMetadata, $metadataArray);
+                // Preserve admin-added timeline and series values.
+                if (isset($existingMetadata['quest_timeline'])) {
+                    $mergedMetadata['quest_timeline'] = $existingMetadata['quest_timeline'];
+                }
+                if (isset($existingMetadata['quest_series'])) {
+                    $mergedMetadata['quest_series'] = $existingMetadata['quest_series'];
+                }
+
                 $stmt = $pdo->prepare("UPDATE content_items
                     SET
                         name = IF(name = '' OR name IS NULL, ?, name),
-                        category = IF(category = '' OR category IS NULL, ?, category),
                         metadata_json = ?,
                         is_active = 1,
                         updated_at = UTC_TIMESTAMP()
                     WHERE id = ?");
-                $stmt->execute([$title, $category, $metadata, $existingId]);
+                $stmt->execute([$title, json_encode($mergedMetadata, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $existingId]);
                 $updated++;
             } else {
                 $stmt = $pdo->prepare("INSERT INTO content_items
