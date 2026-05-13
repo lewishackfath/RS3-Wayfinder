@@ -33,9 +33,9 @@ function page_header(string $title): void
         }
 
         if (current_user_can('admin.access')) {
-            echo '<div class="nav-dropdown">';
-            echo '<button class="nav-dropdown-toggle" type="button">Admin ▾</button>';
-            echo '<div class="nav-dropdown-menu">';
+            echo '<div class="nav-dropdown" data-admin-dropdown>';
+            echo '<button class="nav-dropdown-toggle" type="button" aria-expanded="false" data-admin-dropdown-toggle>Admin ▾</button>';
+            echo '<div class="nav-dropdown-menu" data-admin-dropdown-menu>';
             echo '<a href="/admin/index.php">Admin Dashboard</a>';
             if (current_user_can('users.view')) echo '<a href="/admin/users.php">Users</a>';
             if (current_user_can('roles.manage')) echo '<a href="/admin/roles.php">Roles & Permissions</a>';

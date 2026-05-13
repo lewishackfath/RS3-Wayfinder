@@ -58,8 +58,8 @@ page_header('Content Library');
             <?php foreach ($items as $item): ?>
                 <tr>
                     <td>
-                        <strong><?= e($item['name']) ?></strong><br>
-                        <span class="muted small"><?= e($item['slug']) ?></span>
+                        <strong><?= e($item['name']) ?></strong>
+                        <?php if (!empty($item['description'])): ?><br><span class="muted small"><?= e(mb_strimwidth((string)$item['description'], 0, 110, '…')) ?></span><?php endif; ?>
                     </td>
                     <td><span class="badge"><?= e(content_types()[$item['type']] ?? $item['type']) ?></span></td>
                     <td><?= e($item['category'] ?: '—') ?></td>

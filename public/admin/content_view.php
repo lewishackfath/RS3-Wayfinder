@@ -65,8 +65,6 @@ page_header('Manage Content');
     <h2>Overview</h2>
     <p><?= nl2br(e($item['description'] ?: 'No description yet.')) ?></p>
     <?php if (!empty($item['source_url'])): ?><p><a href="<?= e($item['source_url']) ?>" target="_blank" rel="noopener">Source / Wiki</a></p><?php endif; ?>
-    <p class="muted small">Slug: <code><?= e($item['slug']) ?></code></p>
-
     <?php if ($item['type'] === 'quest'): ?>
         <div class="content-meta-grid">
             <div><span>Difficulty</span><strong><?= e($metadata['difficulty_label'] ?? 'Unknown') ?></strong></div>

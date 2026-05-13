@@ -1026,3 +1026,43 @@ code {
     display: block;
     margin-top: .2rem;
 }
+
+
+/* Click-to-open admin dropdown */
+.nav-dropdown:hover .nav-dropdown-menu {
+    display: none;
+}
+
+.nav-dropdown.is-open .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+    display: grid;
+    gap: .2rem;
+}
+
+.nav-dropdown.is-open .nav-dropdown-toggle {
+    background: rgba(255,255,255,.08);
+}
+
+/* Content editor UX */
+.content-editor-form .quest-extra-fields[hidden] {
+    display: none !important;
+}
+
+.imported-meta-note {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: .75rem .85rem;
+    border: 1px solid rgba(124,240,166,.18);
+    border-radius: 12px;
+    background: rgba(124,240,166,.06);
+}
+
+.imported-meta-note span {
+    color: var(--muted);
+}
+
+.content-editor-form .form-section {
+    margin-bottom: .25rem;
+}
