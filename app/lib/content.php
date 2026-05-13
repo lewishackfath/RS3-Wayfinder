@@ -8,7 +8,7 @@ function content_types(): array
         'achievement' => 'Achievement',
         'task' => 'Task',
         'boss' => 'Boss',
-        'drop' => 'Drop / Item',
+        
         'unlock' => 'Unlock',
         'item' => 'Item',
     ];
@@ -78,7 +78,7 @@ function content_items(array $filters = []): array
     if ($where) {
         $sql .= ' WHERE ' . implode(' AND ', $where);
     }
-    $sql .= ' ORDER BY FIELD(type, "quest","achievement","task","boss","drop","unlock","item"), name ASC LIMIT 500';
+    $sql .= ' ORDER BY FIELD(type, "quest","achievement","task","boss","unlock","item"), name ASC LIMIT 500';
 
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
@@ -228,8 +228,8 @@ function add_boss_drop_source(int $bossContentItemId, int $dropContentItemId, st
     if (!$boss || $boss['type'] !== 'boss') {
         throw new InvalidArgumentException('Boss content item is invalid.');
     }
-    if (!$drop || !in_array($drop['type'], ['drop','item'], true)) {
-        throw new InvalidArgumentException('Drop content item is invalid.');
+    if (!$drop || !in_array($drop['type'], ['item'], true)) {
+        throw new InvalidArgumentException('Item content item is invalid.');
     }
 
     db()->prepare('INSERT INTO boss_drop_sources (boss_content_item_id, drop_content_item_id, rarity, quantity, notes, sort_order)
