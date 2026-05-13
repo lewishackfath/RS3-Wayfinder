@@ -109,5 +109,72 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 });
-</script></body></html>';
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("select.searchable-select").forEach(function (select) {
+        if (select.dataset.enhanced === "1") return;
+        select.dataset.enhanced = "1";
+
+        select.style.display = "none";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "searchable-dropdown";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "searchable-dropdown-input";
+        input.placeholder = "Search and select...";
+        input.autocomplete = "off";
+
+        const list = document.createElement("div");
+        list.className = "searchable-dropdown-list";
+
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption) input.value = selectedOption.text;
+
+        function render(term = "") {
+            list.innerHTML = "";
+            const filtered = Array.from(select.options).filter(function(option){
+                return option.text.toLowerCase().includes(term.toLowerCase());
+            });
+
+            filtered.slice(0, 100).forEach(function(option){
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "searchable-dropdown-item";
+                item.textContent = option.text;
+                item.addEventListener("click", function(){
+                    select.value = option.value;
+                    input.value = option.text;
+                    list.classList.remove("is-open");
+                    select.dispatchEvent(new Event("change"));
+                });
+                list.appendChild(item);
+            });
+        }
+
+        input.addEventListener("focus", function(){
+            render(input.value);
+            list.classList.add("is-open");
+        });
+
+        input.addEventListener("input", function(){
+            render(input.value);
+            list.classList.add("is-open");
+        });
+
+        document.addEventListener("click", function(e){
+            if (!wrapper.contains(e.target)) {
+                list.classList.remove("is-open");
+            }
+        });
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(list);
+        select.parentNode.insertBefore(wrapper, select);
+    });
+});
+</script>
+</body></html>';
 }

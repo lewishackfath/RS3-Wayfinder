@@ -1,70 +1,49 @@
 <?php
 require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/app/layout.php';
-require_permission('users.view');
+require_permission('users.manage');
 
-$pdo = db();
-$users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC LIMIT 200")->fetchAll();
-$allRoles = all_roles();
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    require_csrf();
+    $userId = (int)($_POST['user_id'] ?? 0);
+    $action = (string)($_POST['action'] ?? '');
 
-page_header('Users');
+    if ($action === 'toggle_ban') {
+        db()->prepare('UPDATE users SET is_banned = CASE WHEN is_banned = 1 THEN 0 ELSE 1 END WHERE id = ?')->execute([$userId]);
+    }
+
+    if ($action === 'delete_user') {
+        db()->prepare('DELETE FROM users WHERE id = ?')->execute([$userId]);
+    }
+
+    redirect('/admin/users.php');
+}
+
+$users = db()->query('SELECT * FROM users ORDER BY created_at DESC')->fetchAll();
+
+page_header('Manage Users');
 ?>
-<div class="page-title-row">
-    <div>
-        <h1>Users</h1>
-        <p class="muted">Assign roles and control active access.</p>
-    </div>
-    <?php if (current_user_can('roles.manage')): ?>
-        <a class="button secondary" href="/admin/roles.php">Manage roles</a>
-    <?php endif; ?>
-</div>
+<h1>Manage Users</h1>
 
 <div class="card">
-    <table class="table">
-        <thead><tr><th>User</th><th>Status</th><th>Roles</th><th>Action</th></tr></thead>
-        <tbody>
-        <?php foreach ($users as $u): ?>
-            <?php $userRoles = roles_for_user((int)$u['id']); $roleIds = array_map(fn($r) => (int)$r['id'], $userRoles); ?>
-            <tr>
-                <td>
-                    <strong><?= e($u['global_name'] ?: $u['username']) ?></strong><br>
-                    <span class="muted small"><?= e($u['email'] ?? '') ?></span><br>
-                    <span class="muted small">Discord ID: <?= e($u['discord_id']) ?></span>
-                </td>
-                <td><?= ((int)$u['is_active'] === 1) ? '<span class="badge success">Active</span>' : '<span class="badge">Disabled</span>' ?></td>
-                <td>
-                    <?php if (current_user_can('users.manage')): ?>
-                        <form class="user-role-form" method="post" action="/admin/update_user.php">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                            <div class="role-check-list">
-                                <?php foreach ($allRoles as $role): ?>
-                                    <label class="permission-check compact">
-                                        <input type="checkbox" name="role_ids[]" value="<?= (int)$role['id'] ?>" <?= in_array((int)$role['id'], $roleIds, true) ? 'checked' : '' ?>>
-                                        <span>
-                                            <strong><?= e($role['name']) ?></strong>
-                                            <small><?= e($role['slug']) ?></small>
-                                        </span>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-                </td>
-                <td>
-                            <label class="toggle-row compact">
-                                <input type="checkbox" name="is_active" value="1" <?= ((int)$u['is_active'] === 1) ? 'checked' : '' ?>>
-                                <span><strong>Active</strong><small>User can sign in</small></span>
-                            </label>
-                            <button class="button" type="submit">Save user</button>
-                        </form>
-                    <?php else: ?>
-                        <div class="permission-pill-list">
-                            <?php foreach ($userRoles as $role): ?><span class="badge"><?= e($role['name']) ?></span><?php endforeach; ?>
-                        </div>
-                </td>
-                    <?php endif; ?>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
+<table class="admin-table">
+<thead><tr><th>User</th><th>Status</th><th>Actions</th></tr></thead>
+<tbody>
+<?php foreach ($users as $user): ?>
+<tr>
+<td><?= e($user['display_name'] ?? $user['discord_username'] ?? ('User #' . $user['id'])) ?></td>
+<td><?= !empty($user['is_banned']) ? 'Banned' : 'Active' ?></td>
+<td>
+<form method="post" class="inline-form">
+<?= csrf_field() ?>
+<input type="hidden" name="user_id" value="<?= (int)$user['id'] ?>">
+<button class="button secondary" name="action" value="toggle_ban"><?= !empty($user['is_banned']) ? 'Unban' : 'Ban' ?></button>
+<button class="button danger" name="action" value="delete_user" onclick="return confirm('Delete this user?');">Delete</button>
+</form>
+</td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
 </div>
 <?php page_footer(); ?>

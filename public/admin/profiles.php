@@ -1,46 +1,39 @@
 <?php
 require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/app/layout.php';
-require_permission('profiles.view');
-$profiles = all_profiles_admin();
-page_header('Admin Profiles');
+require_permission('profiles.delete');
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    require_csrf();
+    $profileId = (int)($_POST['profile_id'] ?? 0);
+    db()->prepare('DELETE FROM player_profiles WHERE id = ?')->execute([$profileId]);
+    redirect('/admin/profiles.php');
+}
+
+$profiles = db()->query('SELECT * FROM player_profiles ORDER BY created_at DESC')->fetchAll();
+
+page_header('Manage Profiles');
 ?>
-<div class="page-title-row">
-    <div>
-        <h1>Player Profiles</h1>
-        <p class="muted">A read-only overview of RSNs attached to Wayfinder users. Moderation controls can be expanded later.</p>
-    </div>
-    <a class="button secondary" href="/admin/index.php">Admin dashboard</a>
-</div>
+<h1>Manage Profiles</h1>
+
 <div class="card">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>RSN</th>
-                <th>User</th>
-                <th>Type</th>
-                <th>Visibility</th>
-                <th>Primary</th>
-                <th>Last Sync</th>
-                <th>Created</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($profiles as $profile): ?>
-                <tr>
-                    <td><span class="admin-rsn-cell"><img class="profile-avatar tiny" src="<?= e(runescape_avatar_url((string)$profile['rsn'])) ?>" alt="" loading="lazy" referrerpolicy="no-referrer"> <?= e($profile['rsn']) ?></span></td>
-                    <td><?= e($profile['global_name'] ?: $profile['username']) ?><br><span class="muted small">Discord ID: <?= e($profile['discord_id']) ?></span></td>
-                    <td><?= e(account_type_options()[$profile['account_type']] ?? $profile['account_type']) ?></td>
-                    <td><span class="badge"><?= e(visibility_options()[$profile['visibility']] ?? $profile['visibility']) ?></span></td>
-                    <td><?= ((int)$profile['is_primary'] === 1) ? 'Yes' : 'No' ?></td>
-                    <td><?= $profile['last_sync_at'] ? e($profile['last_sync_at']) : '<span class="muted">Never</span>' ?></td>
-                    <td><?= e($profile['created_at']) ?></td>
-                </tr>
-            <?php endforeach; ?>
-            <?php if (!$profiles): ?>
-                <tr><td colspan="7" class="muted">No profiles have been created yet.</td></tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
+<table class="admin-table">
+<thead><tr><th>RSN</th><th>Owner</th><th>Actions</th></tr></thead>
+<tbody>
+<?php foreach ($profiles as $profile): ?>
+<tr>
+<td><?= e($profile['rsn']) ?></td>
+<td><?= (int)$profile['user_id'] ?></td>
+<td>
+<form method="post" class="inline-form" onsubmit="return confirm('Delete this profile?');">
+<?= csrf_field() ?>
+<input type="hidden" name="profile_id" value="<?= (int)$profile['id'] ?>">
+<button class="button danger">Delete</button>
+</form>
+</td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
 </div>
 <?php page_footer(); ?>

@@ -33,6 +33,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             }
         } elseif ($action === 'delete_content_item') {
             require_permission('content.delete');
+            if (($item['type'] ?? '') === 'quest') {
+                throw new RuntimeException('Quest content cannot be manually deleted. Quests are managed via RuneMetrics imports.');
+            }
             delete_content_item($id);
             redirect('/admin/content.php');
         } elseif ($action === 'add_skill_requirement') {
@@ -152,7 +155,7 @@ page_header('Manage Content');
             </section>
 
             <div class="form-actions">
-                <?php if (current_user_can('content.delete')): ?>
+                <?php if (current_user_can('content.delete') && $item['type'] !== 'quest'): ?>
                     <button class="button danger" type="submit" name="action" value="delete_content_item" onclick="return confirm('Delete this content item and related records?');">Delete content</button>
                 <?php endif; ?>
                 <button class="button" type="submit">Save details</button>

@@ -13,6 +13,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
         if (isset($_POST['delete_content'])) {
             require_permission('content.delete');
+            $existingItem = content_item_by_id($id);
+            if (($existingItem['type'] ?? '') === 'quest') {
+                throw new RuntimeException('Quest content cannot be manually deleted.');
+            }
             delete_content_item($id);
             redirect('/admin/content.php');
         }
@@ -159,7 +163,7 @@ page_header($id ? 'Edit Content' : 'Add Content');
     </section>
 
     <div class="sticky-form-actions">
-        <?php if ($id && current_user_can('content.delete')): ?>
+        <?php if ($id && current_user_can('content.delete') && ($item['type'] ?? '') !== 'quest'): ?>
             <button class="button danger" type="submit" name="delete_content" value="1" onclick="return confirm('Delete this content item and all related requirements/drop sources?');">Delete</button>
         <?php endif; ?>
         <a class="button secondary" href="<?= $id ? '/admin/content_view.php?id=' . (int)$id : '/admin/content.php' ?>">Cancel</a>

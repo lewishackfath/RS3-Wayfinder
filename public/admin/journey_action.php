@@ -1,6 +1,25 @@
 <?php
 require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 require_permission('journeys.manage');
+
+function journey_can_manage(array $journey): bool
+{
+    if (current_user_can('journeys.edit.all')) {
+        return true;
+    }
+
+    return (int)($journey['created_by_user_id'] ?? 0) === (int)current_user()['id'];
+}
+
+function journey_can_delete(array $journey): bool
+{
+    if (current_user_can('journeys.delete.all')) {
+        return true;
+    }
+
+    return current_user_can('journeys.delete')
+        && (int)($journey['created_by_user_id'] ?? 0) === (int)current_user()['id'];
+}
 require_post();
 require_csrf();
 

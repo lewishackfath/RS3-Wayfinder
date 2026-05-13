@@ -26,8 +26,52 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && current_user_can('journe
     }
 }
 $chapters = chapters_for_journey($journeyId);
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $action = (string)($_POST['action'] ?? '');
+    if ($action === 'update_journey_details') {
+        update_journey(
+            $journeyId,
+            (string)($_POST['name'] ?? ''),
+            (string)($_POST['description'] ?? ''),
+            (string)($_POST['difficulty'] ?? ''),
+            !empty($_POST['is_active'])
+        );
+        redirect('/admin/journey_view.php?id=' . $journeyId);
+    }
+}
 page_header('Manage Journey');
 ?>
+<details class="card content-inline-edit-card" open>
+    <summary>Journey Details</summary>
+    <form method="post" class="enhanced-form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="update_journey_details">
+
+        <div class="form-grid">
+            <label>Name
+                <input name="name" value="<?= e($journey['name']) ?>" required>
+            </label>
+
+            <label>Difficulty
+                <input name="difficulty" value="<?= e($journey['difficulty'] ?? '') ?>">
+            </label>
+        </div>
+
+        <label>Description
+            <textarea name="description" rows="4"><?= e($journey['description'] ?? '') ?></textarea>
+        </label>
+
+        <label class="toggle-row">
+            <input type="checkbox" name="is_active" value="1" <?= !empty($journey['is_active']) ? 'checked' : '' ?>>
+            <span><strong>Active</strong></span>
+        </label>
+
+        <div class="form-actions">
+            <button class="button" type="submit">Save Journey</button>
+        </div>
+    </form>
+</details>
+
 <div class="page-title-row">
     <div>
         <h1><?= e($journey['icon'] ?: '🧭') ?> <?= e($journey['name']) ?></h1>

@@ -510,10 +510,14 @@ function seed_permissions_and_roles(): void
         ['profiles.manage', 'Manage profiles', 'Allows moderating player profiles.'],
         ['journeys.view', 'View journeys', 'Allows viewing journeys in the admin area.'],
         ['journeys.manage', 'Manage journeys', 'Allows creating and editing journeys, chapters and steps.'],
-        ['journeys.delete', 'Delete journeys', 'Allows deleting journeys, chapters and steps.'],
+        ['journeys.delete', 'Delete own journeys', 'Allows deleting journeys created by the current user.'],
+        ['journeys.delete.all', 'Delete all journeys', 'Allows deleting any journey regardless of creator.'],
+        ['journeys.edit.all', 'Edit all journeys', 'Allows editing any journey regardless of creator.'],
         ['content.view', 'View content library', 'Allows viewing the admin content library.'],
         ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses and drops.'],
-        ['content.delete', 'Delete content library items', 'Allows deleting content library items and related records.'],
+        ['content.delete', 'Delete non-quest content library items', 'Allows deleting content library items except quests.'],
+        ['users.manage', 'Manage users', 'Allows blocking, banning and deleting users.'],
+        ['profiles.delete', 'Delete player profiles', 'Allows deleting player profiles.'],
     ];
 
     $stmt = $pdo->prepare("INSERT INTO permissions (slug, name, description) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description)");
