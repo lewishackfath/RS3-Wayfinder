@@ -2585,54 +2585,63 @@ tr:hover td {
     }
 }
 
-/* =====================================================================
-   RS3 Wayfinder - Ancient Codex / Arcane Journal Theme (safe layer)
-   ---------------------------------------------------------------------
-   This is intentionally a visual-only layer. It avoids changing the
-   structural display/flex/grid rules used by navigation, menu bars, and
-   page layout so existing behaviour remains intact.
-   ===================================================================== */
+/* ======================================================================
+   RS3 Wayfinder — Arcane Codex / Adventurer Journal Theme v2
+   ----------------------------------------------------------------------
+   Purpose: move the visual language away from generic dashboard cards and
+   towards parchment pages, codex panels, field notes and arcane ledgers.
+   This layer intentionally avoids structural nav/menu positioning rules.
+   ====================================================================== */
 
 :root {
-    --wf-codex-bg-0: #07090d;
-    --wf-codex-bg-1: #0d1219;
-    --wf-codex-bg-2: #15110d;
-    --wf-codex-panel: rgba(22, 23, 25, .84);
-    --wf-codex-panel-strong: rgba(28, 26, 23, .92);
-    --wf-codex-panel-soft: rgba(255, 238, 193, .055);
-    --wf-codex-ink: #f4ead4;
-    --wf-codex-muted: #b9a987;
-    --wf-codex-line: rgba(204, 163, 84, .25);
-    --wf-codex-line-strong: rgba(232, 190, 95, .42);
-    --wf-codex-gold: #d8b45f;
-    --wf-codex-gold-soft: #f0d58c;
-    --wf-codex-bronze: #9b6f34;
-    --wf-codex-cyan: #67d7d2;
-    --wf-codex-violet: #9d7cff;
-    --wf-codex-ember: #df7d45;
-    --wf-codex-shadow: rgba(0, 0, 0, .48);
+    --codex-void: #07090d;
+    --codex-ink: #1a120b;
+    --codex-page: #d5bb7f;
+    --codex-page-deep: #a97d3d;
+    --codex-page-dark: #2a1d12;
+    --codex-leather: #21140d;
+    --codex-leather-2: #2f2114;
+    --codex-bronze: #8f6330;
+    --codex-bronze-soft: #c49a55;
+    --codex-gold: #e7c56d;
+    --codex-gold-soft: #ffe3a2;
+    --codex-arcane: #60d8d6;
+    --codex-violet: #a77cf4;
+    --codex-rune: rgba(96, 216, 214, .42);
+    --codex-line: rgba(231, 197, 109, .28);
+    --codex-shadow: rgba(0, 0, 0, .48);
 
-    --bg: var(--wf-codex-bg-0);
-    --panel: #171717;
-    --panel2: #22201b;
-    --text: var(--wf-codex-ink);
-    --muted: var(--wf-codex-muted);
-    --line: var(--wf-codex-line);
-    --accent: var(--wf-codex-cyan);
+    --bg: #080a0e;
+    --panel: rgba(37, 25, 15, .82);
+    --panel2: rgba(54, 38, 23, .82);
+    --text: #f5ebd3;
+    --muted: #c6b790;
+    --line: rgba(231, 197, 109, .26);
+    --accent: #76e0dc;
+    --wf-text: #f5ebd3;
+    --wf-muted: #c6b790;
+    --wf-line: rgba(231, 197, 109, .26);
+    --wf-gold: #e7c56d;
+    --wf-gold-soft: #ffe3a2;
+    --wf-blue: #60d8d6;
+    --wf-green: #8ddf9b;
 }
 
 html {
-    background: var(--wf-codex-bg-0);
+    background: var(--codex-void);
 }
 
 body {
-    color: var(--wf-codex-ink);
+    color: var(--text);
     background:
-        radial-gradient(circle at 18% 0%, rgba(103, 215, 210, .12), transparent 34rem),
-        radial-gradient(circle at 84% 10%, rgba(216, 180, 95, .105), transparent 34rem),
-        radial-gradient(circle at 62% 96%, rgba(157, 124, 255, .075), transparent 32rem),
-        linear-gradient(145deg, rgba(7, 9, 13, .98), rgba(13, 18, 25, .98) 50%, rgba(18, 14, 10, .98));
-    position: relative;
+        radial-gradient(circle at 18% 8%, rgba(96,216,214,.13) 0 10%, transparent 28%),
+        radial-gradient(circle at 86% 16%, rgba(167,124,244,.12) 0 8%, transparent 30%),
+        radial-gradient(circle at 48% 110%, rgba(231,197,109,.10) 0 12%, transparent 34%),
+        linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.014) 1px, transparent 1px),
+        linear-gradient(180deg, #0b0d12 0%, #090a0d 42%, #050608 100%) !important;
+    background-size: auto, auto, auto, 34px 34px, 34px 34px, auto !important;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body::before {
@@ -2642,12 +2651,11 @@ body::before {
     pointer-events: none;
     z-index: -1;
     background:
-        linear-gradient(90deg, rgba(255,255,255,.026) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(255,255,255,.018) 1px, transparent 1px),
-        radial-gradient(circle at center, transparent 0 45%, rgba(0,0,0,.25) 100%);
-    background-size: 76px 76px, 76px 76px, 100% 100%;
-    opacity: .32;
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,.9), rgba(0,0,0,.38));
+        radial-gradient(circle at 20% 20%, rgba(231,197,109,.055), transparent 22%),
+        radial-gradient(circle at 80% 30%, rgba(96,216,214,.055), transparent 18%),
+        repeating-linear-gradient(115deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px);
+    opacity: .72;
+    mix-blend-mode: screen;
 }
 
 body::after {
@@ -2657,221 +2665,276 @@ body::after {
     pointer-events: none;
     z-index: -1;
     background:
-        radial-gradient(circle at 22% 24%, rgba(216,180,95,.05), transparent 16rem),
-        radial-gradient(circle at 70% 44%, rgba(103,215,210,.045), transparent 18rem),
-        repeating-linear-gradient(135deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px);
-    opacity: .38;
-    mix-blend-mode: screen;
+        radial-gradient(ellipse at center, transparent 0 48%, rgba(0,0,0,.45) 100%),
+        linear-gradient(90deg, rgba(0,0,0,.38), transparent 14%, transparent 86%, rgba(0,0,0,.38));
 }
 
-/* Keep navigation readable without changing its structure. */
-.topbar {
+/* Page should feel like an opened journal spread rather than a floating SaaS canvas. */
+.container {
+    position: relative;
+}
+
+.container::before {
+    content: "";
+    position: fixed;
+    inset: 86px clamp(.75rem, 2vw, 2.2rem) 22px;
+    pointer-events: none;
+    z-index: -1;
+    border: 1px solid rgba(231,197,109,.10);
+    border-radius: 30px;
     background:
-        linear-gradient(180deg, rgba(13, 15, 18, .96), rgba(16, 15, 13, .92)) !important;
-    border-bottom-color: rgba(216, 180, 95, .24) !important;
-    box-shadow: 0 14px 42px rgba(0,0,0,.28), inset 0 -1px 0 rgba(255,240,190,.07);
+        linear-gradient(90deg, transparent calc(50% - 1px), rgba(231,197,109,.075) 50%, transparent calc(50% + 1px)),
+        radial-gradient(circle at 50% 15%, rgba(231,197,109,.075), transparent 26%),
+        linear-gradient(180deg, rgba(53,37,21,.22), rgba(13,10,8,.06));
+    box-shadow: inset 0 0 80px rgba(0,0,0,.22);
 }
 
-.brand {
-    color: var(--wf-codex-gold-soft) !important;
-    text-shadow: 0 0 18px rgba(216,180,95,.18);
+/* Headings become codex titles. */
+h1, h2, h3,
+.hero h1,
+.card h1,
+.card h2,
+.card h3,
+.page-title-row h1,
+.profile-hero-card h1 {
+    font-family: Georgia, "Times New Roman", serif;
     letter-spacing: .015em;
+    color: var(--codex-gold-soft);
+    text-shadow: 0 2px 0 rgba(0,0,0,.36), 0 0 18px rgba(231,197,109,.12);
 }
 
-nav a,
-.nav-dropdown-toggle,
-.profile-select-link {
-    color: rgba(244,234,212,.88) !important;
+h1::first-letter,
+.hero h1::first-letter,
+.page-title-row h1::first-letter {
+    color: var(--codex-arcane);
+    text-shadow: 0 0 16px rgba(96,216,214,.42);
 }
 
-nav a:hover,
-.nav-dropdown-toggle:hover,
-.profile-select-link:hover {
-    color: var(--wf-codex-gold-soft) !important;
-    text-shadow: 0 0 14px rgba(216,180,95,.22);
+.muted,
+small,
+.form-help,
+.table th,
+th {
+    color: rgba(226, 207, 164, .74) !important;
 }
 
-/* Codex panels: target common surfaces only, not layout containers. */
+/* Journal/codex panels */
 .hero,
 .card,
 .stat-card,
 .notice,
 .alert,
 .table-card,
-.panel,
 .dashboard-card,
-.profile-card,
+.panel,
 .journey-card,
-.content-card,
-.boss-log-boss-card,
+.journey-chapter,
+.profile-card,
 .account-summary-card,
 .account-danger-card,
+.filter-card,
+.content-type-card,
+.boss-log-boss-card,
+.boss-log-panel,
+.recommendation-card,
 .empty-state {
     position: relative;
+    isolation: isolate;
+    border-radius: 14px 26px 16px 26px !important;
+    border: 1px solid rgba(231,197,109,.34) !important;
     background:
-        linear-gradient(145deg, rgba(255, 238, 193, .075), rgba(255, 238, 193, .028)),
-        radial-gradient(circle at 12% 0%, rgba(216,180,95,.105), transparent 18rem),
-        radial-gradient(circle at 88% 100%, rgba(103,215,210,.05), transparent 18rem),
-        var(--wf-codex-panel) !important;
-    border: 1px solid var(--wf-codex-line) !important;
-    border-radius: 20px !important;
+        linear-gradient(135deg, rgba(255,235,179,.075), transparent 18%),
+        linear-gradient(315deg, rgba(96,216,214,.050), transparent 20%),
+        radial-gradient(circle at 20% 8%, rgba(231,197,109,.10), transparent 34%),
+        radial-gradient(circle at 85% 92%, rgba(96,216,214,.055), transparent 32%),
+        linear-gradient(180deg, rgba(51,35,21,.92), rgba(27,19,13,.94)) !important;
     box-shadow:
-        0 22px 70px var(--wf-codex-shadow),
-        inset 0 1px 0 rgba(255, 243, 204, .10),
-        inset 0 -1px 0 rgba(0,0,0,.34) !important;
+        0 18px 42px rgba(0,0,0,.36),
+        inset 0 1px 0 rgba(255,235,179,.14),
+        inset 0 0 0 1px rgba(0,0,0,.22),
+        inset 0 -18px 38px rgba(0,0,0,.18) !important;
 }
 
 .hero::before,
 .card::before,
 .stat-card::before,
+.notice::before,
 .table-card::before,
-.panel::before,
 .dashboard-card::before,
-.profile-card::before,
+.panel::before,
 .journey-card::before,
-.content-card::before,
+.journey-chapter::before,
+.profile-card::before,
 .boss-log-boss-card::before,
-.account-summary-card::before,
-.account-danger-card::before {
+.boss-log-panel::before,
+.recommendation-card::before {
     content: "";
     position: absolute;
-    inset: 8px;
-    pointer-events: none;
-    border: 1px solid rgba(216,180,95,.09);
-    border-radius: calc(20px - 8px);
+    inset: 7px;
+    z-index: -1;
+    border-radius: inherit;
+    border: 1px solid rgba(231,197,109,.14);
     background:
-        linear-gradient(135deg, rgba(216,180,95,.16), transparent 18px) top left / 38px 38px no-repeat,
-        linear-gradient(225deg, rgba(216,180,95,.14), transparent 18px) top right / 38px 38px no-repeat,
-        linear-gradient(45deg, rgba(103,215,210,.09), transparent 18px) bottom left / 38px 38px no-repeat,
-        linear-gradient(315deg, rgba(103,215,210,.08), transparent 18px) bottom right / 38px 38px no-repeat;
-    opacity: .85;
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,.018) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity: .62;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,.95), rgba(0,0,0,.38));
 }
 
-.hero > *,
-.card > *,
-.stat-card > *,
-.table-card > *,
-.panel > *,
-.dashboard-card > *,
-.profile-card > *,
-.journey-card > *,
-.content-card > *,
-.boss-log-boss-card > *,
-.account-summary-card > *,
-.account-danger-card > * {
-    position: relative;
-    z-index: 1;
+.hero::after,
+.card::after,
+.stat-card::after,
+.table-card::after,
+.dashboard-card::after,
+.panel::after,
+.journey-card::after,
+.journey-chapter::after,
+.profile-card::after,
+.boss-log-boss-card::after,
+.boss-log-panel::after,
+.recommendation-card::after {
+    content: "✦";
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    color: rgba(96,216,214,.46);
+    font-size: 13px;
+    line-height: 1;
+    text-shadow: 0 0 14px rgba(96,216,214,.55);
+    pointer-events: none;
 }
 
-h1,
-h2,
-h3,
-.page-title,
-.hero h1,
-.card h1,
-.card h2,
-.card h3 {
-    color: var(--wf-codex-gold-soft);
-    text-shadow: 0 2px 18px rgba(216,180,95,.13);
-    letter-spacing: .01em;
+/* Make major page headers read like journal title plates. */
+.page-title-row,
+.profile-hero-card,
+.active-profile-panel,
+.journey-progress-summary {
+    border: 1px solid rgba(231,197,109,.25);
+    border-radius: 18px 30px 18px 30px;
+    padding: clamp(1rem, 2vw, 1.35rem);
+    background:
+        linear-gradient(90deg, rgba(0,0,0,.24), transparent 62%),
+        linear-gradient(180deg, rgba(86,59,32,.62), rgba(31,22,15,.70));
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.10), 0 14px 28px rgba(0,0,0,.24);
 }
 
-h1::after,
-.hero h1::after {
+.page-title-row::before,
+.profile-hero-card::before,
+.active-profile-panel::before,
+.journey-progress-summary::before {
     content: "";
-    display: block;
-    width: min(220px, 42vw);
-    height: 2px;
-    margin-top: .55rem;
-    background: linear-gradient(90deg, transparent, rgba(216,180,95,.65), rgba(103,215,210,.35), transparent);
+    width: 4px;
+    align-self: stretch;
+    border-radius: 99px;
+    background: linear-gradient(180deg, transparent, var(--codex-gold), var(--codex-arcane), transparent);
+    box-shadow: 0 0 16px rgba(96,216,214,.22);
+    flex: 0 0 auto;
 }
 
-.muted,
-small,
-.table th,
-th {
-    color: rgba(224, 207, 169, .72) !important;
+/* Cards should feel grouped like manuscript entries, not KPI tiles. */
+.grid,
+.cards-grid,
+.journey-cards,
+.stats-grid,
+.profile-grid,
+.dashboard-grid,
+.admin-grid {
+    gap: clamp(.85rem, 1.4vw, 1.25rem) !important;
 }
 
-a {
-    color: var(--wf-codex-cyan);
+.card + .card,
+.panel + .panel,
+.journey-chapter + .journey-chapter {
+    margin-top: 1rem;
 }
 
-a:hover {
-    color: #a6fff9;
-}
-
-/* Buttons: tactile relic controls. */
+/* Buttons: engraved metal tabs with arcane hover feedback. */
 .button,
 button,
-input[type="submit"] {
-    border: 1px solid rgba(216,180,95,.32) !important;
+input[type="submit"],
+.action-button {
+    border-radius: 8px 18px 8px 18px !important;
+    border: 1px solid rgba(255,227,162,.36) !important;
     background:
-        linear-gradient(180deg, rgba(240,213,140,.98), rgba(171,116,45,.96)) !important;
-    color: #171008 !important;
+        linear-gradient(180deg, rgba(255,231,162,.96), rgba(185,130,54,.96) 48%, rgba(102,65,28,.96)) !important;
+    color: #201206 !important;
+    text-shadow: 0 1px 0 rgba(255,255,255,.24);
     box-shadow:
-        0 10px 24px rgba(0,0,0,.22),
         inset 0 1px 0 rgba(255,255,255,.38),
-        inset 0 -1px 0 rgba(77,48,13,.44) !important;
-    text-shadow: 0 1px 0 rgba(255,255,255,.28);
-    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, filter .16s ease;
+        inset 0 -2px 0 rgba(0,0,0,.20),
+        0 8px 18px rgba(0,0,0,.24),
+        0 0 0 rgba(96,216,214,0) !important;
+    transition: transform .16s ease, box-shadow .16s ease, filter .16s ease, border-color .16s ease;
 }
 
 .button:hover,
 button:hover,
-input[type="submit"]:hover {
+input[type="submit"]:hover,
+.action-button:hover {
     transform: translateY(-1px);
-    border-color: rgba(103,215,210,.48) !important;
+    filter: brightness(1.06) saturate(1.05);
+    border-color: rgba(96,216,214,.55) !important;
     box-shadow:
-        0 14px 34px rgba(0,0,0,.28),
-        0 0 22px rgba(103,215,210,.12),
         inset 0 1px 0 rgba(255,255,255,.42),
-        inset 0 -1px 0 rgba(77,48,13,.44) !important;
-    filter: brightness(1.04);
+        inset 0 -2px 0 rgba(0,0,0,.20),
+        0 10px 22px rgba(0,0,0,.28),
+        0 0 18px rgba(96,216,214,.18) !important;
 }
 
 .button:active,
 button:active,
-input[type="submit"]:active {
-    transform: translateY(0);
+input[type="submit"]:active,
+.action-button:active {
+    transform: translateY(1px);
 }
 
 .button.secondary,
 button.secondary,
 .button.ghost,
-.button.profile-select-link {
+.button.muted,
+a.button.secondary {
+    color: var(--codex-gold-soft) !important;
     background:
-        linear-gradient(180deg, rgba(255,238,193,.10), rgba(255,238,193,.045)),
-        rgba(21, 20, 18, .78) !important;
-    color: var(--wf-codex-ink) !important;
-    border-color: rgba(216,180,95,.25) !important;
-    text-shadow: none;
+        linear-gradient(180deg, rgba(78,57,35,.82), rgba(35,25,18,.92)) !important;
+    border-color: rgba(231,197,109,.30) !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,.45);
 }
 
 .button.danger,
 button.danger,
 .subtle-danger {
+    color: #ffece7 !important;
     background:
-        linear-gradient(180deg, rgba(223,125,69,.95), rgba(113,47,37,.95)) !important;
-    color: #fff7ef !important;
-    border-color: rgba(255,177,116,.36) !important;
+        linear-gradient(180deg, rgba(139,62,48,.98), rgba(79,28,24,.98)) !important;
+    border-color: rgba(255,160,135,.36) !important;
 }
 
-/* Forms: journal/etched input styling. */
+/* Inputs: journal form fields / etched archive boxes. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
 select,
 textarea,
 .searchable-select-input,
 .searchable-dropdown-input,
 .profile-selector {
+    min-height: 44px;
+    border-radius: 8px 16px 8px 16px !important;
+    color: #fff3d6 !important;
+    caret-color: var(--codex-arcane);
+    border: 1px solid rgba(231,197,109,.30) !important;
     background:
-        linear-gradient(180deg, rgba(7, 9, 13, .58), rgba(30, 24, 17, .56)) !important;
-    border-color: rgba(216,180,95,.26) !important;
-    color: var(--wf-codex-ink) !important;
+        linear-gradient(180deg, rgba(15,12,9,.68), rgba(39,28,18,.78)) !important;
     box-shadow:
-        inset 0 1px 0 rgba(255,243,204,.08),
-        inset 0 0 0 1px rgba(0,0,0,.18),
-        0 8px 22px rgba(0,0,0,.14) !important;
+        inset 0 1px 0 rgba(255,235,179,.08),
+        inset 0 0 0 1px rgba(0,0,0,.22),
+        0 8px 16px rgba(0,0,0,.16) !important;
+}
+
+input::placeholder,
+textarea::placeholder,
+.searchable-select-input::placeholder,
+.searchable-dropdown-input::placeholder {
+    color: rgba(226,207,164,.52) !important;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
@@ -2880,185 +2943,275 @@ textarea:focus,
 .searchable-select-input:focus,
 .searchable-dropdown-input:focus,
 .profile-selector:focus {
-    border-color: rgba(103,215,210,.62) !important;
+    border-color: rgba(96,216,214,.70) !important;
     box-shadow:
-        0 0 0 4px rgba(103,215,210,.12),
-        0 0 24px rgba(103,215,210,.10),
-        inset 0 1px 0 rgba(255,243,204,.09) !important;
+        0 0 0 3px rgba(96,216,214,.12),
+        0 0 20px rgba(96,216,214,.14),
+        inset 0 1px 0 rgba(255,235,179,.10) !important;
 }
 
 select option,
 .profile-selector option {
-    background: #14120f !important;
-    color: var(--wf-codex-ink) !important;
+    background: #21160f !important;
+    color: #fff1d0 !important;
 }
 
 label,
 .form-stack label {
-    color: rgba(244,234,212,.90);
+    color: #f4dfaa;
 }
 
-/* Tables: archive ledger styling. */
+/* Tables become ledgers. */
 table,
 .table {
-    background: rgba(8,10,12,.22);
-    border: 1px solid rgba(216,180,95,.14);
-    border-radius: 16px;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 1px solid rgba(231,197,109,.22);
+    border-radius: 12px 22px 12px 22px;
+    overflow: hidden;
+    background:
+        linear-gradient(180deg, rgba(43,30,19,.74), rgba(23,17,13,.80));
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.07);
 }
 
-th {
-    color: var(--wf-codex-gold-soft) !important;
-    background: rgba(216,180,95,.055);
+th,
+.table th {
+    background:
+        linear-gradient(180deg, rgba(109,78,39,.45), rgba(42,30,20,.70));
+    color: #ffe3a2 !important;
+    font-family: Georgia, "Times New Roman", serif;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    border-bottom: 1px solid rgba(231,197,109,.24) !important;
 }
 
 td,
-th {
-    border-bottom-color: rgba(216,180,95,.13) !important;
+.table td {
+    border-bottom: 1px solid rgba(231,197,109,.12) !important;
 }
 
 tr:hover td {
-    background: rgba(103,215,210,.045) !important;
+    background: rgba(96,216,214,.055) !important;
 }
 
-/* Badges and status marks. */
-.badge {
-    background: rgba(216,180,95,.105) !important;
-    border-color: rgba(216,180,95,.25) !important;
-    color: rgba(244,234,212,.93) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+/* Badges as wax seals / archive tags. */
+.badge,
+.success-badge,
+.status-badge,
+.profile-interest-badge {
+    border-radius: 7px 14px 7px 14px !important;
+    background:
+        linear-gradient(180deg, rgba(82,58,34,.84), rgba(38,27,19,.90)) !important;
+    color: #f6e5bd !important;
+    border: 1px solid rgba(231,197,109,.34) !important;
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.11);
 }
 
-.badge.accent,
-.badge.info {
-    background: rgba(103,215,210,.13) !important;
-    border-color: rgba(103,215,210,.34) !important;
-    color: #b9fffb !important;
+.badge.accent {
+    color: #bff6f3 !important;
+    border-color: rgba(96,216,214,.42) !important;
+    background:
+        linear-gradient(180deg, rgba(38,76,76,.72), rgba(24,39,39,.88)) !important;
 }
 
 .badge.success,
 .success-badge {
-    background: rgba(145,210,128,.13) !important;
-    border-color: rgba(145,210,128,.32) !important;
-    color: #d7ffc9 !important;
+    color: #d9ffd2 !important;
+    border-color: rgba(141,223,155,.42) !important;
+    background:
+        linear-gradient(180deg, rgba(48,88,47,.72), rgba(24,43,24,.88)) !important;
 }
 
 .badge.danger {
-    background: rgba(223,125,69,.14) !important;
-    border-color: rgba(223,125,69,.34) !important;
-    color: #ffd0ad !important;
+    color: #ffd0c6 !important;
+    border-color: rgba(255,150,130,.42) !important;
+    background:
+        linear-gradient(180deg, rgba(105,46,37,.78), rgba(52,22,20,.90)) !important;
 }
 
-/* Progress: magical route lines. */
+/* Progress becomes a glowing rune channel. */
 .progress-bar,
 .boss-log-progress-bar {
-    background: rgba(0,0,0,.34) !important;
-    border-color: rgba(216,180,95,.20) !important;
-    box-shadow: inset 0 1px 6px rgba(0,0,0,.36) !important;
+    height: 13px;
+    border: 1px solid rgba(231,197,109,.24) !important;
+    background:
+        linear-gradient(180deg, rgba(6,8,10,.72), rgba(28,19,13,.82)) !important;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,.52), 0 1px 0 rgba(255,235,179,.05) !important;
 }
 
 .progress-bar span,
 .boss-log-progress-bar span {
-    background: linear-gradient(90deg, var(--wf-codex-cyan), var(--wf-codex-gold), var(--wf-codex-violet)) !important;
-    box-shadow: 0 0 16px rgba(103,215,210,.18), 0 0 18px rgba(216,180,95,.13) !important;
+    background:
+        linear-gradient(90deg, #3bb6c2, #84e3dd 36%, #e7c56d 78%, #fff0b8) !important;
+    box-shadow: 0 0 18px rgba(96,216,214,.34), 0 0 8px rgba(231,197,109,.24) !important;
 }
 
-/* Journey, skill and boss collection details. */
-.journey-icon,
-.journey-list-icon,
-.recommendation-icon,
+/* Journey steps should read as journal entries. */
+.journey-step {
+    position: relative;
+    border-top: 1px dashed rgba(231,197,109,.24) !important;
+}
+
 .step-status,
 .drag-handle,
-.profile-avatar,
-.profile-select-avatar-wrap,
-.skill-row,
-.boss-drop-tile button,
-.boss-log-boss-image {
+.journey-icon,
+.journey-list-icon,
+.recommendation-icon {
+    border: 1px solid rgba(231,197,109,.34) !important;
     background:
-        linear-gradient(145deg, rgba(255,238,193,.09), rgba(255,238,193,.025)),
-        rgba(11, 12, 14, .46) !important;
-    border-color: rgba(216,180,95,.22) !important;
+        radial-gradient(circle at 35% 25%, rgba(255,235,179,.16), transparent 38%),
+        linear-gradient(180deg, rgba(73,51,30,.90), rgba(28,20,15,.92)) !important;
+    color: var(--codex-gold-soft) !important;
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.12), 0 8px 18px rgba(0,0,0,.25) !important;
 }
 
-.journey-step {
-    border-top-color: rgba(216,180,95,.14) !important;
+.journey-step.complete .step-status,
+.step-status.complete {
+    color: #13231b !important;
+    background:
+        radial-gradient(circle at 35% 25%, rgba(255,255,255,.55), transparent 42%),
+        linear-gradient(180deg, #bff4b8, #6fbd73) !important;
+    border-color: rgba(204,255,196,.62) !important;
 }
 
-.journey-step.complete .step-status {
-    color: #09201f !important;
-    background: linear-gradient(180deg, #9ff8ef, #56c7bd) !important;
-    border-color: rgba(159,248,239,.7) !important;
-    box-shadow: 0 0 18px rgba(103,215,210,.18) !important;
+/* Boss/drop log: collection ledger and item pedestals. */
+.boss-log-boss-image,
+.profile-avatar,
+.profile-select-avatar-wrap {
+    border-radius: 10px 18px 10px 18px !important;
+    border: 1px solid rgba(231,197,109,.34) !important;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(96,216,214,.10), transparent 40%),
+        linear-gradient(180deg, rgba(37,25,15,.92), rgba(10,9,8,.94)) !important;
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.10), 0 12px 24px rgba(0,0,0,.26) !important;
 }
 
-.boss-drop-tile button {
-    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, filter .16s ease;
+.boss-drop-tile button,
+.drop-item,
+.item-tile,
+.skill-row,
+.recommended-step,
+.searchable-dropdown-item {
+    border-radius: 10px 18px 10px 18px !important;
+    border: 1px solid rgba(231,197,109,.24) !important;
+    background:
+        linear-gradient(135deg, rgba(255,235,179,.055), transparent 30%),
+        linear-gradient(180deg, rgba(43,31,20,.78), rgba(22,17,13,.90)) !important;
+    color: #f5ebd3 !important;
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.08), 0 8px 18px rgba(0,0,0,.18) !important;
 }
 
 .boss-drop-tile button:hover,
-.boss-drop-tile button:focus,
+.drop-item:hover,
+.item-tile:hover,
+.skill-row:hover,
 .recommended-step:hover,
 .searchable-dropdown-item:hover,
 .searchable-dropdown-item:focus {
-    background: rgba(103,215,210,.095) !important;
-    border-color: rgba(103,215,210,.42) !important;
-    box-shadow: 0 0 24px rgba(103,215,210,.10), inset 0 1px 0 rgba(255,255,255,.08) !important;
-}
-
-.boss-drop-tile button:hover {
     transform: translateY(-1px);
+    border-color: rgba(96,216,214,.48) !important;
+    background:
+        linear-gradient(135deg, rgba(96,216,214,.13), transparent 35%),
+        linear-gradient(180deg, rgba(48,37,25,.86), rgba(24,20,15,.93)) !important;
+    box-shadow: inset 0 1px 0 rgba(255,235,179,.10), 0 10px 24px rgba(0,0,0,.24), 0 0 16px rgba(96,216,214,.12) !important;
 }
 
-/* Dropdown surfaces only; do not alter menu layout. */
-.nav-dropdown-menu,
+/* Dropdowns remain functional, but themed as parchment/ledger overlays. */
 .searchable-dropdown-list,
-.searchable-select-results {
+.nav-dropdown-menu {
+    border-radius: 10px 18px 10px 18px !important;
+    border: 1px solid rgba(231,197,109,.34) !important;
     background:
-        linear-gradient(145deg, rgba(255,238,193,.08), rgba(255,238,193,.025)),
-        rgba(13, 14, 16, .96) !important;
-    border-color: rgba(216,180,95,.30) !important;
-    box-shadow: 0 22px 60px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.07) !important;
+        linear-gradient(180deg, rgba(43,31,20,.98), rgba(18,15,12,.98)) !important;
+    box-shadow: 0 18px 44px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,235,179,.10) !important;
 }
 
 .nav-dropdown-menu a:hover {
-    background: rgba(216,180,95,.10) !important;
+    background: rgba(96,216,214,.10) !important;
+    color: #fff6dc !important;
 }
 
-/* Loading overlay fits the arcane theme. */
-.global-loading-overlay {
-    background: rgba(4, 5, 7, .66) !important;
-    backdrop-filter: blur(8px) saturate(1.05);
-    -webkit-backdrop-filter: blur(8px) saturate(1.05);
+/* Dividers create manuscript sections. */
+hr,
+.section-divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(231,197,109,.44), rgba(96,216,214,.34), rgba(231,197,109,.44), transparent);
+    margin: 1.25rem 0;
 }
 
+/* Alerts/notices as marginalia. */
+.notice,
+.alert {
+    border-left: 4px solid rgba(96,216,214,.52) !important;
+}
+
+.alert.error,
+.notice.error {
+    border-left-color: rgba(255,140,120,.70) !important;
+}
+
+/* Loading overlay as opening codex page. */
 .global-loading-card {
+    border-radius: 14px 28px 14px 28px !important;
+    border-color: rgba(231,197,109,.44) !important;
     background:
-        radial-gradient(circle at 50% 0%, rgba(103,215,210,.12), transparent 16rem),
-        linear-gradient(145deg, rgba(255,238,193,.10), rgba(255,238,193,.035)),
-        rgba(14, 15, 17, .90) !important;
-    border-color: rgba(216,180,95,.35) !important;
+        radial-gradient(circle at 50% 0%, rgba(96,216,214,.12), transparent 35%),
+        linear-gradient(180deg, rgba(55,39,25,.96), rgba(23,17,13,.97)) !important;
 }
 
 .rs-spinner {
-    border-color: rgba(216,180,95,.20) !important;
-    border-top-color: var(--wf-codex-cyan) !important;
+    border-color: rgba(231,197,109,.20) !important;
+    border-top-color: var(--codex-arcane) !important;
+    filter: drop-shadow(0 0 8px rgba(96,216,214,.42));
 }
 
-.footer {
-    color: rgba(185,169,135,.72) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .button,
-    button,
-    input[type="submit"],
-    .boss-drop-tile button {
-        transition: none !important;
+/* Subtle animation only for atmospheric feedback. */
+@media (prefers-reduced-motion: no-preference) {
+    .hero,
+    .card,
+    .panel,
+    .journey-card,
+    .boss-log-boss-card,
+    .boss-drop-tile button,
+    .skill-row {
+        transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
     }
 
-    .button:hover,
-    button:hover,
-    input[type="submit"]:hover,
-    .boss-drop-tile button:hover {
-        transform: none !important;
+    .card:hover,
+    .journey-card:hover,
+    .boss-log-boss-card:hover {
+        border-color: rgba(231,197,109,.46) !important;
+        box-shadow:
+            0 20px 48px rgba(0,0,0,.40),
+            inset 0 1px 0 rgba(255,235,179,.16),
+            inset 0 0 0 1px rgba(0,0,0,.22),
+            0 0 22px rgba(96,216,214,.055) !important;
+    }
+}
+
+/* Mobile: keep the journal flavour without making panels too cramped. */
+@media (max-width: 720px) {
+    .hero,
+    .card,
+    .panel,
+    .journey-card,
+    .journey-chapter,
+    .table-card,
+    .dashboard-card {
+        border-radius: 12px 20px 12px 20px !important;
+        padding: clamp(1rem, 4vw, 1.25rem) !important;
+    }
+
+    .page-title-row,
+    .profile-hero-card,
+    .active-profile-panel,
+    .journey-progress-summary {
+        border-radius: 12px 22px 12px 22px;
+    }
+
+    .container::before {
+        inset: 72px .5rem 14px;
+        border-radius: 20px;
     }
 }
