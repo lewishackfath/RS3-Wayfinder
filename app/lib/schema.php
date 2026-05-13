@@ -316,7 +316,7 @@ function bootstrap_schema(): void
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS content_items (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        type ENUM('quest','achievement','task','boss','drop','unlock','item') NOT NULL,
+        type ENUM('quest','achievement','task','boss','unlock','item') NOT NULL,
         name VARCHAR(220) NOT NULL,
         slug VARCHAR(240) NOT NULL UNIQUE,
         description TEXT NULL,
@@ -367,17 +367,6 @@ function bootstrap_schema(): void
         INDEX idx_content_relationship_target (target_content_item_id),
         CONSTRAINT fk_content_relationship_source FOREIGN KEY (source_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE,
         CONSTRAINT fk_content_relationship_target FOREIGN KEY (target_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS drop_items (
-        content_item_id BIGINT UNSIGNED PRIMARY KEY,
-        item_name VARCHAR(220) NOT NULL,
-        wiki_url TEXT NULL,
-        icon_url TEXT NULL,
-        notes TEXT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        CONSTRAINT fk_drop_items_content FOREIGN KEY (content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS boss_drop_sources (
@@ -471,6 +460,25 @@ function run_schema_migrations(): void
         }
     });
 
+
+    run_once_migration('20260513_remove_legacy_drop_content_type', function (PDO $pdo): void {
+        // Legacy cleanup: older builds exposed a separate `drop` content type and a `drop_items` table.
+        // Drops are now normal `item` content records linked to bosses via boss_drop_sources.
+        $pdo->exec("UPDATE content_items SET type = 'item' WHERE type = 'drop'");
+
+        try {
+            $pdo->exec("DROP TABLE IF EXISTS drop_items");
+        } catch (Throwable $e) {
+            // Some hosts may have unusual FK naming/permissions. Leave the table in place rather than blocking bootstrap.
+        }
+
+        try {
+            $pdo->exec("ALTER TABLE content_items MODIFY type ENUM('quest','achievement','task','boss','unlock','item') NOT NULL");
+        } catch (Throwable $e) {
+            // If the host blocks ENUM changes, the app still hides and prevents legacy drop creation.
+        }
+    });
+
     run_once_migration('20260512_smart_journey_step_fields', function (PDO $pdo): void {
         $cols = $pdo->query("SHOW COLUMNS FROM journey_steps")->fetchAll(PDO::FETCH_COLUMN);
         if (!in_array('is_optional', $cols, true)) {
@@ -551,7 +559,7 @@ function seed_permissions_and_roles(): void
         ['journeys.delete.all', 'Delete all journeys', 'Allows deleting any journey regardless of creator.'],
         ['journeys.edit.all', 'Edit all journeys', 'Allows editing any journey regardless of creator.'],
         ['content.view', 'View content library', 'Allows viewing the admin content library.'],
-        ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses and drops.'],
+        ['content.manage', 'Manage content library', 'Allows creating and editing quests, achievements, bosses, unlocks and items.'],
         ['content.delete', 'Delete non-quest content library items', 'Allows deleting content library items except quests.'],
         ['users.manage', 'Manage users', 'Allows blocking, banning and deleting users.'],
         ['profiles.delete', 'Delete player profiles', 'Allows deleting player profiles.'],

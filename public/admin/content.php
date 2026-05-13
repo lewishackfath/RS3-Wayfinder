@@ -14,7 +14,7 @@ page_header('Content Library');
 <div class="page-title-row">
     <div>
         <h1>Content Library</h1>
-        <p class="muted">Reusable RuneScape knowledge records for quests, achievements, bosses, drops and unlocks.</p>
+        <p class="muted">Reusable RuneScape knowledge records for quests, achievements, bosses, unlocks and items.</p>
     </div>
     <?php if (current_user_can('content.manage')): ?>
         <a class="button secondary" href="/admin/content_import_quests.php">Import quests</a>

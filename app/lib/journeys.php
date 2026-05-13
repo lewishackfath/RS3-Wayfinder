@@ -254,7 +254,7 @@ function apply_content_defaults_to_step_values(?int $contentItemId, string $titl
         if (!$ruleQuestTitle) {
             $ruleQuestTitle = (string)$content['name'];
         }
-    } elseif (in_array($content['type'], ['achievement', 'task', 'boss', 'drop', 'unlock', 'item'], true)) {
+    } elseif (in_array($content['type'], ['achievement', 'task', 'boss', 'unlock', 'item'], true)) {
         if ($completionMode === '') {
             $completionMode = 'manual_only';
         }
