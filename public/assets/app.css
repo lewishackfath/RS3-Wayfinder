@@ -2542,3 +2542,45 @@ tr:hover td {
         background: rgba(255,255,255,.045);
     }
 }
+
+/* Account page alignment refinement
+   Prevent the account summary/delete cards from overflowing or drifting off-canvas on medium widths. */
+.account-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.95fr);
+    gap: clamp(1rem, 2vw, 1.5rem);
+    align-items: stretch;
+    max-width: 1180px;
+    margin: 1.25rem auto 1.5rem;
+}
+
+.account-grid > .card {
+    min-width: 0;
+    width: 100%;
+}
+
+.account-danger-card.danger-zone {
+    margin-top: 0;
+    padding-top: clamp(1.25rem, 2vw, 1.75rem);
+    border-top: 1px solid rgba(255,255,255,.12);
+}
+
+.account-summary-card .profile-card-head {
+    min-width: 0;
+}
+
+.account-summary-card .profile-card-head > div {
+    min-width: 0;
+}
+
+.account-summary-card h2,
+.account-summary-card p {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 1180px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+        max-width: 760px;
+    }
+}
