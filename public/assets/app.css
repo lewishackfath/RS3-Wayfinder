@@ -3345,3 +3345,79 @@ body.admin-page .card:has(.admin-rich-table),
         justify-content: flex-start;
     }
 }
+
+/* ======================================================================
+   Admin/page heading flow repair
+   ----------------------------------------------------------------------
+   The codex title stripe must not become a flex child. The previous version
+   inserted ::before into .page-title-row flow, so justify-content:space-between
+   pushed headings sideways depending on header content. Keep the ornament
+   decorative and absolutely positioned instead.
+   ====================================================================== */
+.page-title-row,
+.profile-hero-card,
+.active-profile-panel,
+.journey-progress-summary {
+    position: relative !important;
+    overflow: hidden;
+}
+
+.page-title-row {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+    padding-left: clamp(1.25rem, 2vw, 1.65rem) !important;
+}
+
+.page-title-row > * {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.page-title-row::before,
+.profile-hero-card::before,
+.active-profile-panel::before,
+.journey-progress-summary::before {
+    position: absolute !important;
+    left: .65rem !important;
+    top: .75rem !important;
+    bottom: .75rem !important;
+    width: 4px !important;
+    height: auto !important;
+    align-self: auto !important;
+    flex: none !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+
+.page-title-row h1,
+.page-title-row p {
+    margin-left: 0 !important;
+}
+
+/* Admin profiles ledger repair: avoid relying on :has() and keep wide data
+   tables inside their own scroll container instead of forcing the page/header
+   layout wider than the viewport. */
+.admin-profiles-ledger-card {
+    overflow: hidden !important;
+}
+
+.admin-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.admin-table-scroll .admin-rich-table {
+    margin: 0;
+}
+
+@media (max-width: 720px) {
+    .page-title-row {
+        display: block !important;
+        padding-left: 1.35rem !important;
+    }
+}

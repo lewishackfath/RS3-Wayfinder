@@ -150,14 +150,14 @@ page_header('Manage Profiles');
     </form>
 </div>
 
-<div class="card">
+<div class="card admin-profiles-ledger-card">
 <?php if (!$profiles): ?>
     <div class="empty-state">
         <h2>No profiles found</h2>
         <p class="muted">Try clearing or changing your filters.</p>
     </div>
 <?php else: ?>
-<table class="admin-table admin-rich-table">
+<div class="admin-table-scroll"><table class="admin-table admin-rich-table">
 <thead>
 <tr>
     <th>Profile</th>
@@ -225,7 +225,7 @@ page_header('Manage Profiles');
 </tr>
 <?php endforeach; ?>
 </tbody>
-</table>
+</table></div>
 <?php endif; ?>
 </div>
 <?php page_footer(); ?>
