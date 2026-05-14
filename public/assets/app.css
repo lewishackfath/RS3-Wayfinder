@@ -4585,14 +4585,89 @@ body.player-layout::after {
 }
 
 /* ======================================================================
-   RS3 Wayfinder — Codex readability merge fix
-   ----------------------------------------------------------------------
-   Keeps the previous parchment/section contrast repair AND the account form
-   readability repair together. This must live after the codex layers because
-   earlier rules use broad .player-book-page card/input selectors.
+   RS3 Wayfinder — Codex Readability Repair v4
+   Scope: player-facing codex only. Removes the dark brown title plaques that
+   made parchment sections unreadable, while keeping the journal aesthetic.
    ====================================================================== */
 
-/* Parchment section panels: remove the dark brown dashboard plaques. */
+.player-layout .player-book-page .page-title-row,
+.player-layout .player-book-page .page-title-row.compact,
+.player-layout .player-book-page .dashboard-section > .page-title-row,
+.player-layout .player-book-page .recommendation-section > .page-title-row,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row {
+    background: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(82, 52, 20, .24) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #221405 !important;
+    padding: 0 0 .75rem !important;
+    margin: 0 0 1rem !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+}
+
+.player-layout .player-book-page .page-title-row::before,
+.player-layout .player-book-page .page-title-row::after,
+.player-layout .player-book-page .dashboard-section > .page-title-row::before,
+.player-layout .player-book-page .dashboard-section > .page-title-row::after,
+.player-layout .player-book-page .recommendation-section > .page-title-row::before,
+.player-layout .player-book-page .recommendation-section > .page-title-row::after,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row::before,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row::after {
+    display: none !important;
+    content: none !important;
+}
+
+.player-layout .player-book-page .page-title-row h1,
+.player-layout .player-book-page .page-title-row h2,
+.player-layout .player-book-page .dashboard-section > .page-title-row h2,
+.player-layout .player-book-page .recommendation-section > .page-title-row h2,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row h2 {
+    color: #1f1205 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(82, 52, 20, .18) !important;
+    box-shadow: none !important;
+    text-shadow: 0 1px 0 rgba(255, 244, 199, .68) !important;
+    margin: 0 .8rem .2rem 0 !important;
+    padding: 0 0 .35rem !important;
+}
+
+.player-layout .player-book-page .page-title-row p,
+.player-layout .player-book-page .page-title-row .muted,
+.player-layout .player-book-page .dashboard-section > .page-title-row p,
+.player-layout .player-book-page .dashboard-section > .page-title-row .muted,
+.player-layout .player-book-page .recommendation-section > .page-title-row p,
+.player-layout .player-book-page .recommendation-section > .page-title-row .muted,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row p,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row .muted {
+    color: #4b3216 !important;
+    text-shadow: none !important;
+}
+
+.player-layout .player-book-page .dashboard-section,
+.player-layout .player-book-page .recommendation-section,
+.player-layout .player-book-page .recommended-journeys-section {
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px dotted rgba(82, 52, 20, .24) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-top: 1.2rem !important;
+    color: #221405 !important;
+}
+
+.player-layout .player-book-page .dashboard-section::before,
+.player-layout .player-book-page .recommendation-section::before,
+.player-layout .player-book-page .recommended-journeys-section::before,
+.player-layout .player-book-page section::before {
+    background: radial-gradient(circle, rgba(84,50,18,.42) 0 2px, transparent 3px) left center / 16px 12px repeat-x !important;
+    opacity: .32 !important;
+}
+
+/* Note cards should read as light parchment notes, never dark chocolate bars. */
 .player-layout .player-book-page .active-profile-panel,
 .player-layout .player-book-page .recommendation-card,
 .player-layout .player-book-page .recommended-journey-card,
@@ -4601,31 +4676,20 @@ body.player-layout::after {
 .player-layout .player-book-page .notice,
 .player-layout .player-book-page .alert,
 .player-layout .player-book-page .stat-card,
-.player-layout .player-book-page .card:not(.account-summary-card):not(.account-danger-card):not(.profile-card),
-.player-layout .player-book-page section.card:not(.account-summary-card):not(.account-danger-card):not(.profile-card),
-.player-layout .player-book-page .journey-step,
-.player-layout .player-book-page .journey-chapter,
-.player-layout .player-book-page .boss-log-boss-card,
-.player-layout .player-book-page .boss-log-panel {
-    color: #241507 !important;
+.player-layout .player-book-page .recommendation-analysis-row,
+.player-layout .player-book-page .card:not(.dashboard-hero-card):not(:first-child) {
+    color: #211405 !important;
     background:
-        radial-gradient(circle at 18% 8%, rgba(255, 250, 218, .48), transparent 15rem),
-        linear-gradient(135deg, rgba(255, 242, 190, .64), rgba(214, 176, 95, .20)),
-        repeating-linear-gradient(0deg, rgba(84, 51, 17, .026) 0 1px, transparent 1px 9px) !important;
-    border: 1px solid rgba(86, 52, 18, .28) !important;
+        radial-gradient(circle at 18% 8%, rgba(255, 251, 224, .62), transparent 12rem),
+        linear-gradient(135deg, rgba(255, 244, 195, .74), rgba(223, 189, 109, .46)) !important;
+    border: 1px solid rgba(93, 58, 19, .24) !important;
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.30),
-        inset 0 -12px 28px rgba(103, 62, 18, .08),
-        0 7px 18px rgba(73, 42, 13, .12) !important;
+        inset 0 1px 0 rgba(255,255,255,.34),
+        inset 0 -18px 28px rgba(108, 68, 22, .055),
+        0 7px 18px rgba(70, 41, 12, .12) !important;
 }
 
-.player-layout .player-book-page .dashboard-hero-card,
-.player-layout .player-book-page > .card:first-child:not(.account-summary-card):not(.account-danger-card):not(.profile-card) {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
+.player-layout .player-book-page .active-profile-panel *,
 .player-layout .player-book-page .recommendation-card *,
 .player-layout .player-book-page .recommended-journey-card *,
 .player-layout .player-book-page .dashboard-journey-item *,
@@ -4633,148 +4697,44 @@ body.player-layout::after {
 .player-layout .player-book-page .notice *,
 .player-layout .player-book-page .alert *,
 .player-layout .player-book-page .stat-card *,
-.player-layout .player-book-page .active-profile-panel *,
-.player-layout .player-book-page .journey-step *,
-.player-layout .player-book-page .journey-chapter *,
-.player-layout .player-book-page .boss-log-boss-card *,
-.player-layout .player-book-page .boss-log-panel * {
+.player-layout .player-book-page .recommendation-analysis-row * {
     color: inherit;
 }
 
-.player-layout .player-book-page h1,
-.player-layout .player-book-page h2,
-.player-layout .player-book-page h3,
-.player-layout .player-book-page h4,
-.player-layout .player-book-page .recommendation-card h1,
-.player-layout .player-book-page .recommendation-card h2,
+.player-layout .player-book-page .active-profile-panel h3,
 .player-layout .player-book-page .recommendation-card h3,
-.player-layout .player-book-page .recommended-journey-card h1,
-.player-layout .player-book-page .recommended-journey-card h2,
 .player-layout .player-book-page .recommended-journey-card h3,
-.player-layout .player-book-page .dashboard-journey-item h1,
-.player-layout .player-book-page .dashboard-journey-item h2,
-.player-layout .player-book-page .dashboard-journey-item h3 {
-    color: #211306 !important;
-    text-shadow: 0 1px 0 rgba(255, 241, 190, .62) !important;
+.player-layout .player-book-page .dashboard-journey-item h3,
+.player-layout .player-book-page .stat-card strong,
+.player-layout .player-book-page .recommendation-analysis-row strong {
+    color: #1f1205 !important;
 }
 
-.player-layout .player-book-page p,
-.player-layout .player-book-page li,
-.player-layout .player-book-page small,
-.player-layout .player-book-page .small,
-.player-layout .player-book-page .muted,
-.player-layout .player-book-page td,
-.player-layout .player-book-page th,
-.player-layout .player-book-page label,
-.player-layout .player-book-page .recommendation-card p,
-.player-layout .player-book-page .recommended-journey-card p,
-.player-layout .player-book-page .dashboard-journey-item p,
-.player-layout .player-book-page .empty-panel p,
-.player-layout .player-book-page .notice p,
-.player-layout .player-book-page .alert p {
-    color: #4d3217 !important;
-    text-shadow: none !important;
+.player-layout .player-book-page .active-profile-panel .muted,
+.player-layout .player-book-page .recommendation-card .muted,
+.player-layout .player-book-page .recommended-journey-card .muted,
+.player-layout .player-book-page .dashboard-journey-item .muted,
+.player-layout .player-book-page .empty-panel .muted,
+.player-layout .player-book-page .stat-card span,
+.player-layout .player-book-page .recommendation-analysis-row span {
+    color: #55391a !important;
 }
 
 .player-layout .player-book-page .badge,
-.player-layout .player-book-page .status-badge,
-.player-layout .player-book-page .profile-interest-badge {
-    color: #f8e9bd !important;
-    background: linear-gradient(180deg, #4f6c3f, #2d4c2d) !important;
-    border-color: rgba(23, 66, 31, .38) !important;
-    text-shadow: 0 1px 0 rgba(0,0,0,.28) !important;
+.player-layout .player-book-page .badge.success {
+    color: #f9edbd !important;
+    background: linear-gradient(180deg, #38653a, #284624) !important;
+    border: 1px solid rgba(23, 57, 22, .44) !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,.36) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 8px rgba(44, 31, 10, .15) !important;
 }
 
-.player-layout .player-book-page .badge.accent,
-.player-layout .player-book-page .badge.success,
-.player-layout .player-book-page .success-badge {
-    color: #e9fff9 !important;
-    background: linear-gradient(180deg, #0d6870, #07444a) !important;
-    border-color: rgba(7, 68, 74, .44) !important;
+.player-layout .player-book-page .dashboard-hero-card,
+.player-layout .player-book-page > .card:first-child {
+    color: #211405 !important;
 }
 
-/* Account/forms: readable by default, not only on hover/focus. */
-.player-layout .player-book-page .account-summary-card,
-.player-layout .player-book-page .account-danger-card,
-.player-layout .player-book-page .profile-card,
-.player-layout .player-book-page .nested-card,
-.player-layout .player-book-page .account-profile-grid > .card {
-    color: #241507 !important;
-    background:
-        radial-gradient(circle at 20% 10%, rgba(255, 250, 218, .54), transparent 14rem),
-        linear-gradient(135deg, rgba(255, 239, 181, .74), rgba(220, 181, 93, .26)),
-        repeating-linear-gradient(0deg, rgba(84, 51, 17, .026) 0 1px, transparent 1px 9px) !important;
-    border: 1px solid rgba(86, 52, 18, .30) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.32),
-        inset 0 -12px 28px rgba(103, 62, 18, .08),
-        0 7px 18px rgba(73, 42, 13, .12) !important;
-}
-
-.player-layout .player-book-page .account-summary-card h2,
-.player-layout .player-book-page .account-danger-card h2,
-.player-layout .player-book-page .profile-card h3,
-.player-layout .player-book-page .nested-card h3 {
-    color: #211306 !important;
-}
-
-.player-layout .player-book-page .account-summary-card p,
-.player-layout .player-book-page .account-danger-card p,
-.player-layout .player-book-page .profile-card p,
-.player-layout .player-book-page .nested-card p,
-.player-layout .player-book-page .account-summary-card .muted,
-.player-layout .player-book-page .account-danger-card .muted,
-.player-layout .player-book-page .profile-card .muted,
-.player-layout .player-book-page .nested-card .muted {
-    color: #4d3217 !important;
-}
-
-.player-layout .player-book-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-.player-layout .player-book-page select,
-.player-layout .player-book-page textarea,
-.player-layout .player-book-page .searchable-dropdown-input {
-    color: #211306 !important;
-    background:
-        linear-gradient(180deg, rgba(255, 250, 222, .92), rgba(239, 214, 144, .84)) !important;
-    border: 1px solid rgba(81, 49, 17, .42) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.45),
-        inset 0 0 9px rgba(85, 48, 12, .10),
-        0 4px 10px rgba(79, 45, 14, .08) !important;
-    text-shadow: none !important;
-}
-
-.player-layout .player-book-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
-.player-layout .player-book-page select:hover,
-.player-layout .player-book-page textarea:hover,
-.player-layout .player-book-page .searchable-dropdown-input:hover,
-.player-layout .player-book-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-.player-layout .player-book-page select:focus,
-.player-layout .player-book-page textarea:focus,
-.player-layout .player-book-page .searchable-dropdown-input:focus {
-    color: #160d04 !important;
-    background:
-        linear-gradient(180deg, rgba(255, 253, 232, .98), rgba(246, 224, 158, .92)) !important;
-    border-color: rgba(7, 93, 102, .56) !important;
-    box-shadow:
-        0 0 0 3px rgba(7, 93, 102, .12),
-        inset 0 1px 0 rgba(255,255,255,.55),
-        inset 0 0 9px rgba(85, 48, 12, .09) !important;
-}
-
-.player-layout .player-book-page input::placeholder,
-.player-layout .player-book-page textarea::placeholder,
-.player-layout .player-book-page .searchable-dropdown-input::placeholder {
-    color: rgba(74, 49, 24, .72) !important;
-}
-
-.player-layout .player-book-page select option {
-    background: #f2dc9c !important;
-    color: #211306 !important;
-}
-
-.player-layout .player-book-page label,
-.player-layout .player-book-page .form-stack label {
-    color: #2f1d0c !important;
-    font-weight: 800;
+.player-layout .player-book-page .dashboard-hero-card p,
+.player-layout .player-book-page .dashboard-hero-card .muted {
+    color: #493016 !important;
 }
