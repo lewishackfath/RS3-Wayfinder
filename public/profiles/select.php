@@ -13,9 +13,9 @@ try {
     $_SESSION['flash_error'] = $e->getMessage();
 }
 
-$back = $_SERVER['HTTP_REFERER'] ?? '/dashboard.php';
+$back = $_SERVER['HTTP_REFERER'] ?? '/index.php';
 if (!is_string($back) || $back === '' || str_contains($back, "\n") || str_contains($back, "\r")) {
-    $back = '/dashboard.php';
+    $back = '/index.php';
 }
 header('Location: ' . $back);
 exit;

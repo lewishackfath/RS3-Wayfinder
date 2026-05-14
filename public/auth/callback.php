@@ -24,7 +24,7 @@ try {
     $discordUser = discord_get_current_user((string)$token['access_token']);
     $userId = upsert_discord_user($discordUser);
     login_user($userId, true);
-    redirect('/dashboard.php');
+    redirect('/index.php');
 } catch (Throwable $e) {
     try { log_auth_event(null, null, false, $e->getMessage()); } catch (Throwable $ignored) {}
     if (is_debug()) {
