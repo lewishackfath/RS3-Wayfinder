@@ -1,11 +1,149 @@
 <?php
 declare(strict_types=1);
 
+function wf_current_path(): string
+{
+    return (string)($_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? '');
+}
+
+function wf_is_admin_context(): bool
+{
+    $path = wf_current_path();
+    if (str_starts_with($path, '/admin/') || str_starts_with($path, '/setup/') || str_starts_with($path, '/auth/')) {
+        return true;
+    }
+
+    // Admins viewing a player profile from the admin profiles page should keep the
+    // clean admin-style layout rather than the player codex shell.
+    if ($path === '/profiles/view.php' && (($_GET['admin'] ?? '') === '1')) {
+        return true;
+    }
+
+    return false;
+}
+
+function wf_skill_icon_url(string $skillName): string
+{
+    $file = strtolower(trim($skillName));
+    $file = preg_replace('/[^a-z0-9]+/', '', $file) ?? $file;
+    return $file === '' ? '/assets/skills/_default.png' : '/assets/skills/' . $file . '.png';
+}
+
+function wf_sidebar_top_skills(int $profileId, int $limit = 8): array
+{
+    try {
+        $skills = latest_skills_for_profile($profileId);
+    } catch (Throwable $e) {
+        return [];
+    }
+
+    usort($skills, static function (array $a, array $b): int {
+        $aDisplay = rs3_display_level((string)($a['skill_name'] ?? ''), $a['level'] ?? null, $a['xp'] ?? null);
+        $bDisplay = rs3_display_level((string)($b['skill_name'] ?? ''), $b['level'] ?? null, $b['xp'] ?? null);
+        $levelCompare = ((int)$bDisplay['display_level']) <=> ((int)$aDisplay['display_level']);
+        if ($levelCompare !== 0) return $levelCompare;
+        return ((int)($b['xp'] ?? 0)) <=> ((int)($a['xp'] ?? 0));
+    });
+
+    return array_slice($skills, 0, $limit);
+}
+
+function wf_render_player_codex_sidebar(?array $profile): void
+{
+    if (!$profile) {
+        echo '<aside class="player-codex-sidebar empty-codex-sidebar">';
+        echo '<div class="codex-sidebar-card">';
+        echo '<span class="codex-kicker">Wayfinder Codex</span>';
+        echo '<h2>No active profile</h2>';
+        echo '<p class="muted">Add an RSN profile to open your adventurer journal.</p>';
+        echo '<a class="button" href="/profiles/new.php">Add profile</a>';
+        echo '</div>';
+        echo '</aside>';
+        return;
+    }
+
+    $profileId = (int)$profile['id'];
+    $metrics = null;
+    $questCounts = [];
+    $topSkills = [];
+    $interests = [];
+
+    try { $metrics = runemetrics_profile_metrics($profileId); } catch (Throwable $e) { $metrics = null; }
+    try { $questCounts = quest_status_counts($profileId); } catch (Throwable $e) { $questCounts = []; }
+    try { $topSkills = wf_sidebar_top_skills($profileId, 8); } catch (Throwable $e) { $topSkills = []; }
+    try { $interests = profile_interest_tags($profileId); } catch (Throwable $e) { $interests = []; }
+
+    $completedQuests = 0;
+    $totalQuestRows = 0;
+    foreach ($questCounts as $row) {
+        $count = (int)($row['total'] ?? 0);
+        $totalQuestRows += $count;
+        if (str_contains(strtolower((string)($row['status'] ?? '')), 'complete')) {
+            $completedQuests += $count;
+        }
+    }
+
+    echo '<aside class="player-codex-sidebar">';
+    echo '<div class="codex-sidebar-card character-sheet-card">';
+    echo '<span class="codex-kicker">Active Adventurer</span>';
+    echo '<div class="codex-character-head">';
+    echo '<img class="codex-character-avatar" src="' . e(runescape_avatar_url((string)$profile['rsn'])) . '" alt="Avatar for ' . e((string)$profile['rsn']) . '" loading="lazy" referrerpolicy="no-referrer">';
+    echo '<div><h2>' . e((string)($metrics['display_name'] ?? $profile['rsn'])) . '</h2>';
+    echo '<p>' . e(account_type_options()[$profile['account_type']] ?? (string)$profile['account_type']) . '</p></div>';
+    echo '</div>';
+
+    echo '<div class="codex-stat-runes">';
+    echo '<div><span>Total</span><strong>' . e(format_number_short($metrics['total_level'] ?? null)) . '</strong></div>';
+    echo '<div><span>Combat</span><strong>' . e(format_number_short($metrics['combat_level'] ?? null)) . '</strong></div>';
+    echo '<div><span>Quests</span><strong>' . ($totalQuestRows > 0 ? e($completedQuests . '/' . $totalQuestRows) : '—') . '</strong></div>';
+    echo '</div>';
+
+    echo '<div class="codex-sidebar-section">';
+    echo '<h3>Mastered Arts</h3>';
+    if ($topSkills) {
+        echo '<div class="codex-skill-list">';
+        foreach ($topSkills as $skill) {
+            $display = rs3_display_level((string)($skill['skill_name'] ?? ''), $skill['level'] ?? null, $skill['xp'] ?? null);
+            echo '<div class="codex-skill-pill">';
+            echo '<img src="' . e(wf_skill_icon_url((string)($skill['skill_name'] ?? ''))) . '" alt="" loading="lazy">';
+            echo '<span>' . e((string)($skill['skill_name'] ?? 'Skill')) . '</span>';
+            echo '<strong>' . e((string)$display['display_level']) . '</strong>';
+            echo '</div>';
+        }
+        echo '</div>';
+    } else {
+        echo '<p class="muted small">Skill data appears here after RuneMetrics sync.</p>';
+    }
+    echo '</div>';
+
+    echo '<div class="codex-sidebar-section">';
+    echo '<h3>Interests</h3>';
+    if ($interests) {
+        echo '<div class="codex-tag-cloud">';
+        foreach (array_slice($interests, 0, 8) as $tag) {
+            echo '<span class="badge">' . e((string)$tag['name']) . '</span>';
+        }
+        echo '</div>';
+    } else {
+        echo '<p class="muted small">No interests selected yet.</p>';
+    }
+    echo '</div>';
+
+    echo '<div class="codex-sidebar-actions">';
+    echo '<a class="button secondary" href="/profiles/view.php?id=' . $profileId . '">Profile journal</a>';
+    echo '<a class="button secondary" href="/profiles/edit.php?id=' . $profileId . '">Edit interests</a>';
+    echo '</div>';
+    echo '</div>';
+    echo '</aside>';
+}
+
 function page_header(string $title): void
 {
     $user = current_user();
+    $isAdminContext = wf_is_admin_context();
+    $bodyClass = $isAdminContext ? 'admin-layout' : 'player-layout';
     echo '<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
-    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body>';
+    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=codex-book-1"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
         echo '<a href="/dashboard.php">Dashboard</a>';
@@ -50,11 +188,24 @@ function page_header(string $title): void
     } else {
         echo '<a href="/auth/login.php">Login</a>';
     }
-    echo '</nav></header><main class="container">';
+    echo '</nav></header>';
+
+    if ($user && !$isAdminContext) {
+        echo '<main class="container player-book-shell">';
+        wf_render_player_codex_sidebar(active_profile());
+        echo '<section class="player-book-page">';
+    } else {
+        echo '<main class="container">';
+    }
 }
 
 function page_footer(): void
 {
+    $user = current_user();
+    $isAdminContext = wf_is_admin_context();
+    if ($user && !$isAdminContext) {
+        echo '</section>';
+    }
     echo '</main><div id="global-loading-overlay" class="global-loading-overlay" aria-live="polite" aria-hidden="true"><div class="global-loading-card"><span class="rs-spinner"></span><strong>Loading...</strong><small>Wayfinder is working on that request.</small></div></div><footer class="footer">RS3 Wayfinder is an independent RuneScape journey tool and is not affiliated with Jagex or Discord.</footer><script>
 document.addEventListener("DOMContentLoaded", function () {
     const overlay = document.getElementById("global-loading-overlay");
