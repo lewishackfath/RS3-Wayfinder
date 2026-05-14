@@ -3215,3 +3215,133 @@ hr,
         border-radius: 20px;
     }
 }
+
+/* ======================================================================
+   Admin Profiles repair — keep codex theme without breaking dense ledgers
+   ----------------------------------------------------------------------
+   The arcane journal theme intentionally styles global tables, but the
+   admin profile screen is a wide data-management ledger. These overrides
+   preserve the fantasy look while restoring predictable table sizing,
+   wrapping, and action alignment.
+   ====================================================================== */
+body.admin-page .admin-rich-table,
+.admin-rich-table {
+    width: 100% !important;
+    min-width: 1180px;
+    table-layout: auto !important;
+}
+
+body.admin-page .card:has(.admin-rich-table),
+.card:has(.admin-rich-table) {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.admin-rich-table th,
+.admin-rich-table td {
+    white-space: normal !important;
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.admin-rich-table th:nth-child(1),
+.admin-rich-table td:nth-child(1) { width: 260px; }
+.admin-rich-table th:nth-child(2),
+.admin-rich-table td:nth-child(2) { width: 220px; }
+.admin-rich-table th:nth-child(3),
+.admin-rich-table td:nth-child(3) { width: 230px; }
+.admin-rich-table th:nth-child(4),
+.admin-rich-table td:nth-child(4) { width: 220px; }
+.admin-rich-table th:nth-child(5),
+.admin-rich-table td:nth-child(5) { width: 120px; }
+.admin-rich-table th:nth-child(6),
+.admin-rich-table td:nth-child(6) { width: 155px; }
+.admin-rich-table th:nth-child(7),
+.admin-rich-table td:nth-child(7) { width: 140px; }
+
+.admin-profile-cell {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: .75rem !important;
+    min-width: 0 !important;
+}
+
+.admin-profile-cell > div {
+    min-width: 0;
+}
+
+.admin-profile-cell strong,
+.admin-rich-table td strong {
+    overflow-wrap: anywhere;
+}
+
+.admin-profile-cell .profile-avatar.tiny,
+.profile-avatar.tiny {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    flex: 0 0 42px !important;
+    object-fit: cover;
+}
+
+.metric-list.compact {
+    display: grid !important;
+    gap: .35rem !important;
+    min-width: 0 !important;
+}
+
+.metric-list.compact > div {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .75rem !important;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(231,197,109,.13) !important;
+    padding-bottom: .25rem !important;
+}
+
+.metric-list.compact span {
+    min-width: 0;
+}
+
+.admin-action-stack {
+    display: grid !important;
+    gap: .5rem !important;
+    align-items: start !important;
+    justify-items: stretch !important;
+}
+
+.admin-action-stack .button,
+.admin-action-stack button {
+    width: 100%;
+    min-width: 0;
+    padding-inline: .8rem !important;
+}
+
+.admin-action-stack .inline-form {
+    margin: 0 !important;
+    width: 100%;
+}
+
+.admin-filter-card {
+    overflow: visible !important;
+}
+
+.admin-filter-form {
+    align-items: end;
+}
+
+@media (max-width: 900px) {
+    .admin-rich-table {
+        min-width: 1040px;
+    }
+
+    .admin-filter-form {
+        grid-template-columns: 1fr !important;
+        align-items: stretch;
+    }
+
+    .admin-filter-actions {
+        justify-content: flex-start;
+    }
+}
