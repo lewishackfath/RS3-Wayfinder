@@ -160,7 +160,14 @@ function boss_log_totals_for_profile(int $profileId): array
             COUNT(DISTINCT boss.id) AS boss_count,
             COUNT(drop_item.id) AS drop_count,
             SUM(CASE WHEN pbdl.is_obtained = 1 THEN 1 ELSE 0 END) AS obtained_count,
-            COALESCE(kc.total_kill_count, 0) AS total_kill_count
+            COALESCE((
+                SELECT SUM(pbk2.kill_count)
+                FROM player_boss_killcounts pbk2
+                INNER JOIN content_items boss2 ON boss2.id = pbk2.boss_content_item_id
+                WHERE pbk2.profile_id = ?
+                  AND boss2.type = 'boss'
+                  AND boss2.is_active = 1
+            ), 0) AS total_kill_count
         FROM content_items boss
         LEFT JOIN boss_drop_sources bds ON bds.boss_content_item_id = boss.id
         LEFT JOIN content_items drop_item ON drop_item.id = bds.drop_content_item_id AND drop_item.is_active = 1
@@ -168,9 +175,6 @@ function boss_log_totals_for_profile(int $profileId): array
             ON pbdl.profile_id = ?
             AND pbdl.boss_content_item_id = boss.id
             AND pbdl.drop_content_item_id = drop_item.id
-        LEFT JOIN player_boss_killcounts pbk
-            ON pbk.profile_id = ?
-            AND pbk.boss_content_item_id = boss.id
         WHERE boss.type = 'boss' AND boss.is_active = 1");
     $stmt->execute([$profileId, $profileId]);
     $row = $stmt->fetch() ?: [];
