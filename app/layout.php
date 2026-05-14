@@ -29,44 +29,33 @@ function wf_skill_icon_url(string $skillName): string
     return $file === '' ? '/assets/skills/_default.png' : '/assets/skills/' . $file . '.png';
 }
 
-function wf_sidebar_all_skills(int $profileId): array
+function wf_sidebar_top_skills(int $profileId, int $limit = 99): array
 {
     try {
-        $rows = latest_skills_for_profile($profileId);
+        $skills = latest_skills_for_profile($profileId);
     } catch (Throwable $e) {
         return [];
     }
 
-    $byName = [];
-    foreach ($rows as $row) {
-        $byName[(string)($row['skill_name'] ?? '')] = $row;
-    }
+    usort($skills, static function (array $a, array $b): int {
+        $aDisplay = rs3_display_level((string)($a['skill_name'] ?? ''), $a['level'] ?? null, $a['xp'] ?? null);
+        $bDisplay = rs3_display_level((string)($b['skill_name'] ?? ''), $b['level'] ?? null, $b['xp'] ?? null);
+        $levelCompare = ((int)$bDisplay['display_level']) <=> ((int)$aDisplay['display_level']);
+        if ($levelCompare !== 0) return $levelCompare;
+        return ((int)($b['xp'] ?? 0)) <=> ((int)($a['xp'] ?? 0));
+    });
 
-    $ordered = [];
-    foreach (array_keys(rs3_skill_configs()) as $skillName) {
-        if (isset($byName[$skillName])) {
-            $ordered[] = $byName[$skillName];
-        }
-    }
-
-    foreach ($rows as $row) {
-        $name = (string)($row['skill_name'] ?? '');
-        if ($name !== '' && !in_array($row, $ordered, true)) {
-            $ordered[] = $row;
-        }
-    }
-
-    return $ordered;
+    return $limit > 0 ? array_slice($skills, 0, $limit) : $skills;
 }
 
 function wf_render_player_codex_sidebar(?array $profile): void
 {
     if (!$profile) {
-        echo '<aside class="player-profile-sidebar empty-profile-sidebar">';
-        echo '<div class="profile-parchment-card">';
-        echo '<span class="journal-kicker">Wayfinder Codex</span>';
+        echo '<aside class="player-codex-sidebar empty-codex-sidebar">';
+        echo '<div class="codex-sidebar-card">';
+        echo '<span class="codex-kicker">Wayfinder Codex</span>';
         echo '<h2>No active profile</h2>';
-        echo '<p class="muted">Add an RSN profile to begin recording your journey.</p>';
+        echo '<p class="muted">Add an RSN profile to open your adventurer journal.</p>';
         echo '<a class="button" href="/profiles/new.php">Add profile</a>';
         echo '</div>';
         echo '</aside>';
@@ -76,61 +65,50 @@ function wf_render_player_codex_sidebar(?array $profile): void
     $profileId = (int)$profile['id'];
     $metrics = null;
     $questCounts = [];
-    $skills = [];
+    $topSkills = [];
     $interests = [];
-    $bossTotals = ['boss_count' => 0, 'drop_count' => 0, 'obtained_count' => 0, 'completion_pct' => 0];
 
     try { $metrics = runemetrics_profile_metrics($profileId); } catch (Throwable $e) { $metrics = null; }
     try { $questCounts = quest_status_counts($profileId); } catch (Throwable $e) { $questCounts = []; }
-    try { $skills = wf_sidebar_all_skills($profileId); } catch (Throwable $e) { $skills = []; }
+    try { $topSkills = wf_sidebar_top_skills($profileId, 99); } catch (Throwable $e) { $topSkills = []; }
     try { $interests = profile_interest_tags($profileId); } catch (Throwable $e) { $interests = []; }
-    try { $bossTotals = boss_log_totals_for_profile($profileId); } catch (Throwable $e) { }
 
     $completedQuests = 0;
-    $startedQuests = 0;
     $totalQuestRows = 0;
     foreach ($questCounts as $row) {
         $count = (int)($row['total'] ?? 0);
-        $status = strtolower((string)($row['status'] ?? ''));
         $totalQuestRows += $count;
-        if (str_contains($status, 'complete')) {
+        if (str_contains(strtolower((string)($row['status'] ?? '')), 'complete')) {
             $completedQuests += $count;
-        } elseif (str_contains($status, 'started')) {
-            $startedQuests += $count;
         }
     }
 
-    $displayName = (string)($metrics['display_name'] ?? $profile['rsn']);
-    $accountType = account_type_options()[$profile['account_type']] ?? (string)$profile['account_type'];
-
-    echo '<aside class="player-profile-sidebar">';
-    echo '<div class="profile-parchment-card character-sheet-card">';
-    echo '<span class="journal-kicker">Character Sheet</span>';
-    echo '<div class="profile-character-head">';
-    echo '<img class="profile-character-avatar" src="' . e(runescape_avatar_url((string)$profile['rsn'])) . '" alt="Avatar for ' . e((string)$profile['rsn']) . '" loading="lazy" referrerpolicy="no-referrer">';
-    echo '<div><h2>' . e($displayName) . '</h2>';
-    echo '<p>' . e($accountType) . '</p></div>';
+    echo '<aside class="player-codex-sidebar">';
+    echo '<div class="codex-sidebar-card character-sheet-card">';
+    echo '<span class="codex-kicker">Active Adventurer</span>';
+    echo '<div class="codex-character-head">';
+    echo '<img class="codex-character-avatar" src="' . e(runescape_avatar_url((string)$profile['rsn'])) . '" alt="Avatar for ' . e((string)$profile['rsn']) . '" loading="lazy" referrerpolicy="no-referrer">';
+    echo '<div><h2>' . e((string)($metrics['display_name'] ?? $profile['rsn'])) . '</h2>';
+    echo '<p>' . e(account_type_options()[$profile['account_type']] ?? (string)$profile['account_type']) . '</p></div>';
     echo '</div>';
 
-    echo '<div class="profile-quick-stats">';
+    echo '<div class="codex-stat-runes">';
     echo '<div><span>Total</span><strong>' . e(format_number_short($metrics['total_level'] ?? null)) . '</strong></div>';
     echo '<div><span>Combat</span><strong>' . e(format_number_short($metrics['combat_level'] ?? null)) . '</strong></div>';
     echo '<div><span>Quests</span><strong>' . ($totalQuestRows > 0 ? e($completedQuests . '/' . $totalQuestRows) : '—') . '</strong></div>';
-    echo '<div><span>Boss Log</span><strong>' . e((string)($bossTotals['completion_pct'] ?? 0)) . '%</strong></div>';
     echo '</div>';
 
-    echo '<div class="profile-sidebar-section skill-tome-section">';
-    echo '<h3><span>✦</span> Skills</h3>';
-    if ($skills) {
-        echo '<div class="profile-skill-icon-grid">';
-        foreach ($skills as $skill) {
+    echo '<div class="codex-sidebar-section">';
+    echo '<h3>Mastered Arts</h3>';
+    if ($topSkills) {
+        echo '<div class="codex-skill-list">';
+        foreach ($topSkills as $skill) {
+            $display = rs3_display_level((string)($skill['skill_name'] ?? ''), $skill['level'] ?? null, $skill['xp'] ?? null);
             $skillName = (string)($skill['skill_name'] ?? 'Skill');
-            $display = rs3_display_level($skillName, $skill['level'] ?? null, $skill['xp'] ?? null);
-            $level = (string)$display['display_level'];
-            $virtual = !empty($display['is_virtual']) ? ' is-virtual' : '';
-            echo '<div class="profile-skill-icon' . $virtual . '" title="' . e($skillName . ' level ' . $level) . '">';
+            echo '<div class="codex-skill-pill" title="' . e($skillName . ' level ' . (string)$display['display_level']) . '">';
             echo '<img src="' . e(wf_skill_icon_url($skillName)) . '" alt="' . e($skillName) . '" loading="lazy">';
-            echo '<strong>' . e($level) . '</strong>';
+            echo '<span>' . e($skillName) . '</span>';
+            echo '<strong>' . e((string)$display['display_level']) . '</strong>';
             echo '</div>';
         }
         echo '</div>';
@@ -139,21 +117,11 @@ function wf_render_player_codex_sidebar(?array $profile): void
     }
     echo '</div>';
 
-    echo '<div class="profile-sidebar-section profile-records-section">';
-    echo '<h3><span>☉</span> Records</h3>';
-    echo '<div class="profile-record-list">';
-    echo '<div><span>Completed quests</span><strong>' . ($totalQuestRows > 0 ? e($completedQuests . ' / ' . $totalQuestRows) : '—') . '</strong></div>';
-    echo '<div><span>Started quests</span><strong>' . e((string)$startedQuests) . '</strong></div>';
-    echo '<div><span>Bosses catalogued</span><strong>' . e((string)($bossTotals['boss_count'] ?? 0)) . '</strong></div>';
-    echo '<div><span>Drops found</span><strong>' . e((string)($bossTotals['obtained_count'] ?? 0)) . ' / ' . e((string)($bossTotals['drop_count'] ?? 0)) . '</strong></div>';
-    echo '</div>';
-    echo '</div>';
-
-    echo '<div class="profile-sidebar-section">';
-    echo '<h3><span>❖</span> Interests</h3>';
+    echo '<div class="codex-sidebar-section">';
+    echo '<h3>Interests</h3>';
     if ($interests) {
-        echo '<div class="journal-tag-cloud">';
-        foreach (array_slice($interests, 0, 10) as $tag) {
+        echo '<div class="codex-tag-cloud">';
+        foreach (array_slice($interests, 0, 8) as $tag) {
             echo '<span class="badge">' . e((string)$tag['name']) . '</span>';
         }
         echo '</div>';
@@ -162,9 +130,9 @@ function wf_render_player_codex_sidebar(?array $profile): void
     }
     echo '</div>';
 
-    echo '<div class="profile-sidebar-actions">';
-    echo '<a class="button secondary" href="/profiles/view.php?id=' . $profileId . '">Open profile</a>';
-    echo '<a class="button secondary" href="/profiles/edit.php?id=' . $profileId . '">Edit profile</a>';
+    echo '<div class="codex-sidebar-actions">';
+    echo '<a class="button secondary" href="/profiles/view.php?id=' . $profileId . '">Profile journal</a>';
+    echo '<a class="button secondary" href="/profiles/edit.php?id=' . $profileId . '">Edit interests</a>';
     echo '</div>';
     echo '</div>';
     echo '</aside>';
@@ -176,10 +144,10 @@ function page_header(string $title): void
     $isAdminContext = wf_is_admin_context();
     $bodyClass = $isAdminContext ? 'admin-layout' : 'player-layout';
     echo '<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
-    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=journal-sidebar-1"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
+    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=journal-scroll-1"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
-        echo '<a href="/index.php">Journal</a>';
+        echo '<a href="/dashboard.php">Dashboard</a>';
         echo '<a href="/account/index.php">Account</a>';
         echo '<a href="/journeys/index.php">Journeys</a>';
         echo '<a href="/boss-log/index.php">Boss Log</a>';
@@ -224,9 +192,9 @@ function page_header(string $title): void
     echo '</nav></header>';
 
     if ($user && !$isAdminContext) {
-        echo '<main class="container player-journey-shell">';
+        echo '<main class="container player-book-shell">';
         wf_render_player_codex_sidebar(active_profile());
-        echo '<section class="journey-journal-page">';
+        echo '<section class="player-book-page">';
     } else {
         echo '<main class="container">';
     }
