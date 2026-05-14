@@ -4813,3 +4813,83 @@ body.player-layout::after {
     background: linear-gradient(180deg, rgba(54, 40, 22, .96), rgba(24, 18, 11, .96)) !important;
     border-color: rgba(229, 200, 115, .42) !important;
 }
+
+
+/* ======================================================================
+   RS3 Wayfinder — Boss Log Item Text Readability Fix
+   Scope: boss drop log only. Keeps the codex/journal theme but makes item
+   labels readable on both collected and missing tiles, without changing
+   headings, account forms, or general page panels.
+   ====================================================================== */
+.boss-drop-grid .boss-drop-tile button {
+    color: #f8edcc !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .82) !important;
+}
+
+.boss-drop-grid .boss-drop-tile .boss-drop-name,
+.boss-drop-grid .boss-drop-tile button > span,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile .boss-drop-name,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile button > span {
+    display: block !important;
+    color: #fff2c9 !important;
+    -webkit-text-fill-color: #fff2c9 !important;
+    background: rgba(34, 22, 12, .72) !important;
+    border: 1px solid rgba(231, 197, 109, .28) !important;
+    border-radius: 8px 12px 8px 12px !important;
+    padding: .24rem .38rem !important;
+    margin-top: .16rem !important;
+    max-width: 100% !important;
+    font-weight: 800 !important;
+    line-height: 1.18 !important;
+    text-align: center !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .90) !important;
+    opacity: 1 !important;
+}
+
+.boss-drop-grid .boss-drop-tile .boss-drop-rarity,
+.boss-drop-grid .boss-drop-tile button > small,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile .boss-drop-rarity,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile button > small {
+    color: #ead7a8 !important;
+    -webkit-text-fill-color: #ead7a8 !important;
+    background: rgba(18, 12, 7, .54) !important;
+    border-radius: 999px !important;
+    padding: .12rem .38rem !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .86) !important;
+    opacity: 1 !important;
+}
+
+.boss-drop-grid .boss-drop-tile.is-missing button {
+    opacity: .76 !important;
+    filter: grayscale(.88) saturate(.72) !important;
+}
+
+.boss-drop-grid .boss-drop-tile.is-missing .boss-drop-name,
+.boss-drop-grid .boss-drop-tile.is-missing button > span,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile.is-missing .boss-drop-name,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile.is-missing button > span {
+    color: #f0dfbb !important;
+    -webkit-text-fill-color: #f0dfbb !important;
+    background: rgba(41, 30, 20, .78) !important;
+    border-color: rgba(218, 190, 126, .22) !important;
+}
+
+.boss-drop-grid .boss-drop-tile.is-obtained .boss-drop-name,
+.boss-drop-grid .boss-drop-tile.is-obtained button > span,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile.is-obtained .boss-drop-name,
+.player-layout .player-book-page .boss-drop-grid .boss-drop-tile.is-obtained button > span {
+    color: #fff6d7 !important;
+    -webkit-text-fill-color: #fff6d7 !important;
+    background: rgba(21, 47, 42, .74) !important;
+    border-color: rgba(110, 232, 212, .28) !important;
+}
+
+.boss-drop-grid .boss-drop-tile button:hover .boss-drop-name,
+.boss-drop-grid .boss-drop-tile button:focus .boss-drop-name,
+.boss-drop-grid .boss-drop-tile button:hover > span,
+.boss-drop-grid .boss-drop-tile button:focus > span {
+    color: #fff8df !important;
+    -webkit-text-fill-color: #fff8df !important;
+    background: rgba(24, 19, 12, .86) !important;
+    border-color: rgba(96, 216, 214, .36) !important;
+}

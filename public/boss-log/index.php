@@ -127,8 +127,8 @@ page_header('Boss Drop Log');
                                 <input type="hidden" name="obtained" value="<?= $drop['is_obtained'] ? '0' : '1' ?>">
                                 <button type="submit" title="<?= $drop['is_obtained'] ? 'Mark as missing' : 'Mark as collected' ?>">
                                     <img src="<?= e(boss_log_icon_url($drop['icon_url'], $drop['name'])) ?>" alt="" loading="lazy" referrerpolicy="no-referrer">
-                                    <span><?= e($drop['name']) ?></span>
-                                    <?php if ($drop['rarity'] !== ''): ?><small><?= e($drop['rarity']) ?></small><?php endif; ?>
+                                    <span class="boss-drop-name"><?= e($drop['name']) ?></span>
+                                    <?php if ($drop['rarity'] !== ''): ?><small class="boss-drop-rarity"><?= e($drop['rarity']) ?></small><?php endif; ?>
                                 </button>
                             </form>
                         <?php endforeach; ?>
