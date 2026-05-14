@@ -4585,197 +4585,156 @@ body.player-layout::after {
 }
 
 /* ======================================================================
-   RS3 Wayfinder — Codex contrast repair
-   Fixes brown-on-brown readability inside the player journal/codex area.
-   This is intentionally scoped to player-facing parchment content only.
+   RS3 Wayfinder — Codex Readability Repair v4
+   Scope: player-facing codex only. Removes the dark brown title plaques that
+   made parchment sections unreadable, while keeping the journal aesthetic.
    ====================================================================== */
 
-.player-layout .player-book-page,
-.player-layout .codex-journal-page,
-body:not(.admin-page) .player-book-page {
-    --codex-ink-strong: #1f1308;
-    --codex-ink: #2d1b0d;
-    --codex-ink-muted: #4a3219;
-    --codex-panel-paper: rgba(255, 242, 196, .72);
-    --codex-panel-paper-soft: rgba(255, 236, 174, .56);
-    --codex-panel-border: rgba(92, 56, 19, .34);
+.player-layout .player-book-page .page-title-row,
+.player-layout .player-book-page .page-title-row.compact,
+.player-layout .player-book-page .dashboard-section > .page-title-row,
+.player-layout .player-book-page .recommendation-section > .page-title-row,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row {
+    background: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(82, 52, 20, .24) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #221405 !important;
+    padding: 0 0 .75rem !important;
+    margin: 0 0 1rem !important;
+    min-height: 0 !important;
+    overflow: visible !important;
 }
 
-.player-layout .player-book-page h1,
-.player-layout .player-book-page h2,
-.player-layout .player-book-page h3,
-.player-layout .player-book-page h4,
-.player-layout .player-book-page h5,
-.player-layout .player-book-page h6,
-.player-layout .codex-journal-page h1,
-.player-layout .codex-journal-page h2,
-.player-layout .codex-journal-page h3,
-.player-layout .codex-journal-page h4 {
-    color: var(--codex-ink-strong) !important;
-    opacity: 1 !important;
-    text-shadow: 0 1px 0 rgba(255, 246, 207, .65) !important;
+.player-layout .player-book-page .page-title-row::before,
+.player-layout .player-book-page .page-title-row::after,
+.player-layout .player-book-page .dashboard-section > .page-title-row::before,
+.player-layout .player-book-page .dashboard-section > .page-title-row::after,
+.player-layout .player-book-page .recommendation-section > .page-title-row::before,
+.player-layout .player-book-page .recommendation-section > .page-title-row::after,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row::before,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row::after {
+    display: none !important;
+    content: none !important;
 }
 
-.player-layout .player-book-page p,
-.player-layout .player-book-page li,
-.player-layout .player-book-page td,
-.player-layout .player-book-page th,
-.player-layout .player-book-page label,
-.player-layout .player-book-page small,
-.player-layout .player-book-page .small,
-.player-layout .player-book-page .muted,
-.player-layout .player-book-page .help-text,
-.player-layout .player-book-page .form-hint,
-.player-layout .player-book-page span:not(.badge):not(.pill):not(.button),
-.player-layout .codex-journal-page p,
-.player-layout .codex-journal-page li,
-.player-layout .codex-journal-page small,
-.player-layout .codex-journal-page .muted {
-    color: var(--codex-ink-muted) !important;
-    opacity: 1 !important;
+.player-layout .player-book-page .page-title-row h1,
+.player-layout .player-book-page .page-title-row h2,
+.player-layout .player-book-page .dashboard-section > .page-title-row h2,
+.player-layout .player-book-page .recommendation-section > .page-title-row h2,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row h2 {
+    color: #1f1205 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(82, 52, 20, .18) !important;
+    box-shadow: none !important;
+    text-shadow: 0 1px 0 rgba(255, 244, 199, .68) !important;
+    margin: 0 .8rem .2rem 0 !important;
+    padding: 0 0 .35rem !important;
+}
+
+.player-layout .player-book-page .page-title-row p,
+.player-layout .player-book-page .page-title-row .muted,
+.player-layout .player-book-page .dashboard-section > .page-title-row p,
+.player-layout .player-book-page .dashboard-section > .page-title-row .muted,
+.player-layout .player-book-page .recommendation-section > .page-title-row p,
+.player-layout .player-book-page .recommendation-section > .page-title-row .muted,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row p,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row .muted {
+    color: #4b3216 !important;
     text-shadow: none !important;
 }
 
-.player-layout .player-book-page strong,
-.player-layout .player-book-page b,
-.player-layout .codex-journal-page strong,
-.player-layout .codex-journal-page b {
-    color: var(--codex-ink) !important;
+.player-layout .player-book-page .dashboard-section,
+.player-layout .player-book-page .recommendation-section,
+.player-layout .player-book-page .recommended-journeys-section {
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px dotted rgba(82, 52, 20, .24) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-top: 1.2rem !important;
+    color: #221405 !important;
 }
 
-.player-layout .player-book-page .card,
-.player-layout .player-book-page .panel,
-.player-layout .player-book-page .dashboard-card,
-.player-layout .player-book-page .dashboard-panel,
-.player-layout .player-book-page .dashboard-section,
+.player-layout .player-book-page .dashboard-section::before,
+.player-layout .player-book-page .recommendation-section::before,
+.player-layout .player-book-page .recommended-journeys-section::before,
+.player-layout .player-book-page section::before {
+    background: radial-gradient(circle, rgba(84,50,18,.42) 0 2px, transparent 3px) left center / 16px 12px repeat-x !important;
+    opacity: .32 !important;
+}
+
+/* Note cards should read as light parchment notes, never dark chocolate bars. */
+.player-layout .player-book-page .active-profile-panel,
 .player-layout .player-book-page .recommendation-card,
 .player-layout .player-book-page .recommended-journey-card,
 .player-layout .player-book-page .dashboard-journey-item,
-.player-layout .player-book-page .active-profile-panel,
 .player-layout .player-book-page .empty-panel,
 .player-layout .player-book-page .notice,
 .player-layout .player-book-page .alert,
 .player-layout .player-book-page .stat-card,
-.player-layout .player-book-page .journey-card,
-.player-layout .player-book-page .boss-card,
-.player-layout .player-book-page .boss-log-card,
-.player-layout .codex-journal-page .card,
-.player-layout .codex-journal-page .panel,
-.player-layout .codex-journal-page .dashboard-card,
-.player-layout .codex-journal-page .recommendation-card,
-.player-layout .codex-journal-page .recommended-journey-card {
-    color: var(--codex-ink) !important;
+.player-layout .player-book-page .recommendation-analysis-row,
+.player-layout .player-book-page .card:not(.dashboard-hero-card):not(:first-child) {
+    color: #211405 !important;
     background:
-        linear-gradient(135deg, rgba(255, 246, 211, .78), rgba(236, 202, 130, .50)),
-        repeating-linear-gradient(0deg, rgba(77, 47, 17, .035) 0 1px, transparent 1px 10px) !important;
-    border-color: var(--codex-panel-border) !important;
+        radial-gradient(circle at 18% 8%, rgba(255, 251, 224, .62), transparent 12rem),
+        linear-gradient(135deg, rgba(255, 244, 195, .74), rgba(223, 189, 109, .46)) !important;
+    border: 1px solid rgba(93, 58, 19, .24) !important;
     box-shadow:
-        inset 0 1px 0 rgba(255, 250, 221, .55),
-        inset 0 -14px 28px rgba(106, 64, 19, .08),
-        0 8px 18px rgba(62, 36, 9, .12) !important;
+        inset 0 1px 0 rgba(255,255,255,.34),
+        inset 0 -18px 28px rgba(108, 68, 22, .055),
+        0 7px 18px rgba(70, 41, 12, .12) !important;
 }
 
-.player-layout .player-book-page .card *:not(.button):not(button):not(input):not(select):not(textarea):not(.badge):not(.pill),
-.player-layout .player-book-page .panel *:not(.button):not(button):not(input):not(select):not(textarea):not(.badge):not(.pill),
-.player-layout .player-book-page .dashboard-card *:not(.button):not(button):not(input):not(select):not(textarea):not(.badge):not(.pill),
-.player-layout .player-book-page .recommendation-card *:not(.button):not(button):not(input):not(select):not(textarea):not(.badge):not(.pill),
-.player-layout .player-book-page .recommended-journey-card *:not(.button):not(button):not(input):not(select):not(textarea):not(.badge):not(.pill),
-.player-layout .player-book-page .active-profile-panel *:not(.button):not(button):not(input):not(select):not(textarea):not(.badge):not(.pill) {
-    color: inherit !important;
-    opacity: 1 !important;
+.player-layout .player-book-page .active-profile-panel *,
+.player-layout .player-book-page .recommendation-card *,
+.player-layout .player-book-page .recommended-journey-card *,
+.player-layout .player-book-page .dashboard-journey-item *,
+.player-layout .player-book-page .empty-panel *,
+.player-layout .player-book-page .notice *,
+.player-layout .player-book-page .alert *,
+.player-layout .player-book-page .stat-card *,
+.player-layout .player-book-page .recommendation-analysis-row * {
+    color: inherit;
 }
 
-.player-layout .player-book-page .card h1,
-.player-layout .player-book-page .card h2,
-.player-layout .player-book-page .card h3,
-.player-layout .player-book-page .panel h1,
-.player-layout .player-book-page .panel h2,
-.player-layout .player-book-page .panel h3,
-.player-layout .player-book-page .dashboard-card h1,
-.player-layout .player-book-page .dashboard-card h2,
-.player-layout .player-book-page .dashboard-card h3,
+.player-layout .player-book-page .active-profile-panel h3,
 .player-layout .player-book-page .recommendation-card h3,
 .player-layout .player-book-page .recommended-journey-card h3,
-.player-layout .player-book-page .active-profile-panel h3 {
-    color: #1b1007 !important;
+.player-layout .player-book-page .dashboard-journey-item h3,
+.player-layout .player-book-page .stat-card strong,
+.player-layout .player-book-page .recommendation-analysis-row strong {
+    color: #1f1205 !important;
 }
 
-.player-layout .player-book-page .card p,
-.player-layout .player-book-page .card small,
-.player-layout .player-book-page .card .muted,
-.player-layout .player-book-page .panel p,
-.player-layout .player-book-page .panel small,
-.player-layout .player-book-page .panel .muted,
-.player-layout .player-book-page .dashboard-card p,
-.player-layout .player-book-page .dashboard-card small,
-.player-layout .player-book-page .dashboard-card .muted,
-.player-layout .player-book-page .recommendation-card p,
-.player-layout .player-book-page .recommendation-card small,
+.player-layout .player-book-page .active-profile-panel .muted,
 .player-layout .player-book-page .recommendation-card .muted,
-.player-layout .player-book-page .recommended-journey-card p,
-.player-layout .player-book-page .recommended-journey-card small,
 .player-layout .player-book-page .recommended-journey-card .muted,
-.player-layout .player-book-page .active-profile-panel p,
-.player-layout .player-book-page .active-profile-panel small,
-.player-layout .player-book-page .active-profile-panel .muted {
-    color: #493016 !important;
+.player-layout .player-book-page .dashboard-journey-item .muted,
+.player-layout .player-book-page .empty-panel .muted,
+.player-layout .player-book-page .stat-card span,
+.player-layout .player-book-page .recommendation-analysis-row span {
+    color: #55391a !important;
 }
 
 .player-layout .player-book-page .badge,
-.player-layout .player-book-page .pill,
-.player-layout .codex-journal-page .badge,
-.player-layout .codex-journal-page .pill {
-    color: #fff4c9 !important;
-    background: linear-gradient(180deg, rgba(41, 91, 65, .95), rgba(31, 70, 50, .95)) !important;
-    border-color: rgba(255, 229, 154, .36) !important;
-    text-shadow: 0 1px 0 rgba(0,0,0,.42) !important;
+.player-layout .player-book-page .badge.success {
+    color: #f9edbd !important;
+    background: linear-gradient(180deg, #38653a, #284624) !important;
+    border: 1px solid rgba(23, 57, 22, .44) !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,.36) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 8px rgba(44, 31, 10, .15) !important;
 }
 
-.player-layout .player-book-page .button,
-.player-layout .player-book-page button,
-.player-layout .codex-journal-page .button,
-.player-layout .codex-journal-page button {
-    color: #fff3c2 !important;
-    text-shadow: 0 1px 0 rgba(0,0,0,.48) !important;
+.player-layout .player-book-page .dashboard-hero-card,
+.player-layout .player-book-page > .card:first-child {
+    color: #211405 !important;
 }
 
-.player-layout .player-book-page .button.secondary,
-.player-layout .player-book-page button.secondary,
-.player-layout .codex-journal-page .button.secondary,
-.player-layout .codex-journal-page button.secondary {
-    color: #241407 !important;
-    background: linear-gradient(180deg, rgba(255, 235, 167, .86), rgba(218, 178, 94, .78)) !important;
-    border-color: rgba(90, 55, 18, .40) !important;
-    text-shadow: 0 1px 0 rgba(255,255,255,.30) !important;
-}
-
-.player-layout .player-book-page input,
-.player-layout .player-book-page select,
-.player-layout .player-book-page textarea,
-.player-layout .player-book-page .searchable-dropdown-input,
-.player-layout .codex-journal-page input,
-.player-layout .codex-journal-page select,
-.player-layout .codex-journal-page textarea,
-.player-layout .codex-journal-page .searchable-dropdown-input {
-    color: #201308 !important;
-    background: rgba(255, 245, 205, .84) !important;
-    border-color: rgba(82, 48, 15, .38) !important;
-}
-
-.player-layout .player-book-page input::placeholder,
-.player-layout .player-book-page textarea::placeholder,
-.player-layout .codex-journal-page input::placeholder,
-.player-layout .codex-journal-page textarea::placeholder {
-    color: rgba(53, 33, 14, .72) !important;
-}
-
-.player-layout .player-book-page .progress-bar,
-.player-layout .codex-journal-page .progress-bar {
-    background: rgba(80, 49, 18, .20) !important;
-    border-color: rgba(80, 49, 18, .30) !important;
-}
-
-.player-layout .player-book-page .progress-bar span,
-.player-layout .codex-journal-page .progress-bar span {
-    background: linear-gradient(90deg, #176e65, #8f6426) !important;
+.player-layout .player-book-page .dashboard-hero-card p,
+.player-layout .player-book-page .dashboard-hero-card .muted {
+    color: #493016 !important;
 }
