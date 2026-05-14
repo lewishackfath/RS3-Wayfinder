@@ -13,7 +13,7 @@ function boss_log_icon_url(?string $url, string $fallbackName = ''): string
 function boss_log_bosses_for_profile(int $profileId, array $filters = []): array
 {
     $where = ["boss.type = 'boss'", 'boss.is_active = 1'];
-    $params = [$profileId];
+    $params = [$profileId, $profileId];
 
     if (!empty($filters['q'])) {
         $where[] = '(boss.name LIKE ? OR drop_item.name LIKE ? OR boss.category LIKE ?)';
@@ -42,7 +42,8 @@ function boss_log_bosses_for_profile(int $profileId, array $filters = []): array
             drop_item.name AS drop_name,
             drop_item.icon_url AS drop_icon_url,
             pbdl.is_obtained,
-            pbdl.obtained_at
+            pbdl.obtained_at,
+            COALESCE(pbk.kill_count, 0) AS kill_count
         FROM content_items boss
         LEFT JOIN boss_drop_sources bds ON bds.boss_content_item_id = boss.id
         LEFT JOIN content_items drop_item ON drop_item.id = bds.drop_content_item_id AND drop_item.is_active = 1
@@ -50,6 +51,9 @@ function boss_log_bosses_for_profile(int $profileId, array $filters = []): array
             ON pbdl.profile_id = ?
             AND pbdl.boss_content_item_id = boss.id
             AND pbdl.drop_content_item_id = drop_item.id
+        LEFT JOIN player_boss_killcounts pbk
+            ON pbk.profile_id = ?
+            AND pbk.boss_content_item_id = boss.id
         WHERE " . implode(' AND ', $where) . "
         ORDER BY boss.name ASC, bds.sort_order ASC, drop_item.name ASC";
 
@@ -69,6 +73,7 @@ function boss_log_bosses_for_profile(int $profileId, array $filters = []): array
                 'drops' => [],
                 'obtained_count' => 0,
                 'drop_count' => 0,
+                'kill_count' => (int)($row['kill_count'] ?? 0),
             ];
         }
 
@@ -154,7 +159,8 @@ function boss_log_totals_for_profile(int $profileId): array
     $stmt = db()->prepare("SELECT
             COUNT(DISTINCT boss.id) AS boss_count,
             COUNT(drop_item.id) AS drop_count,
-            SUM(CASE WHEN pbdl.is_obtained = 1 THEN 1 ELSE 0 END) AS obtained_count
+            SUM(CASE WHEN pbdl.is_obtained = 1 THEN 1 ELSE 0 END) AS obtained_count,
+            COALESCE(kc.total_kill_count, 0) AS total_kill_count
         FROM content_items boss
         LEFT JOIN boss_drop_sources bds ON bds.boss_content_item_id = boss.id
         LEFT JOIN content_items drop_item ON drop_item.id = bds.drop_content_item_id AND drop_item.is_active = 1
@@ -162,8 +168,11 @@ function boss_log_totals_for_profile(int $profileId): array
             ON pbdl.profile_id = ?
             AND pbdl.boss_content_item_id = boss.id
             AND pbdl.drop_content_item_id = drop_item.id
+        LEFT JOIN player_boss_killcounts pbk
+            ON pbk.profile_id = ?
+            AND pbk.boss_content_item_id = boss.id
         WHERE boss.type = 'boss' AND boss.is_active = 1");
-    $stmt->execute([$profileId]);
+    $stmt->execute([$profileId, $profileId]);
     $row = $stmt->fetch() ?: [];
     $dropCount = (int)($row['drop_count'] ?? 0);
     $obtained = (int)($row['obtained_count'] ?? 0);
@@ -172,5 +181,34 @@ function boss_log_totals_for_profile(int $profileId): array
         'drop_count' => $dropCount,
         'obtained_count' => $obtained,
         'completion_pct' => $dropCount > 0 ? round(($obtained / $dropCount) * 100, 1) : 0,
+        'total_kill_count' => (int)($row['total_kill_count'] ?? 0),
     ];
+}
+
+
+function set_profile_boss_killcount(int $profileId, int $userId, int $bossContentItemId, int $killCount): void
+{
+    $profile = profile_for_user($profileId, $userId);
+    if (!$profile) {
+        throw new InvalidArgumentException('Profile not found.');
+    }
+    if ($killCount < 0) {
+        throw new InvalidArgumentException('Kill count cannot be negative.');
+    }
+    $boss = content_item_by_id($bossContentItemId);
+    if (!$boss || ($boss['type'] ?? '') !== 'boss') {
+        throw new InvalidArgumentException('Boss content item is invalid.');
+    }
+
+    db()->prepare('INSERT INTO player_boss_killcounts (profile_id, boss_content_item_id, kill_count)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE kill_count = VALUES(kill_count), updated_at = UTC_TIMESTAMP()')
+        ->execute([$profileId, $bossContentItemId, $killCount]);
+}
+
+function profile_boss_killcount(int $profileId, int $bossContentItemId): int
+{
+    $stmt = db()->prepare('SELECT kill_count FROM player_boss_killcounts WHERE profile_id = ? AND boss_content_item_id = ? LIMIT 1');
+    $stmt->execute([$profileId, $bossContentItemId]);
+    return (int)($stmt->fetchColumn() ?: 0);
 }

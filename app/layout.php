@@ -151,6 +151,7 @@ function page_header(string $title): void
         echo '<a href="/account/index.php">Account</a>';
         echo '<a href="/journeys/index.php">Journeys</a>';
         echo '<a href="/boss-log/index.php">Boss Log</a>';
+        echo '<a href="/achievements/index.php">Achievements</a>';
 
         $profiles = profiles_for_user((int)$user['id']);
         if ($profiles) {

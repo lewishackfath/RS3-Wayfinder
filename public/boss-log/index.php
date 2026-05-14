@@ -16,12 +16,20 @@ $success = null;
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
         require_csrf();
+        $action = (string)($_POST['action'] ?? 'toggle_drop');
         $profileId = (int)($_POST['profile_id'] ?? 0);
         $bossId = (int)($_POST['boss_content_item_id'] ?? 0);
-        $dropId = (int)($_POST['drop_content_item_id'] ?? 0);
-        $obtained = (string)($_POST['obtained'] ?? '0') === '1';
-        set_profile_boss_drop_obtained($profileId, $userId, $bossId, $dropId, $obtained);
-        $success = $obtained ? 'Drop marked as collected.' : 'Drop marked as missing.';
+
+        if ($action === 'set_killcount') {
+            $killCount = max(0, (int)($_POST['kill_count'] ?? 0));
+            set_profile_boss_killcount($profileId, $userId, $bossId, $killCount);
+            $success = 'Boss kill count updated.';
+        } else {
+            $dropId = (int)($_POST['drop_content_item_id'] ?? 0);
+            $obtained = (string)($_POST['obtained'] ?? '0') === '1';
+            set_profile_boss_drop_obtained($profileId, $userId, $bossId, $dropId, $obtained);
+            $success = $obtained ? 'Drop marked as collected.' : 'Drop marked as missing.';
+        }
         $profile = active_profile() ?: $profile;
     } catch (Throwable $e) {
         $error = $e->getMessage();
@@ -54,6 +62,7 @@ page_header('Boss Drop Log');
     <div class="stat-card"><span>Bosses</span><strong><?= e((string)$totals['boss_count']) ?></strong></div>
     <div class="stat-card"><span>Drops collected</span><strong><?= e($totals['obtained_count'] . '/' . $totals['drop_count']) ?></strong></div>
     <div class="stat-card"><span>Completion</span><strong><?= e($totals['completion_pct'] . '%') ?></strong></div>
+    <div class="stat-card"><span>Total KC</span><strong><?= e((string)($totals['total_kill_count'] ?? 0)) ?></strong></div>
 </div>
 
 <section class="card filter-card boss-log-filter-card">
@@ -111,6 +120,16 @@ page_header('Boss Drop Log');
                             <div class="boss-log-progress-bar"><span style="width: <?= (int)$pct ?>%"></span></div>
                             <span class="muted small"><?= e($obtainedCount . '/' . $dropCount) ?> drops</span>
                         </div>
+                        <form method="post" class="boss-kc-form">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="action" value="set_killcount">
+                            <input type="hidden" name="profile_id" value="<?= (int)$profile['id'] ?>">
+                            <input type="hidden" name="boss_content_item_id" value="<?= (int)$boss['id'] ?>">
+                            <label>Kill count
+                                <input type="number" name="kill_count" min="0" step="1" value="<?= (int)($boss['kill_count'] ?? 0) ?>">
+                            </label>
+                            <button class="button secondary small-button" type="submit">Save KC</button>
+                        </form>
                     </div>
                 </div>
 
@@ -121,6 +140,7 @@ page_header('Boss Drop Log');
                         <?php foreach ($boss['drops'] as $drop): ?>
                             <form method="post" class="boss-drop-tile <?= $drop['is_obtained'] ? 'is-obtained' : 'is-missing' ?>">
                                 <?= csrf_field() ?>
+                                <input type="hidden" name="action" value="toggle_drop">
                                 <input type="hidden" name="profile_id" value="<?= (int)$profile['id'] ?>">
                                 <input type="hidden" name="boss_content_item_id" value="<?= (int)$boss['id'] ?>">
                                 <input type="hidden" name="drop_content_item_id" value="<?= (int)$drop['id'] ?>">

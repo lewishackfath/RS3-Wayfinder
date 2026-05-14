@@ -437,6 +437,32 @@ function bootstrap_schema(): void
         CONSTRAINT fk_player_boss_drop_log_drop FOREIGN KEY (drop_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS player_boss_killcounts (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        boss_content_item_id BIGINT UNSIGNED NOT NULL,
+        kill_count INT UNSIGNED NOT NULL DEFAULT 0,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (profile_id, boss_content_item_id),
+        INDEX idx_player_boss_kc_profile (profile_id),
+        INDEX idx_player_boss_kc_boss (boss_content_item_id),
+        CONSTRAINT fk_player_boss_kc_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+        CONSTRAINT fk_player_boss_kc_boss FOREIGN KEY (boss_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS profile_achievement_progress (
+        profile_id BIGINT UNSIGNED NOT NULL,
+        achievement_content_item_id BIGINT UNSIGNED NOT NULL,
+        is_completed TINYINT(1) NOT NULL DEFAULT 1,
+        completed_at DATETIME NULL,
+        source ENUM('manual','sync','admin') NOT NULL DEFAULT 'manual',
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (profile_id, achievement_content_item_id),
+        INDEX idx_profile_achievement_progress_profile (profile_id),
+        INDEX idx_profile_achievement_progress_achievement (achievement_content_item_id),
+        CONSTRAINT fk_profile_achievement_progress_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+        CONSTRAINT fk_profile_achievement_progress_achievement FOREIGN KEY (achievement_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     $pdo->exec("CREATE TABLE IF NOT EXISTS auth_login_events (
         id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         user_id BIGINT UNSIGNED NULL,
@@ -550,6 +576,34 @@ function run_schema_migrations(): void
             // Some MySQL/MariaDB installs can reject enum changes while old constraints/indexes are being repaired.
             // The application-level type list still prevents new drop records.
         }
+    });
+
+    run_once_migration('20260514_boss_kc_and_achievement_progress', function (PDO $pdo): void {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS player_boss_killcounts (
+            profile_id BIGINT UNSIGNED NOT NULL,
+            boss_content_item_id BIGINT UNSIGNED NOT NULL,
+            kill_count INT UNSIGNED NOT NULL DEFAULT 0,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (profile_id, boss_content_item_id),
+            INDEX idx_player_boss_kc_profile (profile_id),
+            INDEX idx_player_boss_kc_boss (boss_content_item_id),
+            CONSTRAINT fk_player_boss_kc_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+            CONSTRAINT fk_player_boss_kc_boss FOREIGN KEY (boss_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS profile_achievement_progress (
+            profile_id BIGINT UNSIGNED NOT NULL,
+            achievement_content_item_id BIGINT UNSIGNED NOT NULL,
+            is_completed TINYINT(1) NOT NULL DEFAULT 1,
+            completed_at DATETIME NULL,
+            source ENUM('manual','sync','admin') NOT NULL DEFAULT 'manual',
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (profile_id, achievement_content_item_id),
+            INDEX idx_profile_achievement_progress_profile (profile_id),
+            INDEX idx_profile_achievement_progress_achievement (achievement_content_item_id),
+            CONSTRAINT fk_profile_achievement_progress_profile FOREIGN KEY (profile_id) REFERENCES player_profiles(id) ON DELETE CASCADE,
+            CONSTRAINT fk_profile_achievement_progress_achievement FOREIGN KEY (achievement_content_item_id) REFERENCES content_items(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     });
 
     run_once_migration('20260512_smart_journey_step_fields', function (PDO $pdo): void {
