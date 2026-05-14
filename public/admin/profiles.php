@@ -97,9 +97,10 @@ function admin_sync_label(array $profile): string
 
 page_header('Manage Profiles');
 ?>
+<section class="admin-profiles-page" aria-labelledby="admin-profiles-title">
 <div class="page-title-row">
     <div>
-        <h1>Manage Profiles</h1>
+        <h1 id="admin-profiles-title">Manage Profiles</h1>
         <p class="muted">Review player profiles, owners, account details and RuneMetrics sync state.</p>
     </div>
 </div>
@@ -228,4 +229,5 @@ page_header('Manage Profiles');
 </table></div>
 <?php endif; ?>
 </div>
+</section>
 <?php page_footer(); ?>
