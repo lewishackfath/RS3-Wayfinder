@@ -143,10 +143,10 @@ function page_header(string $title): void
     $isAdminContext = wf_is_admin_context();
     $bodyClass = $isAdminContext ? 'admin-layout' : 'player-layout';
     echo '<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
-    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=journal-v4"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
+    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=codex-book-1"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
-        echo '<a href="/index.php">Codex</a>';
+        echo '<a href="/dashboard.php">Dashboard</a>';
         echo '<a href="/account/index.php">Account</a>';
         echo '<a href="/journeys/index.php">Journeys</a>';
         echo '<a href="/boss-log/index.php">Boss Log</a>';
@@ -190,13 +190,22 @@ function page_header(string $title): void
     }
     echo '</nav></header>';
 
-    echo '<main class="container">';
+    if ($user && !$isAdminContext) {
+        echo '<main class="container player-book-shell">';
+        wf_render_player_codex_sidebar(active_profile());
+        echo '<section class="player-book-page">';
+    } else {
+        echo '<main class="container">';
+    }
 }
 
 function page_footer(): void
 {
     $user = current_user();
     $isAdminContext = wf_is_admin_context();
+    if ($user && !$isAdminContext) {
+        echo '</section>';
+    }
     echo '</main><div id="global-loading-overlay" class="global-loading-overlay" aria-live="polite" aria-hidden="true"><div class="global-loading-card"><span class="rs-spinner"></span><strong>Loading...</strong><small>Wayfinder is working on that request.</small></div></div><footer class="footer">RS3 Wayfinder is an independent RuneScape journey tool and is not affiliated with Jagex or Discord.</footer><script>
 document.addEventListener("DOMContentLoaded", function () {
     const overlay = document.getElementById("global-loading-overlay");
