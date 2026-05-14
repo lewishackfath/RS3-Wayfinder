@@ -4584,103 +4584,157 @@ body.player-layout::after {
     }
 }
 
-/* -------------------------------------------------------------------------
-   Account / codex form readability fix
-   The previous journal theme made form controls depend too much on hover
-   contrast. These rules keep the parchment/codex style but make all account
-   page fields readable in their default state.
-------------------------------------------------------------------------- */
-body:not(.admin-page) .account-grid input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-body:not(.admin-page) .account-grid select,
-body:not(.admin-page) .account-grid textarea,
-body:not(.admin-page) .account-summary-card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-body:not(.admin-page) .account-summary-card select,
-body:not(.admin-page) .account-summary-card textarea,
-body:not(.admin-page) .account-danger-card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-body:not(.admin-page) .account-danger-card select,
-body:not(.admin-page) .account-danger-card textarea,
-body:not(.admin-page) .compact-form input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-body:not(.admin-page) .compact-form select,
-body:not(.admin-page) .compact-form textarea {
-    color: #24170b !important;
-    -webkit-text-fill-color: #24170b !important;
-    background:
-        linear-gradient(180deg, rgba(255, 248, 218, .98), rgba(239, 211, 139, .94)) !important;
-    border: 1px solid rgba(102, 66, 25, .42) !important;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.65),
-        inset 0 -10px 20px rgba(99, 61, 20, .06),
-        0 2px 0 rgba(255,255,255,.16),
-        0 8px 18px rgba(64, 38, 10, .12) !important;
+/* ======================================================================
+   RS3 Wayfinder — Codex Readability Repair v4
+   Scope: player-facing codex only. Removes the dark brown title plaques that
+   made parchment sections unreadable, while keeping the journal aesthetic.
+   ====================================================================== */
+
+.player-layout .player-book-page .page-title-row,
+.player-layout .player-book-page .page-title-row.compact,
+.player-layout .player-book-page .dashboard-section > .page-title-row,
+.player-layout .player-book-page .recommendation-section > .page-title-row,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row {
+    background: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(82, 52, 20, .24) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #221405 !important;
+    padding: 0 0 .75rem !important;
+    margin: 0 0 1rem !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+}
+
+.player-layout .player-book-page .page-title-row::before,
+.player-layout .player-book-page .page-title-row::after,
+.player-layout .player-book-page .dashboard-section > .page-title-row::before,
+.player-layout .player-book-page .dashboard-section > .page-title-row::after,
+.player-layout .player-book-page .recommendation-section > .page-title-row::before,
+.player-layout .player-book-page .recommendation-section > .page-title-row::after,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row::before,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row::after {
+    display: none !important;
+    content: none !important;
+}
+
+.player-layout .player-book-page .page-title-row h1,
+.player-layout .player-book-page .page-title-row h2,
+.player-layout .player-book-page .dashboard-section > .page-title-row h2,
+.player-layout .player-book-page .recommendation-section > .page-title-row h2,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row h2 {
+    color: #1f1205 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(82, 52, 20, .18) !important;
+    box-shadow: none !important;
+    text-shadow: 0 1px 0 rgba(255, 244, 199, .68) !important;
+    margin: 0 .8rem .2rem 0 !important;
+    padding: 0 0 .35rem !important;
+}
+
+.player-layout .player-book-page .page-title-row p,
+.player-layout .player-book-page .page-title-row .muted,
+.player-layout .player-book-page .dashboard-section > .page-title-row p,
+.player-layout .player-book-page .dashboard-section > .page-title-row .muted,
+.player-layout .player-book-page .recommendation-section > .page-title-row p,
+.player-layout .player-book-page .recommendation-section > .page-title-row .muted,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row p,
+.player-layout .player-book-page .recommended-journeys-section > .page-title-row .muted {
+    color: #4b3216 !important;
     text-shadow: none !important;
 }
 
-body:not(.admin-page) .account-grid input::placeholder,
-body:not(.admin-page) .account-grid textarea::placeholder,
-body:not(.admin-page) .account-summary-card input::placeholder,
-body:not(.admin-page) .account-summary-card textarea::placeholder,
-body:not(.admin-page) .account-danger-card input::placeholder,
-body:not(.admin-page) .account-danger-card textarea::placeholder,
-body:not(.admin-page) .compact-form input::placeholder,
-body:not(.admin-page) .compact-form textarea::placeholder {
-    color: rgba(72, 47, 19, .72) !important;
-    -webkit-text-fill-color: rgba(72, 47, 19, .72) !important;
+.player-layout .player-book-page .dashboard-section,
+.player-layout .player-book-page .recommendation-section,
+.player-layout .player-book-page .recommended-journeys-section {
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px dotted rgba(82, 52, 20, .24) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding-top: 1.2rem !important;
+    color: #221405 !important;
 }
 
-body:not(.admin-page) .account-grid input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
-body:not(.admin-page) .account-grid select:hover,
-body:not(.admin-page) .account-grid textarea:hover,
-body:not(.admin-page) .account-summary-card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
-body:not(.admin-page) .account-summary-card select:hover,
-body:not(.admin-page) .account-summary-card textarea:hover,
-body:not(.admin-page) .account-danger-card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
-body:not(.admin-page) .account-danger-card select:hover,
-body:not(.admin-page) .account-danger-card textarea:hover,
-body:not(.admin-page) .compact-form input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
-body:not(.admin-page) .compact-form select:hover,
-body:not(.admin-page) .compact-form textarea:hover {
-    color: #1b1007 !important;
-    -webkit-text-fill-color: #1b1007 !important;
-    background:
-        linear-gradient(180deg, rgba(255, 251, 230, 1), rgba(246, 222, 156, .98)) !important;
-    border-color: rgba(79, 49, 15, .58) !important;
+.player-layout .player-book-page .dashboard-section::before,
+.player-layout .player-book-page .recommendation-section::before,
+.player-layout .player-book-page .recommended-journeys-section::before,
+.player-layout .player-book-page section::before {
+    background: radial-gradient(circle, rgba(84,50,18,.42) 0 2px, transparent 3px) left center / 16px 12px repeat-x !important;
+    opacity: .32 !important;
 }
 
-body:not(.admin-page) .account-grid input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-body:not(.admin-page) .account-grid select:focus,
-body:not(.admin-page) .account-grid textarea:focus,
-body:not(.admin-page) .account-summary-card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-body:not(.admin-page) .account-summary-card select:focus,
-body:not(.admin-page) .account-summary-card textarea:focus,
-body:not(.admin-page) .account-danger-card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-body:not(.admin-page) .account-danger-card select:focus,
-body:not(.admin-page) .account-danger-card textarea:focus,
-body:not(.admin-page) .compact-form input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-body:not(.admin-page) .compact-form select:focus,
-body:not(.admin-page) .compact-form textarea:focus {
-    color: #160d05 !important;
-    -webkit-text-fill-color: #160d05 !important;
+/* Note cards should read as light parchment notes, never dark chocolate bars. */
+.player-layout .player-book-page .active-profile-panel,
+.player-layout .player-book-page .recommendation-card,
+.player-layout .player-book-page .recommended-journey-card,
+.player-layout .player-book-page .dashboard-journey-item,
+.player-layout .player-book-page .empty-panel,
+.player-layout .player-book-page .notice,
+.player-layout .player-book-page .alert,
+.player-layout .player-book-page .stat-card,
+.player-layout .player-book-page .recommendation-analysis-row,
+.player-layout .player-book-page .card:not(.dashboard-hero-card):not(:first-child) {
+    color: #211405 !important;
     background:
-        linear-gradient(180deg, rgba(255, 253, 238, 1), rgba(250, 230, 170, 1)) !important;
-    border-color: rgba(0, 118, 126, .76) !important;
+        radial-gradient(circle at 18% 8%, rgba(255, 251, 224, .62), transparent 12rem),
+        linear-gradient(135deg, rgba(255, 244, 195, .74), rgba(223, 189, 109, .46)) !important;
+    border: 1px solid rgba(93, 58, 19, .24) !important;
     box-shadow:
-        0 0 0 3px rgba(0, 132, 141, .18),
-        0 0 18px rgba(0, 132, 141, .16),
-        inset 0 1px 0 rgba(255,255,255,.72) !important;
+        inset 0 1px 0 rgba(255,255,255,.34),
+        inset 0 -18px 28px rgba(108, 68, 22, .055),
+        0 7px 18px rgba(70, 41, 12, .12) !important;
 }
 
-body:not(.admin-page) .account-grid label,
-body:not(.admin-page) .account-summary-card label,
-body:not(.admin-page) .account-danger-card label,
-body:not(.admin-page) .compact-form label {
-    color: #2b1a0b !important;
-    text-shadow: 0 1px 0 rgba(255,241,190,.45) !important;
+.player-layout .player-book-page .active-profile-panel *,
+.player-layout .player-book-page .recommendation-card *,
+.player-layout .player-book-page .recommended-journey-card *,
+.player-layout .player-book-page .dashboard-journey-item *,
+.player-layout .player-book-page .empty-panel *,
+.player-layout .player-book-page .notice *,
+.player-layout .player-book-page .alert *,
+.player-layout .player-book-page .stat-card *,
+.player-layout .player-book-page .recommendation-analysis-row * {
+    color: inherit;
 }
 
-body:not(.admin-page) .account-grid select option,
-body:not(.admin-page) .account-summary-card select option,
-body:not(.admin-page) .account-danger-card select option,
-body:not(.admin-page) .compact-form select option {
-    background: #fff1c7 !important;
-    color: #24170b !important;
+.player-layout .player-book-page .active-profile-panel h3,
+.player-layout .player-book-page .recommendation-card h3,
+.player-layout .player-book-page .recommended-journey-card h3,
+.player-layout .player-book-page .dashboard-journey-item h3,
+.player-layout .player-book-page .stat-card strong,
+.player-layout .player-book-page .recommendation-analysis-row strong {
+    color: #1f1205 !important;
+}
+
+.player-layout .player-book-page .active-profile-panel .muted,
+.player-layout .player-book-page .recommendation-card .muted,
+.player-layout .player-book-page .recommended-journey-card .muted,
+.player-layout .player-book-page .dashboard-journey-item .muted,
+.player-layout .player-book-page .empty-panel .muted,
+.player-layout .player-book-page .stat-card span,
+.player-layout .player-book-page .recommendation-analysis-row span {
+    color: #55391a !important;
+}
+
+.player-layout .player-book-page .badge,
+.player-layout .player-book-page .badge.success {
+    color: #f9edbd !important;
+    background: linear-gradient(180deg, #38653a, #284624) !important;
+    border: 1px solid rgba(23, 57, 22, .44) !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,.36) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 8px rgba(44, 31, 10, .15) !important;
+}
+
+.player-layout .player-book-page .dashboard-hero-card,
+.player-layout .player-book-page > .card:first-child {
+    color: #211405 !important;
+}
+
+.player-layout .player-book-page .dashboard-hero-card p,
+.player-layout .player-book-page .dashboard-hero-card .muted {
+    color: #493016 !important;
 }
