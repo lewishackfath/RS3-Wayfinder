@@ -4893,3 +4893,108 @@ body.player-layout::after {
     background: rgba(24, 19, 12, .86) !important;
     border-color: rgba(96, 216, 214, .36) !important;
 }
+
+/* ======================================================================
+   Profile edit interests + footer Discord polish
+   Applied as a narrow hotfix so existing heading/background fixes remain
+   untouched.
+   ====================================================================== */
+.player-book-page .profile-interest-section,
+.profile-interest-section {
+    background:
+        linear-gradient(180deg, rgba(255, 247, 221, .96), rgba(236, 207, 145, .92)) !important;
+    border: 1px solid rgba(120, 78, 28, .34) !important;
+    color: #241609 !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.42),
+        0 10px 22px rgba(35, 21, 8, .16) !important;
+}
+
+.player-book-page .profile-interest-section h2,
+.profile-interest-section h2 {
+    color: #2a1707 !important;
+    -webkit-text-fill-color: #2a1707 !important;
+    text-shadow: none !important;
+}
+
+.player-book-page .profile-interest-section p,
+.player-book-page .profile-interest-section .muted,
+.profile-interest-section p,
+.profile-interest-section .muted {
+    color: rgba(45, 29, 12, .78) !important;
+    -webkit-text-fill-color: rgba(45, 29, 12, .78) !important;
+}
+
+.player-book-page .profile-interest-section .choice-card,
+.profile-interest-section .choice-card,
+.player-book-page .profile-interest-section .tag-choice-card,
+.profile-interest-section .tag-choice-card {
+    background:
+        linear-gradient(180deg, rgba(255, 250, 231, .96), rgba(240, 216, 158, .94)) !important;
+    border: 1px solid rgba(123, 82, 30, .36) !important;
+    color: #271707 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.52) !important;
+}
+
+.player-book-page .profile-interest-section .choice-card strong,
+.profile-interest-section .choice-card strong,
+.player-book-page .profile-interest-section .tag-choice-card strong,
+.profile-interest-section .tag-choice-card strong {
+    color: #241306 !important;
+    -webkit-text-fill-color: #241306 !important;
+    text-shadow: none !important;
+}
+
+.player-book-page .profile-interest-section .choice-card small,
+.profile-interest-section .choice-card small,
+.player-book-page .profile-interest-section .tag-choice-card small,
+.profile-interest-section .tag-choice-card small {
+    color: rgba(58, 36, 13, .76) !important;
+    -webkit-text-fill-color: rgba(58, 36, 13, .76) !important;
+}
+
+.player-book-page .profile-interest-section .choice-card:hover,
+.profile-interest-section .choice-card:hover,
+.player-book-page .profile-interest-section .tag-choice-card:hover,
+.profile-interest-section .tag-choice-card:hover {
+    background:
+        linear-gradient(180deg, rgba(255, 252, 237, 1), rgba(246, 224, 166, .98)) !important;
+    border-color: rgba(0, 114, 128, .48) !important;
+}
+
+.footer {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: .65rem 1rem !important;
+}
+
+.footer-discord-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .42rem;
+    color: #f3e2b6 !important;
+    text-decoration: none !important;
+    border: 1px solid rgba(231,197,109,.32);
+    background: linear-gradient(180deg, rgba(88, 101, 242, .24), rgba(31, 28, 58, .34));
+    border-radius: 999px;
+    padding: .34rem .72rem;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    transition: transform .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.footer-discord-link:hover,
+.footer-discord-link:focus {
+    color: #fff3cf !important;
+    border-color: rgba(96,216,214,.44);
+    background: linear-gradient(180deg, rgba(88, 101, 242, .34), rgba(31, 28, 58, .48));
+    transform: translateY(-1px);
+}
+
+.footer-discord-icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: currentColor;
+    flex: 0 0 auto;
+}
