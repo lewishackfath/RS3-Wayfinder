@@ -29,7 +29,7 @@ function wf_skill_icon_url(string $skillName): string
     return $file === '' ? '/assets/skills/_default.png' : '/assets/skills/' . $file . '.png';
 }
 
-function wf_sidebar_all_skills(int $profileId): array
+function wf_sidebar_top_skills(int $profileId, int $limit = 8): array
 {
     try {
         $skills = latest_skills_for_profile($profileId);
@@ -37,26 +37,15 @@ function wf_sidebar_all_skills(int $profileId): array
         return [];
     }
 
-    $byName = [];
-    foreach ($skills as $skill) {
-        $byName[(string)($skill['skill_name'] ?? '')] = $skill;
-    }
+    usort($skills, static function (array $a, array $b): int {
+        $aDisplay = rs3_display_level((string)($a['skill_name'] ?? ''), $a['level'] ?? null, $a['xp'] ?? null);
+        $bDisplay = rs3_display_level((string)($b['skill_name'] ?? ''), $b['level'] ?? null, $b['xp'] ?? null);
+        $levelCompare = ((int)$bDisplay['display_level']) <=> ((int)$aDisplay['display_level']);
+        if ($levelCompare !== 0) return $levelCompare;
+        return ((int)($b['xp'] ?? 0)) <=> ((int)($a['xp'] ?? 0));
+    });
 
-    $ordered = [];
-    foreach (array_keys(rs3_skill_configs()) as $skillName) {
-        if (isset($byName[$skillName])) {
-            $ordered[] = $byName[$skillName];
-        }
-    }
-
-    foreach ($skills as $skill) {
-        $skillName = (string)($skill['skill_name'] ?? '');
-        if ($skillName !== '' && !isset(rs3_skill_configs()[$skillName])) {
-            $ordered[] = $skill;
-        }
-    }
-
-    return $ordered;
+    return array_slice($skills, 0, $limit);
 }
 
 function wf_render_player_codex_sidebar(?array $profile): void
@@ -76,12 +65,12 @@ function wf_render_player_codex_sidebar(?array $profile): void
     $profileId = (int)$profile['id'];
     $metrics = null;
     $questCounts = [];
-    $allSkills = [];
+    $topSkills = [];
     $interests = [];
 
     try { $metrics = runemetrics_profile_metrics($profileId); } catch (Throwable $e) { $metrics = null; }
     try { $questCounts = quest_status_counts($profileId); } catch (Throwable $e) { $questCounts = []; }
-    try { $allSkills = wf_sidebar_all_skills($profileId); } catch (Throwable $e) { $allSkills = []; }
+    try { $topSkills = wf_sidebar_top_skills($profileId, 8); } catch (Throwable $e) { $topSkills = []; }
     try { $interests = profile_interest_tags($profileId); } catch (Throwable $e) { $interests = []; }
 
     $completedQuests = 0;
@@ -110,13 +99,14 @@ function wf_render_player_codex_sidebar(?array $profile): void
     echo '</div>';
 
     echo '<div class="codex-sidebar-section">';
-    echo '<h3>Skill Ledger</h3>';
-    if ($allSkills) {
-        echo '<div class="codex-skill-ledger">';
-        foreach ($allSkills as $skill) {
+    echo '<h3>Mastered Arts</h3>';
+    if ($topSkills) {
+        echo '<div class="codex-skill-list">';
+        foreach ($topSkills as $skill) {
             $display = rs3_display_level((string)($skill['skill_name'] ?? ''), $skill['level'] ?? null, $skill['xp'] ?? null);
-            echo '<div class="codex-skill-rune" title="' . e((string)($skill['skill_name'] ?? 'Skill')) . ' level ' . e((string)$display['display_level']) . '">';
-            echo '<img src="' . e(wf_skill_icon_url((string)($skill['skill_name'] ?? ''))) . '" alt="' . e((string)($skill['skill_name'] ?? 'Skill')) . '" loading="lazy">';
+            echo '<div class="codex-skill-pill">';
+            echo '<img src="' . e(wf_skill_icon_url((string)($skill['skill_name'] ?? ''))) . '" alt="" loading="lazy">';
+            echo '<span>' . e((string)($skill['skill_name'] ?? 'Skill')) . '</span>';
             echo '<strong>' . e((string)$display['display_level']) . '</strong>';
             echo '</div>';
         }
@@ -156,7 +146,7 @@ function page_header(string $title): void
     echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=codex-book-1"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
-        echo '<a href="/index.php">Codex</a>';
+        echo '<a href="/dashboard.php">Dashboard</a>';
         echo '<a href="/account/index.php">Account</a>';
         echo '<a href="/journeys/index.php">Journeys</a>';
         echo '<a href="/boss-log/index.php">Boss Log</a>';
