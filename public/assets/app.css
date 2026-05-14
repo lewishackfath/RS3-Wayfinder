@@ -3423,32 +3423,32 @@ body.admin-page .card:has(.admin-rich-table),
 }
 
 /* ======================================================================
-   Player Book / Arcane Codex Layout
+   Player Codex / Arcane Journal Theme v4
    ----------------------------------------------------------------------
-   This layer is intentionally scoped to body.player-layout so admin screens
-   keep their cleaner management UI while player-facing pages feel like an
-   adventurer journal with a character sheet on the left and parchment pages
-   on the right.
+   Safer front-end only theme. It keeps the original dark Wayfinder palette
+   for readability, removes the forced side-profile book shell, and pushes
+   player pages toward a mystical journal with parchment-like panels, hand
+   drawn accents and less corporate geometry. Admin screens are not affected.
    ====================================================================== */
 body.player-layout {
-    --book-void: #07090b;
-    --book-ink: #efe1bd;
-    --book-ink-strong: #fff0c8;
-    --book-muted: #b7a783;
-    --book-bronze: #9b7439;
-    --book-gold: #e5c873;
-    --book-cyan: #62d8d6;
-    --book-violet: #8d7bff;
-    --book-page: rgba(38, 31, 23, .88);
-    --book-page-2: rgba(27, 24, 22, .94);
-    --book-line: rgba(218, 178, 101, .28);
-    --book-shadow: rgba(0, 0, 0, .55);
-    color: var(--book-ink);
+    --wf-bg: #0b111d;
+    --wf-bg-2: #121a2a;
+    --wf-panel: rgba(19, 25, 39, .88);
+    --wf-panel-deep: rgba(9, 12, 20, .84);
+    --wf-ink: #f3ead1;
+    --wf-muted-journal: #b9aacd;
+    --wf-gold: #d9b86f;
+    --wf-bronze: #8d6637;
+    --wf-cyan: #72d7d2;
+    --wf-violet: #8f7bff;
+    --wf-red: #d26b5f;
+    --wf-line-journal: rgba(217, 184, 111, .24);
+    color: var(--wf-ink);
     background:
-        radial-gradient(circle at 18% 18%, rgba(98,216,214,.13), transparent 25rem),
-        radial-gradient(circle at 88% 16%, rgba(141,123,255,.13), transparent 26rem),
-        radial-gradient(circle at 52% 72%, rgba(229,200,115,.12), transparent 30rem),
-        linear-gradient(115deg, #050608 0%, #11100d 45%, #0d1315 100%);
+        radial-gradient(circle at 12% 10%, rgba(114, 215, 210, .18), transparent 28rem),
+        radial-gradient(circle at 84% 8%, rgba(143, 123, 255, .14), transparent 30rem),
+        radial-gradient(circle at 50% 90%, rgba(217, 184, 111, .11), transparent 34rem),
+        linear-gradient(135deg, #090d16 0%, #111927 44%, #0b111d 100%);
     background-attachment: fixed;
 }
 
@@ -3457,445 +3457,299 @@ body.player-layout::before {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: -1;
-    opacity: .42;
+    opacity: .34;
     background-image:
-        linear-gradient(rgba(229,200,115,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(229,200,115,.025) 1px, transparent 1px),
-        radial-gradient(circle at center, transparent 0 58%, rgba(0,0,0,.42) 100%);
-    background-size: 42px 42px, 42px 42px, 100% 100%;
-    mix-blend-mode: screen;
+        linear-gradient(rgba(217,184,111,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(217,184,111,.045) 1px, transparent 1px),
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.045), transparent 12rem);
+    background-size: 56px 56px, 56px 56px, 100% 100%;
+    mask-image: radial-gradient(circle at center, #000 0%, rgba(0,0,0,.82) 42%, transparent 100%);
+    z-index: -1;
 }
 
 body.player-layout::after {
-    content: "";
+    content: "✦ ᚱ ᚢ ᚾ ᛖ ✦";
     position: fixed;
-    inset: 0;
+    right: clamp(1rem, 4vw, 5rem);
+    bottom: clamp(1rem, 5vw, 4rem);
+    color: rgba(114,215,210,.12);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(2.4rem, 8vw, 8rem);
+    letter-spacing: .16em;
     pointer-events: none;
     z-index: -1;
-    opacity: .34;
-    background:
-        linear-gradient(90deg, rgba(0,0,0,.55), transparent 16%, transparent 84%, rgba(0,0,0,.55)),
-        repeating-linear-gradient(35deg, rgba(255,255,255,.018) 0 1px, transparent 1px 8px);
+}
+
+.player-layout .container {
+    width: min(94vw, 1420px);
+    margin-top: clamp(1.5rem, 3vw, 3rem);
 }
 
 .player-layout .topbar {
-    background: rgba(5, 7, 8, .88);
-    border-bottom: 1px solid rgba(229,200,115,.18);
-    box-shadow: 0 10px 40px rgba(0,0,0,.34);
+    background: rgba(5, 8, 14, .88);
+    border-bottom: 1px solid rgba(217,184,111,.22);
+    box-shadow: 0 10px 40px rgba(0,0,0,.26);
 }
 
-.player-layout .brand,
+.player-layout .brand {
+    color: #ffe6a6;
+    text-shadow: 0 0 16px rgba(217,184,111,.22);
+}
+
 .player-layout .topbar nav a,
 .player-layout .nav-dropdown-toggle {
-    color: var(--book-ink-strong);
-    text-shadow: 0 0 16px rgba(229,200,115,.14);
+    color: rgba(243,234,209,.84);
 }
 
 .player-layout .topbar nav a:hover,
 .player-layout .nav-dropdown-toggle:hover {
-    color: #fff7d8;
+    color: #ffe6a6;
 }
 
-.player-layout .profile-selector {
-    background: rgba(27, 20, 13, .82);
-    border-color: rgba(229,200,115,.32);
-    color: var(--book-ink-strong);
-    box-shadow: inset 0 0 16px rgba(0,0,0,.35), 0 0 18px rgba(229,200,115,.08);
-}
-
-.player-layout .profile-selector option {
-    background: #19150f;
-    color: var(--book-ink-strong);
-}
-
-.player-book-shell {
-    width: min(98vw, 1800px);
-    max-width: 1800px;
-    display: grid;
-    grid-template-columns: minmax(270px, 340px) minmax(0, 1fr);
-    gap: clamp(1rem, 2.2vw, 2.6rem);
-    align-items: start;
-    margin-top: clamp(1.2rem, 2vw, 2rem);
-    position: relative;
-}
-
-.player-book-shell::before {
-    content: "";
-    position: absolute;
-    inset: -1.2rem -1rem -1.4rem;
-    pointer-events: none;
-    border-radius: 34px;
-    background:
-        linear-gradient(90deg, rgba(0,0,0,.42), transparent 22%, rgba(229,200,115,.07) 50%, transparent 78%, rgba(0,0,0,.42)),
-        radial-gradient(circle at 50% 0%, rgba(229,200,115,.12), transparent 32rem);
-    border: 1px solid rgba(229,200,115,.12);
-    box-shadow: inset 0 0 90px rgba(0,0,0,.35), 0 30px 120px rgba(0,0,0,.35);
-    z-index: -1;
-}
-
-.player-codex-sidebar {
-    position: sticky;
-    top: 92px;
-    min-width: 0;
-}
-
-.codex-sidebar-card {
-    position: relative;
-    overflow: hidden;
-    border-radius: 28px 18px 18px 28px;
-    padding: clamp(1rem, 1.6vw, 1.35rem);
-    background:
-        linear-gradient(135deg, rgba(69, 49, 29, .94), rgba(22, 20, 19, .96) 58%, rgba(16, 27, 29, .92)),
-        radial-gradient(circle at 30% 0%, rgba(229,200,115,.18), transparent 20rem);
-    border: 1px solid rgba(229,200,115,.34);
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.055),
-        inset 0 0 54px rgba(0,0,0,.45),
-        0 20px 80px rgba(0,0,0,.42);
-}
-
-.codex-sidebar-card::before {
-    content: "";
-    position: absolute;
-    inset: 10px;
-    pointer-events: none;
-    border-radius: 22px 14px 14px 22px;
-    border: 1px solid rgba(229,200,115,.18);
-    box-shadow: inset 0 0 24px rgba(98,216,214,.055);
-}
-
-.codex-sidebar-card::after {
-    content: "✦";
-    position: absolute;
-    right: 1.1rem;
-    top: 1rem;
-    color: var(--book-cyan);
-    opacity: .7;
-    text-shadow: 0 0 16px rgba(98,216,214,.7);
-}
-
-.codex-kicker {
-    display: inline-flex;
-    margin-bottom: .75rem;
-    color: var(--book-gold);
-    font-size: .68rem;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    font-weight: 900;
-}
-
-.codex-character-head {
-    display: grid;
-    grid-template-columns: 86px minmax(0, 1fr);
-    gap: .95rem;
-    align-items: center;
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 1;
-}
-
-.codex-character-avatar {
-    width: 86px;
-    height: 86px;
-    object-fit: cover;
-    border-radius: 18px;
-    background: rgba(0,0,0,.34);
-    border: 1px solid rgba(229,200,115,.4);
-    box-shadow: inset 0 0 0 2px rgba(0,0,0,.28), 0 0 28px rgba(229,200,115,.14);
-}
-
-.codex-character-head h2 {
-    margin: 0 0 .25rem;
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: clamp(1.35rem, 2.2vw, 1.75rem);
-    line-height: 1;
-    color: var(--book-ink-strong);
-}
-
-.codex-character-head p {
-    margin: 0;
-    color: var(--book-muted);
-    font-size: .9rem;
-}
-
-.codex-stat-runes {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: .55rem;
-    position: relative;
-    z-index: 1;
-}
-
-.codex-stat-runes > div {
-    min-width: 0;
-    padding: .7rem .45rem;
-    border-radius: 14px;
-    text-align: center;
-    background: rgba(0,0,0,.2);
-    border: 1px solid rgba(229,200,115,.18);
-    box-shadow: inset 0 0 18px rgba(0,0,0,.25);
-}
-
-.codex-stat-runes span {
-    display: block;
-    font-size: .64rem;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--book-muted);
-}
-
-.codex-stat-runes strong {
-    display: block;
-    margin-top: .25rem;
-    color: var(--book-gold);
-    font-size: 1.15rem;
-}
-
-.codex-sidebar-section {
-    margin-top: 1.1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(229,200,115,.18);
-    position: relative;
-    z-index: 1;
-}
-
-.codex-sidebar-section h3 {
-    margin: 0 0 .65rem;
-    font-family: Georgia, 'Times New Roman', serif;
-    color: var(--book-ink-strong);
-    font-size: 1.05rem;
-}
-
-.codex-skill-list {
-    display: grid;
-    gap: .45rem;
-}
-
-.codex-skill-pill {
-    display: grid;
-    grid-template-columns: 24px minmax(0, 1fr) auto;
-    gap: .5rem;
-    align-items: center;
-    padding: .45rem .55rem;
-    border-radius: 12px;
-    background: rgba(255,255,255,.045);
-    border: 1px solid rgba(229,200,115,.12);
-}
-
-.codex-skill-pill img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-}
-
-.codex-skill-pill span {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--book-ink);
-    font-size: .88rem;
-}
-
-.codex-skill-pill strong {
-    color: var(--book-cyan);
-    text-shadow: 0 0 14px rgba(98,216,214,.28);
-}
-
-.codex-tag-cloud {
-    display: flex;
-    gap: .4rem;
-    flex-wrap: wrap;
-}
-
-.codex-sidebar-actions {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    gap: .55rem;
-    margin-top: 1rem;
-}
-
-.player-book-page {
-    min-width: 0;
-    position: relative;
-    padding: clamp(1.1rem, 2.2vw, 2rem);
-    border-radius: 18px 30px 30px 18px;
-    background:
-        linear-gradient(90deg, rgba(0,0,0,.18), transparent 3.2rem),
-        radial-gradient(circle at 86% 8%, rgba(98,216,214,.12), transparent 22rem),
-        linear-gradient(135deg, rgba(61, 47, 30, .94), rgba(32, 27, 24, .96) 45%, rgba(23, 28, 31, .94));
-    border: 1px solid rgba(229,200,115,.28);
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.045),
-        inset 38px 0 50px rgba(0,0,0,.22),
-        0 28px 110px rgba(0,0,0,.4);
-}
-
-.player-book-page::before {
-    content: "";
-    position: absolute;
-    inset: 12px;
-    pointer-events: none;
-    border-radius: 12px 24px 24px 12px;
-    border: 1px solid rgba(229,200,115,.15);
-    background:
-        linear-gradient(rgba(229,200,115,.04) 1px, transparent 1px),
-        repeating-linear-gradient(90deg, transparent 0 5rem, rgba(229,200,115,.022) 5rem calc(5rem + 1px));
-    background-size: 100% 32px, auto;
-    opacity: .56;
-}
-
-.player-book-page > * {
-    position: relative;
-    z-index: 1;
-}
-
-.player-layout h1,
-.player-layout h2,
-.player-layout h3 {
-    color: var(--book-ink-strong);
-}
-
-.player-layout h1,
-.player-layout .hero h1,
-.player-layout .page-title-row h1 {
-    font-family: Georgia, 'Times New Roman', serif;
-    letter-spacing: -.035em;
-    text-shadow: 0 2px 0 rgba(0,0,0,.2), 0 0 26px rgba(229,200,115,.14);
-}
-
-.player-layout .page-title-row {
-    margin-bottom: 1.15rem;
-    padding: 0 0 1rem !important;
-    border-bottom: 1px solid rgba(229,200,115,.18);
-    overflow: visible !important;
-}
-
-.player-layout .page-title-row::before {
-    display: none !important;
-}
-
-.player-layout .muted,
-.player-layout .small,
-.player-layout p {
-    color: var(--book-muted);
-}
-
-.player-layout .card,
-.player-layout .hero,
-.player-layout .stat-card,
+/* Broad journal page surface */
+.player-layout main.container > .hero,
+.player-layout main.container > .card,
+.player-layout main.container > section.card,
+.player-layout .dashboard-hero-card,
+.player-layout .profile-hero-card,
+.player-layout .journey-card,
 .player-layout .recommendation-card,
 .player-layout .recommended-journey-card,
 .player-layout .dashboard-journey-item,
 .player-layout .empty-panel,
+.player-layout .content-card,
+.player-layout .boss-log-card,
+.player-layout .panel,
 .player-layout .notice,
-.player-layout .alert,
-.player-layout .journey-step,
-.player-layout .journey-chapter {
+.player-layout .alert {
+    position: relative;
+    isolation: isolate;
+    border-radius: 18px 26px 20px 24px;
+    border: 1px solid var(--wf-line-journal);
     background:
-        linear-gradient(135deg, rgba(27, 22, 17, .86), rgba(21, 24, 26, .82)),
-        radial-gradient(circle at 100% 0%, rgba(229,200,115,.1), transparent 18rem);
-    border: 1px solid rgba(229,200,115,.2);
-    border-radius: 18px;
+        linear-gradient(135deg, rgba(31, 35, 47, .92), rgba(16, 23, 35, .86)),
+        radial-gradient(circle at 8% 0%, rgba(217,184,111,.12), transparent 20rem),
+        radial-gradient(circle at 100% 12%, rgba(114,215,210,.10), transparent 18rem);
     box-shadow:
         inset 0 0 0 1px rgba(255,255,255,.035),
-        inset 0 0 34px rgba(0,0,0,.25),
-        0 14px 44px rgba(0,0,0,.25);
+        inset 0 0 34px rgba(0,0,0,.24),
+        0 18px 58px rgba(0,0,0,.28);
 }
 
+.player-layout main.container > .hero::before,
+.player-layout main.container > .card::before,
+.player-layout main.container > section.card::before,
+.player-layout .dashboard-hero-card::before,
+.player-layout .profile-hero-card::before,
+.player-layout .journey-card::before,
+.player-layout .recommendation-card::before,
+.player-layout .recommended-journey-card::before,
+.player-layout .dashboard-journey-item::before,
+.player-layout .empty-panel::before,
+.player-layout .content-card::before,
+.player-layout .boss-log-card::before,
+.player-layout .panel::before {
+    content: "";
+    position: absolute;
+    inset: .55rem;
+    border: 1px solid rgba(217,184,111,.12);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Uneven journal rhythm instead of rigid dashboard blocks */
 .player-layout .card,
 .player-layout .hero {
-    padding: clamp(1rem, 1.8vw, 1.55rem);
+    padding: clamp(1.25rem, 2.3vw, 2.1rem);
 }
 
-.player-layout .card + .card,
-.player-layout .grid + .card,
-.player-layout section.card {
-    margin-top: 1rem;
+.player-layout .dashboard-section,
+.player-layout .journey-chapter,
+.player-layout .profile-section {
+    margin-top: 1.25rem;
 }
 
-.player-layout .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: .8rem;
+.player-layout .grid,
+.player-layout .cards-grid,
+.player-layout .recommendation-grid,
+.player-layout .recommended-journey-grid,
+.player-layout .journey-cards,
+.player-layout .dashboard-journey-list {
+    gap: 1rem;
 }
 
-.player-layout .stat-card {
-    padding: .95rem;
+.player-layout .recommendation-card:nth-child(odd),
+.player-layout .recommended-journey-card:nth-child(even),
+.player-layout .journey-card:nth-child(odd) {
+    transform: rotate(-.18deg);
 }
 
-.player-layout .stat-card span,
-.player-layout th {
-    color: rgba(229,200,115,.72);
-    font-size: .7rem;
-    letter-spacing: .13em;
+.player-layout .recommendation-card:nth-child(even),
+.player-layout .recommended-journey-card:nth-child(odd),
+.player-layout .journey-card:nth-child(even) {
+    transform: rotate(.14deg);
 }
 
-.player-layout .stat-card strong {
-    color: var(--book-ink-strong);
+/* Typography: journal headings without sacrificing readability */
+.player-layout h1,
+.player-layout h2,
+.player-layout h3,
+.player-layout .page-title-row h1,
+.player-layout .page-title-row h2 {
+    color: #ffe9ad;
     font-family: Georgia, 'Times New Roman', serif;
+    letter-spacing: -.025em;
+    text-shadow: 0 0 18px rgba(217,184,111,.16);
 }
 
+.player-layout h1::before,
+.player-layout h2::before {
+    content: "✦";
+    display: inline-block;
+    margin-right: .45rem;
+    color: var(--wf-cyan);
+    font-size: .72em;
+    transform: translateY(-.06em);
+    text-shadow: 0 0 14px rgba(114,215,210,.42);
+}
+
+.player-layout .page-title-row {
+    align-items: center;
+    border-bottom: 1px solid rgba(217,184,111,.16);
+    padding-bottom: .75rem;
+}
+
+.player-layout .muted,
+.player-layout .small {
+    color: var(--wf-muted-journal);
+}
+
+/* Active profile area remains inline, not a permanent side book page */
+.player-layout .active-profile-panel {
+    border: 1px solid rgba(217,184,111,.20);
+    border-radius: 18px;
+    background: rgba(6, 9, 16, .34);
+    padding: 1rem;
+    box-shadow: inset 0 0 24px rgba(0,0,0,.24);
+}
+
+.player-layout .profile-avatar,
+.player-layout .profile-avatar.large {
+    border: 2px solid rgba(217,184,111,.42);
+    box-shadow: 0 0 0 4px rgba(0,0,0,.20), 0 0 26px rgba(114,215,210,.16);
+}
+
+/* Skill lists: compact icon-led codex style */
+.player-layout .skills-grid,
+.player-layout .skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: .65rem;
+}
+
+.player-layout .skill-row,
+.player-layout .skill-card,
+.player-layout .codex-skill-pill {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    min-height: 44px;
+    border: 1px solid rgba(217,184,111,.16);
+    border-radius: 13px;
+    background: rgba(6, 9, 16, .28);
+    padding: .48rem .55rem;
+}
+
+.player-layout .skill-row img,
+.player-layout .skill-card img,
+.player-layout .codex-skill-pill img,
+.player-layout .skill-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(217,184,111,.14));
+}
+
+.player-layout .skill-row strong,
+.player-layout .skill-level {
+    color: var(--wf-cyan);
+    margin-left: auto;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+}
+
+/* Buttons and form controls retain dark palette for readability */
 .player-layout .button,
-.player-layout button {
-    background: linear-gradient(180deg, #edd17a, #a87832);
-    color: #1a1208;
-    border: 1px solid rgba(255,238,173,.5);
+.player-layout button,
+.player-layout input[type="submit"] {
     border-radius: 999px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 10px 28px rgba(0,0,0,.24), 0 0 18px rgba(229,200,115,.12);
-}
-
-.player-layout .button:hover,
-.player-layout button:hover {
-    filter: brightness(1.06);
-    transform: translateY(-1px);
+    border: 1px solid rgba(255,232,170,.45);
+    background: linear-gradient(180deg, #f0d381, #af7a35);
+    color: #151008;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.36), 0 9px 24px rgba(0,0,0,.23);
 }
 
 .player-layout .button.secondary,
-.player-layout button.secondary,
-.player-layout .form-actions .button.secondary {
-    background: rgba(16, 17, 15, .68);
-    color: var(--book-ink-strong);
-    border-color: rgba(229,200,115,.3);
+.player-layout button.secondary {
+    background: rgba(10, 14, 23, .76);
+    color: #f3ead1;
+    border-color: rgba(217,184,111,.28);
 }
 
 .player-layout .button.danger,
 .player-layout button.danger {
-    background: linear-gradient(180deg, #d87561, #8e2f2a);
-    color: #fff2e8;
-    border-color: rgba(255,190,160,.4);
+    background: linear-gradient(180deg, #dc756a, #89312d);
+    color: #fff3ed;
+    border-color: rgba(255,185,160,.4);
 }
 
 .player-layout input,
 .player-layout select,
 .player-layout textarea,
 .player-layout .searchable-dropdown-input {
-    background: rgba(12, 10, 8, .58) !important;
-    border: 1px solid rgba(229,200,115,.28) !important;
-    color: var(--book-ink-strong) !important;
+    background: rgba(5, 8, 14, .72) !important;
+    color: #f3ead1 !important;
+    border: 1px solid rgba(217,184,111,.26) !important;
     border-radius: 12px !important;
-    box-shadow: inset 0 0 18px rgba(0,0,0,.34);
+    box-shadow: inset 0 0 18px rgba(0,0,0,.28);
 }
 
 .player-layout input::placeholder,
 .player-layout textarea::placeholder {
-    color: rgba(239,225,189,.48);
+    color: rgba(243,234,209,.48);
 }
 
+.player-layout .profile-selector {
+    background: rgba(10, 14, 23, .86) !important;
+    color: #ffe9ad !important;
+}
+
+.player-layout .profile-selector option {
+    color: #10131b;
+    background: #f4e2b5;
+}
+
+/* Tables as ledgers */
 .player-layout table,
 .player-layout .table {
     border-collapse: separate;
     border-spacing: 0;
+    border: 1px solid rgba(217,184,111,.17);
+    border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(229,200,115,.16);
-    border-radius: 14px;
-    background: rgba(0,0,0,.12);
+    background: rgba(6, 9, 16, .26);
 }
 
-.player-layout th,
-.player-layout td {
-    border-bottom: 1px solid rgba(229,200,115,.12);
+.player-layout th {
+    color: rgba(255,233,173,.78);
+    background: rgba(217,184,111,.065);
+    font-family: Georgia, 'Times New Roman', serif;
+}
+
+.player-layout td,
+.player-layout th {
+    border-bottom: 1px solid rgba(217,184,111,.12);
 }
 
 .player-layout tr:last-child td {
@@ -3903,148 +3757,45 @@ body.player-layout::after {
 }
 
 .player-layout .badge {
-    background: rgba(0,0,0,.24);
-    color: var(--book-ink-strong);
-    border-color: rgba(229,200,115,.22);
+    background: rgba(6, 9, 16, .48);
+    border-color: rgba(217,184,111,.22);
+    color: #f3ead1;
 }
 
-.player-layout .badge.accent,
-.player-layout .badge.success {
-    color: #cffffc;
-    border-color: rgba(98,216,214,.34);
-    background: rgba(98,216,214,.1);
-    box-shadow: 0 0 16px rgba(98,216,214,.08);
+.player-layout .badge.success,
+.player-layout .badge.accent {
+    color: #d8ffff;
+    border-color: rgba(114,215,210,.36);
+    background: rgba(114,215,210,.10);
 }
 
 .player-layout .progress-bar {
-    background: rgba(0,0,0,.32);
-    border-color: rgba(229,200,115,.22);
+    background: rgba(4, 6, 11, .58);
+    border-color: rgba(217,184,111,.22);
 }
 
 .player-layout .progress-bar span {
-    background: linear-gradient(90deg, var(--book-cyan), var(--book-gold));
-    box-shadow: 0 0 18px rgba(98,216,214,.24);
-}
-
-.player-layout .skill-row {
-    background: rgba(0,0,0,.18);
-    border-color: rgba(229,200,115,.14);
-}
-
-.player-layout .skill-row.is-virtual {
-    border-color: rgba(98,216,214,.34);
-    background: rgba(98,216,214,.07);
-}
-
-.player-layout .skill-level,
-.player-layout .skill-row strong {
-    color: var(--book-cyan);
-}
-
-.player-layout .dashboard-logo-wrap {
-    opacity: .85;
-}
-
-.player-layout .dashboard-hero-card {
-    overflow: hidden;
-}
-
-.player-layout .dashboard-hero-card::after,
-.player-layout .profile-hero-card::after {
-    content: "";
-    position: absolute;
-    right: 1rem;
-    top: 1rem;
-    width: 7rem;
-    height: 7rem;
-    pointer-events: none;
-    opacity: .12;
-    border-radius: 50%;
-    border: 1px solid var(--book-gold);
-    box-shadow: inset 0 0 0 12px rgba(229,200,115,.035), 0 0 38px rgba(98,216,214,.2);
-}
-
-.player-layout .recommendation-grid,
-.player-layout .recommended-journey-grid,
-.player-layout .dashboard-journey-list,
-.player-layout .journey-cards,
-.player-layout .cards-grid {
-    gap: .9rem;
+    background: linear-gradient(90deg, var(--wf-cyan), var(--wf-gold));
+    box-shadow: 0 0 20px rgba(114,215,210,.28);
 }
 
 .player-layout .footer {
-    color: rgba(239,225,189,.58);
+    color: rgba(243,234,209,.58);
 }
 
-@media (max-width: 1180px) {
-    .player-book-shell {
-        grid-template-columns: 1fr;
-    }
-
-    .player-codex-sidebar {
-        position: relative;
-        top: auto;
-    }
-
-    .codex-sidebar-card {
-        border-radius: 22px;
-    }
-
-    .codex-sidebar-card.character-sheet-card {
-        display: grid;
-        grid-template-columns: minmax(260px, .8fr) minmax(260px, 1fr);
-        gap: 1rem;
-        align-items: start;
-    }
-
-    .codex-stat-runes,
-    .codex-sidebar-actions {
-        grid-column: 1;
-    }
-
-    .codex-sidebar-section {
-        margin-top: 0;
-        padding-top: 0;
-        border-top: 0;
-    }
-}
-
-@media (max-width: 760px) {
-    .player-book-shell {
+@media (max-width: 820px) {
+    .player-layout .container {
         width: 100%;
-        padding-inline: .8rem;
-        gap: 1rem;
-    }
-
-    .player-book-shell::before {
-        inset: -.5rem .2rem;
-    }
-
-    .player-book-page {
-        padding: 1rem;
-        border-radius: 20px;
-    }
-
-    .codex-sidebar-card.character-sheet-card {
-        display: block;
-    }
-
-    .codex-sidebar-section {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid rgba(229,200,115,.18);
-    }
-
-    .codex-character-head {
-        grid-template-columns: 68px minmax(0, 1fr);
-    }
-
-    .codex-character-avatar {
-        width: 68px;
-        height: 68px;
+        padding-inline: 1rem;
     }
 
     .player-layout .page-title-row {
-        display: block !important;
+        display: block;
+    }
+
+    .player-layout .recommendation-card:nth-child(n),
+    .player-layout .recommended-journey-card:nth-child(n),
+    .player-layout .journey-card:nth-child(n) {
+        transform: none;
     }
 }
