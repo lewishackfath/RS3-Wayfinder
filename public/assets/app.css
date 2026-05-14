@@ -4347,3 +4347,239 @@ body.player-layout::after {
         grid-template-columns: repeat(4, minmax(42px, 1fr));
     }
 }
+
+/* ======================================================================
+   RS3 Wayfinder — Codex readability + torn parchment refinement
+   Scope: player-facing layout only. Admin remains clean/structured.
+   ====================================================================== */
+
+.player-layout {
+    --codex-readable-ink: #20140a;
+    --codex-readable-ink-soft: #463018;
+    --codex-readable-muted: #5b4327;
+    --codex-readable-paper: #e6cf91;
+    --codex-readable-paper-light: #f1dea6;
+    --codex-readable-paper-deep: #cba35d;
+    --codex-readable-rule: rgba(82, 52, 19, .32);
+    --codex-readable-bronze: #6d4519;
+    --codex-readable-teal: #075d66;
+    --codex-readable-gold: #7d561c;
+}
+
+/* Keep the profile sheet separate and readable. */
+.player-layout .player-codex-sidebar,
+.player-layout .codex-sidebar-card,
+.player-layout .character-sheet-card {
+    color: #f7e9bf;
+}
+
+.player-layout .codex-sidebar-card h1,
+.player-layout .codex-sidebar-card h2,
+.player-layout .codex-sidebar-card h3,
+.player-layout .codex-sidebar-card strong {
+    color: #ffe7a3;
+}
+
+.player-layout .codex-sidebar-card p,
+.player-layout .codex-sidebar-card span,
+.player-layout .codex-sidebar-card small,
+.player-layout .codex-sidebar-card .muted {
+    color: rgba(246, 226, 178, .82) !important;
+}
+
+/* Right-hand journal page: more like a sheet of torn parchment, not a card. */
+.player-layout .player-book-page {
+    color: var(--codex-readable-ink) !important;
+    overflow: visible;
+    border-radius: 18px 34px 22px 30px !important;
+    border: 0 !important;
+    isolation: isolate;
+    clip-path: polygon(
+        1.0% 2.2%, 4.3% .8%, 9.7% 1.8%, 14.9% .9%, 21.1% 2.0%,
+        27.6% .7%, 34.4% 1.7%, 41.3% .9%, 48.0% 2.1%, 55.2% .8%,
+        62.7% 1.8%, 70.4% .9%, 77.9% 2.0%, 85.2% .8%, 93.4% 1.8%, 99.0% 3.4%,
+        98.2% 8.7%, 99.1% 15.1%, 98.4% 22.3%, 99.2% 30.1%, 98.1% 37.8%,
+        99.0% 45.1%, 98.2% 52.7%, 99.1% 60.4%, 98.3% 68.0%, 99.0% 75.6%,
+        98.1% 83.2%, 99.0% 90.5%, 97.6% 97.7%, 92.0% 99.0%, 84.7% 98.0%,
+        77.5% 99.0%, 70.2% 97.9%, 62.7% 99.1%, 55.5% 98.0%, 48.0% 99.0%,
+        40.4% 97.8%, 33.0% 99.1%, 25.6% 98.1%, 18.2% 99.0%, 10.7% 97.8%,
+        3.3% 99.0%, .8% 95.3%, 1.7% 88.4%, .7% 80.9%, 1.6% 73.2%,
+        .7% 65.6%, 1.5% 58.0%, .8% 50.2%, 1.6% 42.6%, .7% 35.1%,
+        1.4% 27.8%, .8% 20.1%, 1.6% 12.8%
+    );
+    background:
+        radial-gradient(circle at 20% 10%, rgba(255, 247, 204, .45), transparent 18rem),
+        radial-gradient(circle at 92% 8%, rgba(109, 69, 25, .16), transparent 17rem),
+        radial-gradient(circle at 50% 105%, rgba(95, 57, 18, .18), transparent 24rem),
+        linear-gradient(90deg, rgba(78, 45, 14, .20), transparent 3.1rem, transparent calc(100% - 3.1rem), rgba(78, 45, 14, .18)),
+        repeating-linear-gradient(0deg, rgba(81, 51, 20, .045) 0 1px, transparent 1px 10px),
+        repeating-linear-gradient(90deg, rgba(120, 83, 36, .026) 0 1px, transparent 1px 13px),
+        linear-gradient(135deg, var(--codex-readable-paper-light), var(--codex-readable-paper) 48%, var(--codex-readable-paper-deep)) !important;
+    box-shadow:
+        0 28px 80px rgba(0,0,0,.48),
+        0 3px 0 rgba(255,235,167,.22) inset,
+        26px 0 54px rgba(89, 52, 17, .18) inset,
+        -26px 0 54px rgba(89, 52, 17, .16) inset,
+        0 -32px 62px rgba(71, 42, 14, .14) inset !important;
+}
+
+.player-layout .player-book-page::before {
+    content: "";
+    position: absolute;
+    inset: 18px 22px;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 14px 24px 18px 24px;
+    border: 1px solid rgba(84, 52, 18, .18);
+    background:
+        radial-gradient(circle at 12% 16%, rgba(91, 55, 19, .11) 0 1px, transparent 2px) 0 0 / 34px 31px,
+        radial-gradient(circle at 72% 88%, rgba(91, 55, 19, .09) 0 1px, transparent 2px) 0 0 / 47px 43px,
+        linear-gradient(90deg, transparent 0 2.55rem, rgba(95, 57, 17, .16) 2.55rem calc(2.55rem + 1px), transparent calc(2.55rem + 1px)),
+        repeating-linear-gradient(0deg, transparent 0 31px, rgba(88, 55, 20, .075) 31px 32px) !important;
+    opacity: 1 !important;
+}
+
+.player-layout .player-book-page::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(70, 38, 10, .22), transparent 14rem),
+        radial-gradient(circle at 100% 100%, rgba(70, 38, 10, .20), transparent 16rem),
+        linear-gradient(115deg, transparent 0 64%, rgba(255,255,255,.12) 66%, transparent 69%);
+    mix-blend-mode: multiply;
+    opacity: .55;
+}
+
+/* Make all text on parchment readable. */
+.player-layout .player-book-page,
+.player-layout .player-book-page *:not(.button):not(button):not(input):not(select):not(textarea) {
+    text-shadow: none;
+}
+
+.player-layout .player-book-page h1,
+.player-layout .player-book-page h2,
+.player-layout .player-book-page h3,
+.player-layout .player-book-page h4 {
+    color: var(--codex-readable-ink) !important;
+    text-shadow: 0 1px 0 rgba(255, 241, 188, .55) !important;
+}
+
+.player-layout .player-book-page p,
+.player-layout .player-book-page li,
+.player-layout .player-book-page small,
+.player-layout .player-book-page .small,
+.player-layout .player-book-page .muted,
+.player-layout .player-book-page td,
+.player-layout .player-book-page th,
+.player-layout .player-book-page label,
+.player-layout .player-book-page span:not(.badge):not(.button) {
+    color: var(--codex-readable-ink-soft) !important;
+}
+
+.player-layout .player-book-page a:not(.button) {
+    color: var(--codex-readable-teal) !important;
+    font-weight: 700;
+}
+
+/* Remove the dark dashboard hero box; the codex page itself is the surface. */
+.player-layout .player-book-page > .card:first-child,
+.player-layout .player-book-page .dashboard-hero-card {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Inner sections are written notes on the same page, not heavy dashboard panes. */
+.player-layout .player-book-page .dashboard-section,
+.player-layout .player-book-page .recommendation-section,
+.player-layout .player-book-page .recommended-journeys-section {
+    padding-top: .8rem;
+    border-top: 1px solid var(--codex-readable-rule);
+}
+
+.player-layout .player-book-page .active-profile-panel,
+.player-layout .player-book-page .recommendation-card,
+.player-layout .player-book-page .recommended-journey-card,
+.player-layout .player-book-page .dashboard-journey-item,
+.player-layout .player-book-page .empty-panel,
+.player-layout .player-book-page .notice,
+.player-layout .player-book-page .alert,
+.player-layout .player-book-page .stat-card,
+.player-layout .player-book-page .card:not(:first-child) {
+    color: var(--codex-readable-ink) !important;
+    border: 1px solid rgba(90, 55, 19, .24) !important;
+    border-radius: 14px 8px 16px 10px !important;
+    background:
+        linear-gradient(135deg, rgba(255,246,209,.34), rgba(122,78,27,.08)),
+        repeating-linear-gradient(0deg, rgba(83, 52, 20, .026) 0 1px, transparent 1px 9px) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.22),
+        0 6px 16px rgba(75, 43, 12, .10) !important;
+}
+
+.player-layout .player-book-page .active-profile-panel {
+    background:
+        linear-gradient(90deg, rgba(39, 83, 78, .16), rgba(111, 73, 25, .11)),
+        rgba(255,245,199,.20) !important;
+}
+
+.player-layout .player-book-page .active-profile-panel h3,
+.player-layout .player-book-page .recommendation-card h3,
+.player-layout .player-book-page .recommended-journey-card h3,
+.player-layout .player-book-page .dashboard-journey-item h3 {
+    color: var(--codex-readable-ink) !important;
+}
+
+.player-layout .player-book-page .button,
+.player-layout .player-book-page button {
+    color: #fff0be !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,.35) !important;
+}
+
+.player-layout .player-book-page .button.secondary,
+.player-layout .player-book-page button.secondary {
+    color: var(--codex-readable-ink) !important;
+    text-shadow: 0 1px 0 rgba(255,242,191,.55) !important;
+    background: rgba(255, 231, 160, .42) !important;
+}
+
+.player-layout .player-book-page input,
+.player-layout .player-book-page select,
+.player-layout .player-book-page textarea,
+.player-layout .player-book-page .searchable-dropdown-input {
+    color: var(--codex-readable-ink) !important;
+    background: rgba(255, 244, 202, .55) !important;
+}
+
+.player-layout .player-book-page input::placeholder,
+.player-layout .player-book-page textarea::placeholder {
+    color: rgba(70, 48, 24, .72) !important;
+}
+
+/* Small handwritten/journal details without sacrificing readability. */
+.player-layout .player-book-page h1::before,
+.player-layout .player-book-page .page-title-row h1::before {
+    content: "✦" !important;
+    color: var(--codex-readable-teal) !important;
+}
+
+.player-layout .player-book-page h2::before {
+    content: "✧ ";
+    color: var(--codex-readable-teal);
+    font-size: .84em;
+}
+
+.player-layout .player-book-page .dashboard-logo-wrap {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    .player-layout .player-book-page {
+        clip-path: none;
+        border-radius: 18px !important;
+    }
+}

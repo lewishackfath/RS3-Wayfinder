@@ -144,10 +144,10 @@ function page_header(string $title): void
     $isAdminContext = wf_is_admin_context();
     $bodyClass = $isAdminContext ? 'admin-layout' : 'player-layout';
     echo '<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">';
-    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=journal-scroll-1"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
+    echo '<title>' . e($title) . ' - ' . e(env('APP_NAME', 'RS3 Wayfinder')) . '</title><link rel="stylesheet" href="/assets/app.css?v=codex-readable-2"><link rel="icon" type="image/png" href="/assets/branding/icon.png"></head><body class="' . e($bodyClass) . '">';
     echo '<header class="topbar"><a class="brand" href="/index.php"><img src="/assets/branding/icon.png" alt="Wayfinder" style="height:32px;width:32px;vertical-align:middle;margin-right:10px;border-radius:8px;">RS3 Wayfinder</a><nav>';
     if ($user) {
-        echo '<a href="/dashboard.php">Dashboard</a>';
+        echo '<a href="/index.php">Codex</a>';
         echo '<a href="/account/index.php">Account</a>';
         echo '<a href="/journeys/index.php">Journeys</a>';
         echo '<a href="/boss-log/index.php">Boss Log</a>';
