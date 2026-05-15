@@ -5116,158 +5116,256 @@ body.player-layout::after {
     }
 }
 
+
 /* ======================================================================
-   RS3 Wayfinder — Player Codex Contrast Sweep
-   Fixes remaining brown-on-brown readable text issues across player-facing
-   journal pages without changing admin layouts.
+   RS3 Wayfinder — Clean Player Codex Readability Pass
+   Scope: player-facing journal/codex pages only. Admin screens are not touched.
+   Fixes: brown-on-brown plaques, progress bars, buttons, boss/achievement text.
    ====================================================================== */
+.player-layout .player-book-page {
+    --wf-paper: #f2dfae;
+    --wf-paper-soft: #fff2cf;
+    --wf-paper-deep: #dfbe72;
+    --wf-ink: #241607;
+    --wf-ink-soft: #4a2f13;
+    --wf-rule: rgba(91, 56, 19, .28);
+    --wf-bronze: #765021;
+    --wf-teal: #08727c;
+    --wf-gold: #d9ad4f;
+}
+
+/* General readable journal surfaces. */
 .player-layout .player-book-page > .card,
 .player-layout .player-book-page .card,
-.player-layout .player-book-page .journey-chapter,
+.player-layout .player-book-page .dashboard-section,
 .player-layout .player-book-page .recommended-steps-card,
+.player-layout .player-book-page .recommendation-card,
 .player-layout .player-book-page .recommended-step,
 .player-layout .player-book-page .recommended-step.rich,
-.player-layout .player-book-page .journey-list-item,
+.player-layout .player-book-page .journey-chapter,
+.player-layout .player-book-page .journey-step,
 .player-layout .player-book-page .journey-card,
+.player-layout .player-book-page .journey-list-item,
 .player-layout .player-book-page .recommended-journey-card,
-.player-layout .player-book-page .recommendation-card,
 .player-layout .player-book-page .dashboard-journey-item,
+.player-layout .player-book-page .active-profile-panel,
+.player-layout .player-book-page .empty-panel,
+.player-layout .player-book-page .notice,
+.player-layout .player-book-page .alert,
+.player-layout .player-book-page .stat-card,
 .player-layout .player-book-page .achievement-entry,
 .player-layout .player-book-page .achievement-requirements,
 .player-layout .player-book-page .boss-card,
 .player-layout .player-book-page .boss-log-card,
-.player-layout .player-book-page .boss-panel,
+.player-layout .player-book-page .boss-log-boss-card,
+.player-layout .player-book-page .boss-log-panel,
 .player-layout .player-book-page .collection-card,
-.player-layout .player-book-page .notice,
-.player-layout .player-book-page .alert,
-.player-layout .player-book-page .empty-panel,
-.player-layout .player-book-page .stat-card {
-    color: #211405 !important;
+.player-layout .player-book-page .collection-item,
+.player-layout .player-book-page .boss-log-item,
+.player-layout .player-book-page .drop-log-item {
+    color: var(--wf-ink) !important;
     background:
-        radial-gradient(circle at 12% 10%, rgba(255, 252, 229, .70), transparent 12rem),
-        linear-gradient(135deg, rgba(255, 245, 203, .94), rgba(231, 199, 124, .80)) !important;
-    border: 1px solid rgba(100, 63, 22, .30) !important;
+        radial-gradient(circle at 10% 8%, rgba(255,255,244,.65), transparent 11rem),
+        linear-gradient(135deg, rgba(255,244,205,.96), rgba(235,207,139,.90)) !important;
+    border: 1px solid var(--wf-rule) !important;
     box-shadow:
         inset 0 1px 0 rgba(255,255,255,.42),
-        inset 0 -18px 34px rgba(113, 71, 22, .075),
-        0 8px 20px rgba(63, 39, 13, .14) !important;
+        inset 0 -14px 28px rgba(115,72,20,.06),
+        0 7px 18px rgba(54,34,11,.12) !important;
+    text-shadow: none !important;
+}
+
+/* Kill any remaining dark brown overlay/panel treatment inside the player codex. */
+.player-layout .player-book-page [class*="glass"],
+.player-layout .player-book-page [class*="dark"],
+.player-layout .player-book-page [class*="hero"],
+.player-layout .player-book-page [class*="summary"] {
+    color: var(--wf-ink) !important;
+    background-color: transparent !important;
+    text-shadow: none !important;
 }
 
 .player-layout .player-book-page > .card *,
 .player-layout .player-book-page .card *,
-.player-layout .player-book-page .journey-chapter *,
+.player-layout .player-book-page .dashboard-section *,
 .player-layout .player-book-page .recommended-steps-card *,
-.player-layout .player-book-page .recommended-step *,
-.player-layout .player-book-page .journey-list-item *,
-.player-layout .player-book-page .journey-card *,
-.player-layout .player-book-page .recommended-journey-card *,
 .player-layout .player-book-page .recommendation-card *,
+.player-layout .player-book-page .recommended-step *,
+.player-layout .player-book-page .journey-chapter *,
+.player-layout .player-book-page .journey-step *,
+.player-layout .player-book-page .journey-card *,
+.player-layout .player-book-page .journey-list-item *,
+.player-layout .player-book-page .recommended-journey-card *,
 .player-layout .player-book-page .dashboard-journey-item *,
+.player-layout .player-book-page .active-profile-panel *,
+.player-layout .player-book-page .empty-panel *,
+.player-layout .player-book-page .notice *,
+.player-layout .player-book-page .alert *,
+.player-layout .player-book-page .stat-card *,
 .player-layout .player-book-page .achievement-entry *,
 .player-layout .player-book-page .achievement-requirements *,
 .player-layout .player-book-page .boss-card *,
 .player-layout .player-book-page .boss-log-card *,
-.player-layout .player-book-page .boss-panel *,
+.player-layout .player-book-page .boss-log-boss-card *,
+.player-layout .player-book-page .boss-log-panel *,
 .player-layout .player-book-page .collection-card *,
-.player-layout .player-book-page .notice *,
-.player-layout .player-book-page .alert *,
-.player-layout .player-book-page .empty-panel *,
-.player-layout .player-book-page .stat-card * {
-    color: inherit;
+.player-layout .player-book-page .collection-item *,
+.player-layout .player-book-page .boss-log-item *,
+.player-layout .player-book-page .drop-log-item * {
+    text-shadow: none !important;
 }
 
-.player-layout .player-book-page > .card h1,
-.player-layout .player-book-page > .card h2,
-.player-layout .player-book-page > .card h3,
-.player-layout .player-book-page .card h1,
-.player-layout .player-book-page .card h2,
-.player-layout .player-book-page .card h3,
-.player-layout .player-book-page .journey-chapter h2,
-.player-layout .player-book-page .journey-step h3,
-.player-layout .player-book-page .recommended-step strong,
-.player-layout .player-book-page .recommended-journey-card h3,
-.player-layout .player-book-page .recommendation-card h3,
-.player-layout .player-book-page .dashboard-journey-item h3,
-.player-layout .player-book-page .achievement-entry h2,
-.player-layout .player-book-page .boss-card h2,
-.player-layout .player-book-page .boss-log-card h2 {
-    color: #1f1205 !important;
-    -webkit-text-fill-color: #1f1205 !important;
-    text-shadow: 0 1px 0 rgba(255, 246, 204, .70) !important;
+.player-layout .player-book-page h1,
+.player-layout .player-book-page h2,
+.player-layout .player-book-page h3,
+.player-layout .player-book-page h4,
+.player-layout .player-book-page strong,
+.player-layout .player-book-page .item-name,
+.player-layout .player-book-page .boss-log-item-name,
+.player-layout .player-book-page .drop-log-item-name,
+.player-layout .player-book-page .collection-item-name {
+    color: #1d1004 !important;
+    -webkit-text-fill-color: #1d1004 !important;
+    text-shadow: 0 1px 0 rgba(255,246,207,.65) !important;
+    opacity: 1 !important;
 }
 
-.player-layout .player-book-page > .card p,
-.player-layout .player-book-page > .card small,
-.player-layout .player-book-page > .card .muted,
-.player-layout .player-book-page .card p,
-.player-layout .player-book-page .card small,
-.player-layout .player-book-page .card .muted,
-.player-layout .player-book-page .recommended-step small,
+.player-layout .player-book-page p,
+.player-layout .player-book-page small,
+.player-layout .player-book-page .small,
+.player-layout .player-book-page .muted,
+.player-layout .player-book-page li,
+.player-layout .player-book-page span,
 .player-layout .player-book-page .recommendation-reasons,
-.player-layout .player-book-page .journey-step p,
-.player-layout .player-book-page .journey-step small,
-.player-layout .player-book-page .achievement-requirements li,
-.player-layout .player-book-page .boss-card p,
-.player-layout .player-book-page .boss-log-card p {
-    color: #4a2f13 !important;
-    -webkit-text-fill-color: #4a2f13 !important;
-    text-shadow: none !important;
+.player-layout .player-book-page .achievement-requirements li {
+    color: var(--wf-ink-soft) !important;
+    -webkit-text-fill-color: var(--wf-ink-soft) !important;
     opacity: 1 !important;
 }
 
-.player-layout .player-book-page .recommended-step:hover,
-.player-layout .player-book-page .journey-list-item:hover,
-.player-layout .player-book-page .recommended-journey-card:hover,
-.player-layout .player-book-page .recommendation-card:hover {
-    background:
-        radial-gradient(circle at 15% 8%, rgba(255, 255, 239, .82), transparent 12rem),
-        linear-gradient(135deg, rgba(255, 249, 219, .98), rgba(238, 208, 135, .88)) !important;
-    border-color: rgba(0, 112, 125, .42) !important;
+/* Journey progress: no brown block over the actual bar. */
+.player-layout .player-book-page .journey-progress-summary {
+    color: var(--wf-ink) !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
-.player-layout .player-book-page .journey-step {
-    background: rgba(255, 247, 215, .52) !important;
-    border-top: 1px solid rgba(88, 55, 20, .18) !important;
-    border-radius: 14px !important;
-    padding: .9rem !important;
-    margin: .7rem 0 !important;
-    color: #211405 !important;
+.player-layout .player-book-page .journey-progress-summary > div,
+.player-layout .player-book-page .journey-progress-summary > div:first-child {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
-.player-layout .player-book-page .journey-step.locked {
-    opacity: 1 !important;
-    background: rgba(234, 211, 160, .58) !important;
+.player-layout .player-book-page .progress-bar,
+.player-layout .player-book-page .progress-bar.large,
+.player-layout .player-book-page .progress-track {
+    display: block !important;
+    overflow: hidden !important;
+    min-height: 14px !important;
+    background: rgba(49,29,9,.30) !important;
+    border: 1px solid rgba(78,48,16,.32) !important;
+    box-shadow: inset 0 2px 5px rgba(36,20,6,.28) !important;
 }
 
-.player-layout .player-book-page .journey-step.complete {
-    background:
-        linear-gradient(135deg, rgba(230, 253, 217, .78), rgba(218, 198, 125, .48)) !important;
-    border-color: rgba(49, 112, 56, .26) !important;
+.player-layout .player-book-page .progress-bar > span,
+.player-layout .player-book-page .progress-bar span,
+.player-layout .player-book-page .progress-fill {
+    display: block !important;
+    height: 100% !important;
+    min-height: 12px !important;
+    background: linear-gradient(90deg, #23a7c4, #83d9cb 54%, #f2d67c) !important;
+    box-shadow: 0 0 10px rgba(35,167,196,.30) !important;
 }
 
-.player-layout .player-book-page .step-status {
-    color: #2a1707 !important;
-    background: rgba(255, 239, 183, .82) !important;
-    border-color: rgba(91, 56, 19, .36) !important;
+/* Player action buttons: readable in normal, hover and visited states. */
+.player-layout .player-book-page a.button,
+.player-layout .player-book-page .button,
+.player-layout .player-book-page button,
+.player-layout .player-book-page input[type="submit"] {
+    color: #fff6df !important;
+    -webkit-text-fill-color: #fff6df !important;
+    background: linear-gradient(180deg, #865d27, #5d3914) !important;
+    border: 1px solid rgba(80,45,12,.38) !important;
+    box-shadow: inset 0 1px 0 rgba(255,236,181,.30), 0 4px 10px rgba(56,31,8,.22) !important;
     text-shadow: none !important;
 }
 
+.player-layout .player-book-page a.button.secondary,
+.player-layout .player-book-page .button.secondary {
+    color: #2b1a08 !important;
+    -webkit-text-fill-color: #2b1a08 !important;
+    background: linear-gradient(180deg, #ffe7a1, #d8ad56) !important;
+}
+
+.player-layout .player-book-page a.button:hover,
+.player-layout .player-book-page .button:hover,
+.player-layout .player-book-page button:hover,
+.player-layout .player-book-page input[type="submit"]:hover {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    background: linear-gradient(180deg, #986f34, #6a4218) !important;
+}
+
+.player-layout .player-book-page a.button.secondary:hover,
+.player-layout .player-book-page .button.secondary:hover {
+    color: #1f1204 !important;
+    -webkit-text-fill-color: #1f1204 !important;
+    background: linear-gradient(180deg, #fff0bb, #e4bd65) !important;
+}
+
+/* Badges remain readable against parchment. */
+.player-layout .player-book-page .badge,
+.player-layout .player-book-page .step-status,
+.player-layout .player-book-page .warning-badge {
+    color: #fff3cd !important;
+    -webkit-text-fill-color: #fff3cd !important;
+    background: linear-gradient(180deg, #5c3b17, #351f09) !important;
+    border: 1px solid rgba(66,39,12,.44) !important;
+    text-shadow: none !important;
+}
+
+.player-layout .player-book-page .badge.success,
+.player-layout .player-book-page .achievement-status-completed,
 .player-layout .player-book-page .journey-step.complete .step-status {
     color: #0f2613 !important;
-    background: #bce8a5 !important;
-    border-color: rgba(50, 110, 48, .52) !important;
+    -webkit-text-fill-color: #0f2613 !important;
+    background: #bee7a5 !important;
+    border-color: rgba(49,110,48,.42) !important;
 }
 
-.player-layout .player-book-page .progress-bar {
-    background: rgba(42, 25, 9, .32) !important;
-    border-color: rgba(83, 52, 18, .32) !important;
+/* Forms on player pages. */
+.player-layout .player-book-page input,
+.player-layout .player-book-page select,
+.player-layout .player-book-page textarea {
+    color: #241607 !important;
+    -webkit-text-fill-color: #241607 !important;
+    background: #fff3d1 !important;
+    border: 1px solid rgba(98,62,23,.36) !important;
+    text-shadow: none !important;
 }
 
-.player-layout .player-book-page .badge:not(.success),
-.player-layout .player-book-page .warning-badge {
-    color: #fff0be !important;
-    -webkit-text-fill-color: #fff0be !important;
-    background: linear-gradient(180deg, #5a3a18, #3a220d) !important;
-    border-color: rgba(71, 43, 14, .48) !important;
-    text-shadow: 0 1px 0 rgba(0,0,0,.36) !important;
+.player-layout .player-book-page input:hover,
+.player-layout .player-book-page select:hover,
+.player-layout .player-book-page textarea:hover,
+.player-layout .player-book-page input:focus,
+.player-layout .player-book-page select:focus,
+.player-layout .player-book-page textarea:focus {
+    color: #1f1204 !important;
+    -webkit-text-fill-color: #1f1204 !important;
+    background: #fff8e5 !important;
+}
+
+/* Hover cards should brighten, not darken. */
+.player-layout .player-book-page .recommended-step:hover,
+.player-layout .player-book-page .recommendation-card:hover,
+.player-layout .player-book-page .recommended-journey-card:hover,
+.player-layout .player-book-page .dashboard-journey-item:hover,
+.player-layout .player-book-page .journey-list-item:hover,
+.player-layout .player-book-page .collection-item:hover,
+.player-layout .player-book-page .boss-log-item:hover {
+    color: var(--wf-ink) !important;
+    background: linear-gradient(135deg, rgba(255,250,225,.98), rgba(240,215,151,.94)) !important;
+    border-color: rgba(8,114,124,.38) !important;
 }

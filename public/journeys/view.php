@@ -60,8 +60,15 @@ $journeyRecommendations = [];
 if ($isEnabled) {
     $progress = evaluate_journey_progress((int)$active['id'], $journeyId);
     $allSteps = $progress['steps'];
+    $seenJourneyRecommendations = [];
     foreach (($progress['recommended'] ?? []) as $recommendedStep) {
-        $journeyRecommendations[] = recommendation_from_step((int)$active['id'], $journey, $recommendedStep);
+        $rec = recommendation_from_step((int)$active['id'], $journey, $recommendedStep);
+        $dedupeKey = strtolower(trim((string)$rec['title'])) . '|' . strtolower(trim((string)$rec['summary'])) . '|' . strtolower(trim((string)$rec['detail']));
+        if (isset($seenJourneyRecommendations[$dedupeKey])) {
+            continue;
+        }
+        $seenJourneyRecommendations[$dedupeKey] = true;
+        $journeyRecommendations[] = $rec;
     }
 } else {
     $allSteps = steps_for_journey($journeyId);
