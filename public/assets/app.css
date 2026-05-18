@@ -5369,3 +5369,281 @@ body.player-layout::after {
     background: linear-gradient(135deg, rgba(255,250,225,.98), rgba(240,215,151,.94)) !important;
     border-color: rgba(8,114,124,.38) !important;
 }
+
+/* =========================================================
+   Boss Drop Log — sticker ledger refinement
+   Scope: player boss drop log only.
+   ========================================================= */
+.boss-log-ledger {
+    display: grid;
+    gap: 1rem;
+}
+
+.boss-log-entry {
+    border: 1px solid rgba(126, 91, 45, 0.28);
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255, 246, 219, 0.92), rgba(232, 207, 147, 0.82));
+    box-shadow: 0 10px 24px rgba(73, 46, 18, 0.12), inset 0 1px 0 rgba(255,255,255,0.32);
+    overflow: hidden;
+}
+
+.boss-log-summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    background:
+        radial-gradient(circle at 8% 20%, rgba(0, 161, 185, 0.08), transparent 28%),
+        linear-gradient(180deg, rgba(255, 248, 225, 0.72), rgba(230, 199, 124, 0.42));
+}
+
+.boss-log-summary::-webkit-details-marker {
+    display: none;
+}
+
+.boss-log-summary:hover,
+.boss-log-summary:focus-visible {
+    background:
+        radial-gradient(circle at 8% 20%, rgba(0, 161, 185, 0.14), transparent 30%),
+        linear-gradient(180deg, rgba(255, 250, 232, 0.88), rgba(234, 204, 132, 0.55));
+    outline: none;
+}
+
+.boss-log-entry .boss-log-boss-image {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    border-radius: 14px;
+    border: 1px solid rgba(84, 54, 22, 0.26);
+    background: rgba(255, 252, 236, 0.62);
+    box-shadow: 0 6px 16px rgba(58, 35, 10, 0.16);
+}
+
+.boss-log-summary-main {
+    min-width: 0;
+}
+
+.boss-log-summary-title-row {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.boss-log-summary h2 {
+    margin: 0;
+    color: #2b1a0a !important;
+    font-size: clamp(1.15rem, 1rem + 0.8vw, 1.75rem);
+    line-height: 1.05;
+    text-shadow: none !important;
+}
+
+.boss-log-kc,
+.boss-log-progress-label,
+.boss-log-category {
+    color: #4e3517 !important;
+    font-weight: 800;
+}
+
+.boss-log-entry .boss-log-progress {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) auto;
+    gap: 0.7rem;
+    align-items: center;
+    margin-top: 0.45rem;
+}
+
+.boss-log-entry .boss-log-progress-bar {
+    height: 0.72rem;
+    border-radius: 999px;
+    background: rgba(61, 39, 16, 0.24) !important;
+    border: 1px solid rgba(72, 45, 16, 0.28) !important;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(35, 22, 8, 0.34);
+}
+
+.boss-log-entry .boss-log-progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #2fa9bd, #9fd7c8 55%, #e8c85e) !important;
+    box-shadow: 0 0 10px rgba(47, 169, 189, 0.28);
+}
+
+.boss-log-expand-indicator {
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    color: #2d1b0a !important;
+    background: rgba(255, 245, 211, 0.74);
+    border: 1px solid rgba(95, 61, 22, 0.22);
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.boss-log-entry[open] .boss-log-expand-indicator::before {
+    content: 'Close';
+}
+.boss-log-entry[open] .boss-log-expand-indicator {
+    font-size: 0;
+}
+.boss-log-entry[open] .boss-log-expand-indicator::before {
+    font-size: 0.78rem;
+}
+
+.boss-log-entry-body {
+    padding: 1rem;
+    border-top: 1px dashed rgba(104, 70, 29, 0.26);
+}
+
+.boss-log-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.9rem;
+}
+
+.boss-kc-prompt-form {
+    margin: 0;
+}
+
+.boss-drop-stamp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(112px, 112px));
+    gap: 0.9rem;
+    align-items: stretch;
+}
+
+.boss-drop-stamp {
+    margin: 0;
+}
+
+.boss-drop-stamp button {
+    position: relative;
+    width: 112px;
+    height: 136px;
+    display: grid;
+    grid-template-rows: 62px 1fr;
+    justify-items: center;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.7rem 0.55rem 0.65rem;
+    border: 1px solid rgba(91, 63, 28, 0.28) !important;
+    border-radius: 14px 11px 15px 10px;
+    background:
+        radial-gradient(circle at 20% 12%, rgba(255,255,255,0.62), transparent 34%),
+        linear-gradient(145deg, #fff2c6 0%, #e9c978 100%) !important;
+    color: #2b1a0a !important;
+    box-shadow:
+        0 6px 12px rgba(54, 34, 10, 0.16),
+        inset 0 1px 0 rgba(255,255,255,0.45);
+    cursor: pointer;
+    transform: rotate(var(--stamp-tilt, -0.7deg));
+    transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease, opacity 0.16s ease;
+}
+
+.boss-drop-stamp:nth-child(3n) button { --stamp-tilt: 0.8deg; }
+.boss-drop-stamp:nth-child(4n) button { --stamp-tilt: -1.1deg; }
+.boss-drop-stamp:nth-child(5n) button { --stamp-tilt: 0.4deg; }
+
+.boss-drop-stamp button::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px dashed rgba(84, 55, 22, 0.22);
+    border-radius: 10px 8px 11px 8px;
+    pointer-events: none;
+}
+
+.boss-drop-stamp button:hover,
+.boss-drop-stamp button:focus-visible {
+    transform: translateY(-2px) rotate(0deg);
+    outline: none;
+    box-shadow:
+        0 10px 18px rgba(54, 34, 10, 0.22),
+        0 0 0 2px rgba(37, 150, 174, 0.14),
+        inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.boss-drop-stamp .stamp-icon-wrap {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(70, 45, 18, 0.10);
+    border: 1px solid rgba(70, 45, 18, 0.14);
+}
+
+.boss-drop-stamp img {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+}
+
+.boss-drop-stamp .boss-drop-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 100%;
+    color: #2b1a0a !important;
+    font-size: 0.78rem;
+    line-height: 1.08;
+    font-weight: 900;
+    text-align: center;
+    text-shadow: none !important;
+}
+
+.boss-drop-stamp.is-missing button {
+    opacity: 0.62;
+    filter: grayscale(1) saturate(0.55);
+    background: linear-gradient(145deg, #cfc0a0 0%, #9b8662 100%) !important;
+}
+
+.boss-drop-stamp.is-missing .stamp-icon-wrap {
+    background: rgba(36, 30, 22, 0.16);
+}
+
+.boss-drop-stamp.is-missing .boss-drop-name {
+    color: #24180d !important;
+}
+
+.boss-drop-stamp.is-obtained button {
+    opacity: 1;
+    filter: none;
+    border-color: rgba(34, 142, 163, 0.34) !important;
+    box-shadow:
+        0 8px 16px rgba(54, 34, 10, 0.18),
+        0 0 18px rgba(37, 150, 174, 0.13),
+        inset 0 1px 0 rgba(255,255,255,0.45);
+}
+
+@media (max-width: 680px) {
+    .boss-log-summary {
+        grid-template-columns: 58px minmax(0, 1fr);
+    }
+    .boss-log-expand-indicator {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+    .boss-log-entry .boss-log-boss-image {
+        width: 58px;
+        height: 58px;
+    }
+    .boss-log-entry .boss-log-progress {
+        grid-template-columns: 1fr;
+        gap: 0.35rem;
+    }
+    .boss-drop-stamp-grid {
+        grid-template-columns: repeat(auto-fill, minmax(98px, 98px));
+    }
+    .boss-drop-stamp button {
+        width: 98px;
+        height: 128px;
+    }
+}
