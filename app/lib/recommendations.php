@@ -4,6 +4,7 @@ declare(strict_types=1);
 function wayfinder_recommendations_for_profile(int $profileId, int $limit = 6): array
 {
     $recommendations = [];
+    $seenRecommendationKeys = [];
     $enabledJourneys = journeys_for_profile($profileId);
 
     foreach ($enabledJourneys as $journey) {
@@ -14,7 +15,13 @@ function wayfinder_recommendations_for_profile(int $profileId, int $limit = 6): 
                 break 2;
             }
 
-            $recommendations[] = recommendation_from_step($profileId, $journey, $step, 'next_step');
+            $rec = recommendation_from_step($profileId, $journey, $step, 'next_step');
+            $dedupeKey = strtolower(trim((string)$rec['journey_id'])) . '|' . strtolower(trim((string)$rec['title'])) . '|' . strtolower(trim((string)$rec['summary'])) . '|' . strtolower(trim((string)$rec['detail']));
+            if (isset($seenRecommendationKeys[$dedupeKey])) {
+                continue;
+            }
+            $seenRecommendationKeys[$dedupeKey] = true;
+            $recommendations[] = $rec;
         }
 
         foreach (($progress['steps'] ?? []) as $step) {
@@ -53,7 +60,18 @@ function wayfinder_recommendations_for_profile(int $profileId, int $limit = 6): 
 
     usort($recommendations, fn(array $a, array $b): int => ((int)$b['priority'] <=> (int)$a['priority']));
 
-    return array_slice($recommendations, 0, $limit);
+    $uniqueRecommendations = [];
+    $seenFinalKeys = [];
+    foreach ($recommendations as $rec) {
+        $key = strtolower(trim((string)($rec['journey_id'] ?? 'global'))) . '|' . strtolower(trim((string)($rec['title'] ?? ''))) . '|' . strtolower(trim((string)($rec['summary'] ?? ''))) . '|' . strtolower(trim((string)($rec['detail'] ?? '')));
+        if (isset($seenFinalKeys[$key])) {
+            continue;
+        }
+        $seenFinalKeys[$key] = true;
+        $uniqueRecommendations[] = $rec;
+    }
+
+    return array_slice($uniqueRecommendations, 0, $limit);
 }
 
 function recommendation_from_step(int $profileId, array $journey, array $step, string $type = 'next_step'): array
