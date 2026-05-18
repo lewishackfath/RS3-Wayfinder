@@ -5647,3 +5647,293 @@ body.player-layout::after {
         height: 128px;
     }
 }
+
+
+/* =========================================================
+   SAFE GLOBAL TORN PAPER CARD EDGES
+   ---------------------------------------------------------
+   The jagged paper is drawn on ::after behind the card.
+   The card itself is NOT clipped, so icons/text are not cropped.
+   ========================================================= */
+
+:root {
+    --wf-paper-edge-fill: linear-gradient(145deg, rgba(255, 245, 214, 0.98), rgba(229, 199, 132, 0.94));
+    --wf-paper-edge-shadow: 0 8px 18px rgba(50, 29, 8, 0.18), inset 0 1px 0 rgba(255,255,255,0.32);
+    --wf-paper-edge-outline: rgba(95, 63, 25, 0.20);
+}
+
+/* Card-like shells: keep the content box rectangular; only the backing paper is torn. */
+.player-layout .card,
+.player-layout .panel,
+.player-layout .widget,
+.player-layout .codex-panel,
+.player-layout .codex-section,
+.player-layout .scroll-panel,
+.player-layout .parchment-panel,
+.player-layout .journal-card,
+.player-layout .player-card,
+.player-layout .boss-card,
+.player-layout .achievement-card,
+.player-layout .journey-step-card,
+.player-layout .next-step-card,
+.player-layout .recommendation-card,
+.player-layout .recommended-step,
+.player-layout .recommended-journey-card,
+.player-layout .dashboard-journey-item,
+.player-layout .journey-list-item,
+.player-layout .collection-item,
+.player-layout .boss-log-entry,
+.player-layout .boss-log-entry-body,
+.player-layout .boss-log-summary {
+    position: relative !important;
+    isolation: isolate;
+    overflow: visible !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* The torn paper backing. */
+.player-layout .card::after,
+.player-layout .panel::after,
+.player-layout .widget::after,
+.player-layout .codex-panel::after,
+.player-layout .codex-section::after,
+.player-layout .scroll-panel::after,
+.player-layout .parchment-panel::after,
+.player-layout .journal-card::after,
+.player-layout .player-card::after,
+.player-layout .boss-card::after,
+.player-layout .achievement-card::after,
+.player-layout .journey-step-card::after,
+.player-layout .next-step-card::after,
+.player-layout .recommendation-card::after,
+.player-layout .recommended-step::after,
+.player-layout .recommended-journey-card::after,
+.player-layout .dashboard-journey-item::after,
+.player-layout .journey-list-item::after,
+.player-layout .collection-item::after,
+.player-layout .boss-log-entry::after,
+.player-layout .boss-log-entry-body::after,
+.player-layout .boss-log-summary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+
+    background:
+        radial-gradient(circle at 12% 14%, rgba(255,255,255,0.30), transparent 30%),
+        radial-gradient(circle at 82% 80%, rgba(108,72,30,0.10), transparent 32%),
+        repeating-linear-gradient(
+            9deg,
+            rgba(104, 70, 32, 0.035) 0px,
+            rgba(104, 70, 32, 0.035) 2px,
+            transparent 2px,
+            transparent 9px
+        ),
+        var(--wf-paper-edge-fill);
+
+    clip-path: polygon(
+        0% 5%,
+        2% 1%,
+        8% 3%,
+        15% 0%,
+        24% 2%,
+        32% 0%,
+        43% 3%,
+        52% 1%,
+        63% 3%,
+        72% 0%,
+        83% 2%,
+        94% 1%,
+        100% 6%,
+        98% 14%,
+        100% 24%,
+        97% 34%,
+        100% 45%,
+        98% 56%,
+        100% 66%,
+        97% 77%,
+        100% 88%,
+        95% 100%,
+        84% 97%,
+        74% 100%,
+        62% 98%,
+        51% 100%,
+        40% 97%,
+        30% 100%,
+        19% 97%,
+        8% 100%,
+        0% 94%,
+        2% 83%,
+        0% 73%,
+        3% 62%,
+        0% 51%,
+        2% 39%,
+        0% 29%,
+        3% 17%
+    );
+
+    box-shadow: var(--wf-paper-edge-shadow);
+}
+
+/* Slightly extend the backing for larger journal containers so the torn edge reads clearly. */
+.player-layout .codex-panel::after,
+.player-layout .scroll-panel::after,
+.player-layout .parchment-panel::after,
+.player-layout .journal-card::after,
+.player-layout .boss-log-entry::after {
+    inset: -2px;
+}
+
+/* Keep text and controls above the backing layer. */
+.player-layout .card > *,
+.player-layout .panel > *,
+.player-layout .widget > *,
+.player-layout .codex-panel > *,
+.player-layout .codex-section > *,
+.player-layout .scroll-panel > *,
+.player-layout .parchment-panel > *,
+.player-layout .journal-card > *,
+.player-layout .player-card > *,
+.player-layout .boss-card > *,
+.player-layout .achievement-card > *,
+.player-layout .journey-step-card > *,
+.player-layout .next-step-card > *,
+.player-layout .recommendation-card > *,
+.player-layout .recommended-step > *,
+.player-layout .recommended-journey-card > *,
+.player-layout .dashboard-journey-item > *,
+.player-layout .journey-list-item > *,
+.player-layout .collection-item > *,
+.player-layout .boss-log-entry > *,
+.player-layout .boss-log-entry-body > *,
+.player-layout .boss-log-summary > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Small sticker/tile treatment. Same-size boss drops now look like pasted journal stickers. */
+.boss-drop-stamp button,
+.player-layout .boss-drop-stamp button {
+    position: relative !important;
+    isolation: isolate;
+    overflow: visible !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.boss-drop-stamp button::after,
+.player-layout .boss-drop-stamp button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+
+    background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,0.42), transparent 34%),
+        repeating-linear-gradient(
+            -12deg,
+            rgba(105, 72, 30, 0.045) 0px,
+            rgba(105, 72, 30, 0.045) 2px,
+            transparent 2px,
+            transparent 8px
+        ),
+        linear-gradient(145deg, #fff2c6 0%, #e9c978 100%);
+
+    clip-path: polygon(
+        0% 8%,
+        6% 0%,
+        18% 4%,
+        31% 0%,
+        45% 5%,
+        58% 1%,
+        74% 4%,
+        91% 0%,
+        100% 9%,
+        96% 21%,
+        100% 34%,
+        97% 49%,
+        100% 64%,
+        95% 79%,
+        100% 93%,
+        90% 100%,
+        76% 96%,
+        62% 100%,
+        47% 95%,
+        31% 100%,
+        17% 96%,
+        4% 100%,
+        0% 88%,
+        4% 73%,
+        0% 59%,
+        3% 43%,
+        0% 27%
+    );
+
+    box-shadow:
+        0 6px 12px rgba(54, 34, 10, 0.16),
+        inset 0 1px 0 rgba(255,255,255,0.45);
+}
+
+/* Preserve the inner dashed stamp border and content. */
+.boss-drop-stamp button::before,
+.player-layout .boss-drop-stamp button::before {
+    z-index: 0;
+}
+
+.boss-drop-stamp button > *,
+.player-layout .boss-drop-stamp button > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Missing stickers should still be readable, but visibly uncollected. */
+.boss-drop-stamp.is-missing button::after,
+.player-layout .boss-drop-stamp.is-missing button::after {
+    background:
+        repeating-linear-gradient(
+            -12deg,
+            rgba(48, 39, 28, 0.045) 0px,
+            rgba(48, 39, 28, 0.045) 2px,
+            transparent 2px,
+            transparent 8px
+        ),
+        linear-gradient(145deg, #d6c8a8 0%, #a99570 100%);
+}
+
+/* Buttons retain readable labels while gaining less perfect edges. */
+.player-layout .btn,
+.player-layout button,
+.player-layout input[type=submit],
+.player-layout input[type=button],
+.player-layout a.button {
+    border-radius: 15px 10px 17px 12px !important;
+}
+
+/* Do not apply torn edges to navigation/header/footer chrome. */
+.site-header .card,
+.site-header .panel,
+.site-nav .card,
+.site-nav .panel,
+.menu .card,
+.menu .panel,
+footer .card,
+footer .panel {
+    background: inherit !important;
+    overflow: initial !important;
+    box-shadow: inherit !important;
+}
+.site-header .card::after,
+.site-header .panel::after,
+.site-nav .card::after,
+.site-nav .panel::after,
+.menu .card::after,
+.menu .panel::after,
+footer .card::after,
+footer .panel::after {
+    display: none !important;
+}
