@@ -3713,3 +3713,53 @@ body.player-layout .player-book-page .skill-row strong em {
     border-color: rgba(92,59,23,.35) !important;
     background: rgba(92,59,23,.08) !important;
 }
+
+/* =========================================================
+   Player scrapbook card shadow refinement
+   ---------------------------------------------------------
+   Adds a brown paper-like drop shadow to end-user journal
+   cards without touching the left profile sidebar or admin UI.
+   The shadow is applied to the torn-paper pseudo layer so the
+   visible shape follows the jagged paper edge rather than a
+   clean rectangular box.
+   ========================================================= */
+body.player-layout .player-book-page :where(
+    .card:not(.dashboard-hero-card),
+    .stat-card,
+    .filter-card,
+    .journey-list-item,
+    .dashboard-journey-item,
+    .recommendation-card,
+    .recommended-journey-card,
+    .recommended-step,
+    .recommended-steps-card,
+    .empty-panel,
+    .notice,
+    .alert,
+    .active-profile-panel,
+    .journey-chapter,
+    .journey-step,
+    .achievement-entry,
+    .boss-log-entry,
+    .nested-card,
+    .form-section,
+    .profile-hero-card,
+    .skill-row
+):not(.dashboard-hero-card)::before {
+    filter:
+        drop-shadow(0 10px 12px rgba(82, 48, 16, .30))
+        drop-shadow(0 2px 1px rgba(68, 38, 12, .24)) !important;
+}
+
+body.player-layout .player-book-page .boss-drop-stamp button::before {
+    filter:
+        drop-shadow(0 7px 8px rgba(82, 48, 16, .28))
+        drop-shadow(0 1px 1px rgba(68, 38, 12, .22)) !important;
+}
+
+/* Profile view: skills and quest-status summary are intentionally hidden in
+   the player journal view because the left profile panel and top quest summary
+   already cover that information. Admin profile views still render those blocks. */
+body.player-layout .player-book-page .profile-view-admin-only {
+    display: none !important;
+}

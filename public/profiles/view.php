@@ -119,6 +119,7 @@ page_header('Profile Data');
     <div class="stat-card"><span>Quest Completion</span><strong><?= $completionPct === null ? '—' : e($completionPct . '%') ?></strong></div>
 </div>
 
+<?php if ($isAdminProfileView): ?>
 <div class="grid two-col-grid">
     <div class="card">
         <h2>Skills</h2>
@@ -159,6 +160,7 @@ page_header('Profile Data');
         <?php endif; ?>
     </div>
 </div>
+<?php endif; ?>
 
 <div class="card">
     <h2>Recent RuneMetrics Activity</h2>
