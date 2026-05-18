@@ -1,7 +1,26 @@
 <?php
 require_once dirname(__DIR__) . '/app/bootstrap.php';
 require_once dirname(__DIR__) . '/app/layout.php';
-require_login();
+
+if (!current_user()) {
+    page_header('Welcome');
+    ?>
+    <section class="public-codex-landing">
+        <div class="public-codex-landing-inner">
+            <img class="public-codex-logo" src="/assets/branding/logo.png" alt="RS3 Wayfinder" loading="lazy">
+            <span class="codex-kicker">Adventurer Codex</span>
+            <h1>Welcome to RS3 Wayfinder</h1>
+            <p>Track your RuneScape journey, follow custom progression paths, record boss drops, and build a personal codex for every RSN profile.</p>
+            <div class="public-codex-actions">
+                <a class="button" href="/auth/login.php">Login with Discord</a>
+            </div>
+        </div>
+    </section>
+    <?php
+    page_footer();
+    exit;
+}
+
 $user = current_user();
 page_header('Codex');
 $roles = roles_for_user((int)$user['id']);

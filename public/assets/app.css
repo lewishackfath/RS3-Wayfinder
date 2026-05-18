@@ -3763,3 +3763,161 @@ body.player-layout .player-book-page .boss-drop-stamp button::before {
 body.player-layout .player-book-page .profile-view-admin-only {
     display: none !important;
 }
+
+
+/* =========================================================
+   Targeted player UI polish fixes
+   ---------------------------------------------------------
+   Applies only the requested fixes:
+   - Recommendation analysis row paper treatment
+   - Embossed player-facing headings
+   - Account page spacing
+   - Logged-out landing panel
+   - Boss log details open anchor offset
+   ========================================================= */
+
+body.player-layout .player-book-page .recommendation-analysis-row {
+    --paper-bg: var(--journal-paper-b, #ead09b);
+    position: relative !important;
+    isolation: isolate !important;
+    overflow: visible !important;
+    padding: clamp(1.35rem, 2vw, 2rem) !important;
+    margin-top: 1.35rem !important;
+    margin-bottom: 1.15rem !important;
+    background: transparent !important;
+    border: 0 !important;
+    color: var(--journal-ink, #241609) !important;
+}
+
+body.player-layout .player-book-page .recommendation-analysis-row::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background-color: var(--paper-bg);
+    border: 1px solid rgba(88, 53, 19, .18);
+    filter: drop-shadow(0 10px 12px rgba(82, 48, 16, .22));
+    clip-path: polygon(
+        0 12px, 10px 0, 34px 5px, 58px 0, 92px 4px,
+        calc(100% - 92px) 4px, calc(100% - 58px) 0, calc(100% - 34px) 5px, calc(100% - 10px) 0, 100% 12px,
+        100% calc(100% - 12px), calc(100% - 10px) 100%, calc(100% - 34px) calc(100% - 5px), calc(100% - 58px) 100%, calc(100% - 92px) calc(100% - 4px),
+        92px calc(100% - 4px), 58px 100%, 34px calc(100% - 5px), 10px 100%, 0 calc(100% - 12px)
+    );
+}
+
+body.player-layout .player-book-page .recommendation-analysis-row::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    z-index: -1;
+    pointer-events: none;
+    border: 1px dashed rgba(88, 53, 19, .14);
+}
+
+body.player-layout .player-book-page .recommendation-analysis-row > div {
+    position: relative;
+    z-index: 1;
+    padding: .65rem .75rem !important;
+    background: rgba(255, 247, 221, .30) !important;
+    border: 1px dashed rgba(88, 53, 19, .16) !important;
+    border-radius: 10px !important;
+    color: var(--journal-ink, #241609) !important;
+}
+
+body.player-layout .player-book-page .recommendation-analysis-row strong,
+body.player-layout .player-book-page .recommendation-analysis-row span {
+    color: var(--journal-ink, #241609) !important;
+}
+
+body.player-layout :where(.player-book-page, .player-codex-sidebar) :where(h1, h2, h3, h4) {
+    text-shadow:
+        0 1px 0 rgba(255, 244, 203, .78),
+        0 -1px 0 rgba(81, 48, 15, .20),
+        1px 1px 0 rgba(81, 48, 15, .16),
+        0 3px 0 rgba(81, 48, 15, .10) !important;
+}
+
+body.player-layout .player-book-page .account-grid {
+    gap: clamp(1.65rem, 3vw, 2.35rem) !important;
+    margin-bottom: clamp(2.2rem, 4vw, 3.3rem) !important;
+}
+
+body.player-layout .player-book-page .account-grid + .card,
+body.player-layout .player-book-page .account-grid + section.card {
+    margin-top: clamp(1.45rem, 3vw, 2.3rem) !important;
+}
+
+body.player-layout .player-book-page .account-profile-grid,
+body.player-layout .player-book-page .cards-grid {
+    gap: clamp(1.25rem, 2.4vw, 2rem) !important;
+}
+
+body.player-layout .player-book-page .account-summary-card,
+body.player-layout .player-book-page .account-danger-card {
+    margin-bottom: .75rem !important;
+}
+
+.public-codex-landing {
+    min-height: min(72vh, 760px);
+    display: grid;
+    place-items: center;
+    padding: clamp(2rem, 5vw, 5rem) 1rem;
+}
+
+.public-codex-landing-inner {
+    width: min(760px, 100%);
+    position: relative;
+    isolation: isolate;
+    text-align: center;
+    padding: clamp(2rem, 5vw, 4rem);
+    color: var(--journal-ink, #241609);
+}
+
+.public-codex-landing-inner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: #ecd9a8;
+    border: 1px solid rgba(91, 58, 22, .34);
+    filter: drop-shadow(0 20px 32px rgba(41, 24, 8, .42));
+    clip-path: polygon(
+        0 18px, 14px 0, 54px 7px, 104px 0, 164px 8px,
+        calc(100% - 164px) 8px, calc(100% - 104px) 0, calc(100% - 54px) 7px, calc(100% - 14px) 0, 100% 18px,
+        100% calc(100% - 18px), calc(100% - 14px) 100%, calc(100% - 54px) calc(100% - 7px), calc(100% - 104px) 100%, calc(100% - 164px) calc(100% - 8px),
+        164px calc(100% - 8px), 104px 100%, 54px calc(100% - 7px), 14px 100%, 0 calc(100% - 18px)
+    );
+}
+
+.public-codex-logo {
+    display: block;
+    width: min(280px, 70vw);
+    max-height: 180px;
+    object-fit: contain;
+    margin: 0 auto 1rem;
+}
+
+.public-codex-landing h1 {
+    margin: .2rem 0 .75rem;
+    color: #241609 !important;
+    text-shadow:
+        0 1px 0 rgba(255, 244, 203, .82),
+        0 -1px 0 rgba(81, 48, 15, .22),
+        1px 1px 0 rgba(81, 48, 15, .18) !important;
+}
+
+.public-codex-landing p {
+    max-width: 54rem;
+    margin-inline: auto;
+    color: #3b2a16 !important;
+    font-size: 1.08rem;
+}
+
+.public-codex-actions {
+    margin-top: 1.35rem;
+}
+
+body.player-layout .boss-log-entry {
+    scroll-margin-top: 100px;
+}

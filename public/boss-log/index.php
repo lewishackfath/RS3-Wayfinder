@@ -12,6 +12,14 @@ if (!$profile) {
 
 $error = null;
 $success = null;
+if (!empty($_SESSION['boss_log_success'])) {
+    $success = (string)$_SESSION['boss_log_success'];
+    unset($_SESSION['boss_log_success']);
+}
+if (!empty($_SESSION['boss_log_error'])) {
+    $error = (string)$_SESSION['boss_log_error'];
+    unset($_SESSION['boss_log_error']);
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
@@ -23,15 +31,25 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         if ($action === 'set_killcount') {
             $killCount = max(0, (int)($_POST['kill_count'] ?? 0));
             set_profile_boss_killcount($profileId, $userId, $bossId, $killCount);
-            $success = 'Boss kill count updated.';
+            $_SESSION['boss_log_success'] = 'Boss kill count updated.';
         } else {
             $dropId = (int)($_POST['drop_content_item_id'] ?? 0);
             $obtained = (string)($_POST['obtained'] ?? '0') === '1';
             set_profile_boss_drop_obtained($profileId, $userId, $bossId, $dropId, $obtained);
-            $success = $obtained ? 'Drop marked as collected.' : 'Drop marked as missing.';
+            $_SESSION['boss_log_success'] = $obtained ? 'Drop marked as collected.' : 'Drop marked as missing.';
         }
-        $profile = active_profile() ?: $profile;
+
+        $query = $_GET;
+        $query['open'] = (string)$bossId;
+        $target = '/boss-log/index.php?' . http_build_query($query) . '#boss-log-' . $bossId;
+        redirect($target);
     } catch (Throwable $e) {
+        $_SESSION['boss_log_error'] = $e->getMessage();
+        $query = $_GET;
+        if ($bossId > 0) {
+            $query['open'] = (string)$bossId;
+            redirect('/boss-log/index.php?' . http_build_query($query) . '#boss-log-' . $bossId);
+        }
         $error = $e->getMessage();
     }
 }
@@ -41,6 +59,7 @@ $filters = [
     'category' => trim((string)($_GET['category'] ?? '')),
     'completion' => trim((string)($_GET['completion'] ?? '')),
 ];
+$openBossId = (int)($_GET['open'] ?? 0);
 $bosses = boss_log_bosses_for_profile((int)$profile['id'], $filters);
 $categories = boss_log_categories();
 $totals = boss_log_totals_for_profile((int)$profile['id']);
@@ -109,7 +128,7 @@ page_header('Boss Drop Log');
                 $killCount = (int)($boss['kill_count'] ?? 0);
                 $bossDomId = 'boss-log-' . (int)$boss['id'];
             ?>
-            <details class="boss-log-entry" id="<?= e($bossDomId) ?>">
+            <details class="boss-log-entry" id="<?= e($bossDomId) ?>" <?= $openBossId === (int)$boss['id'] ? 'open' : '' ?>>
                 <summary class="boss-log-summary">
                     <img class="boss-log-boss-image" src="<?= e(boss_log_icon_url($boss['icon_url'], $boss['name'])) ?>" alt="<?= e($boss['name']) ?>" loading="lazy" referrerpolicy="no-referrer">
                     <div class="boss-log-summary-main">
